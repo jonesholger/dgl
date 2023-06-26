@@ -17,6 +17,8 @@
 #include <cstdlib>
 #include <string>
 
+#include<dgl/StackTrace.h>
+
 #include "runtime_base.h"
 
 namespace dgl {
@@ -61,6 +63,7 @@ class DeviceAPIManager {
   }
   // Get or initialize API.
   DeviceAPI* GetAPI(int type, bool allow_missing) {
+    //print_stacktrace();
     if (type < kRPCSessMask) {
       if (api_[type] != nullptr) return api_[type];
       std::lock_guard<std::mutex> lock(mutex_);
@@ -76,9 +79,12 @@ class DeviceAPIManager {
     }
   }
   DeviceAPI* GetAPI(const std::string name, bool allow_missing) {
+    //print_stacktrace();
     std::string factory = "device_api." + name;
+    std::cerr << "GetAPI: " << factory << std::endl;
     auto* f = Registry::Get(factory);
     if (f == nullptr) {
+      std::cerr << "Registry::Get returns nullptr\n";
       CHECK(allow_missing)
           << "Device API " << name
           << " is not enabled. Please install the cuda version of dgl.";
@@ -385,6 +391,7 @@ int DGLCbArgToReturn(DGLValue* value, int code) {
 }
 
 int DGLLoadTensorAdapter(const char* path) {
+  std::cerr << "LoadTensorAdaoter at: " << path << std::endl;
   return TensorDispatcher::Global()->Load(path) ? 0 : -1;
 }
 
