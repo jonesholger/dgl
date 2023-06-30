@@ -25,14 +25,14 @@ endif()
 dgl_option(USE_CUDA "Build with CUDA" OFF)
 dgl_option(USE_OPENMP "Build with OpenMP" ON)
 dgl_option(USE_LIBXSMM "Build with LIBXSMM library optimization" ON)
-dgl_option(BUILD_CPP_TEST "Build cpp unittest executables" OFF)
+dgl_option(BUILD_CPP_TEST "Build cpp unittest executables" ON)
 dgl_option(LIBCXX_ENABLE_PARALLEL_ALGORITHMS "Enable the parallel algorithms library. This requires the PSTL to be available." OFF)
 dgl_option(USE_S3 "Build with S3 support" OFF)
 dgl_option(USE_HDFS "Build with HDFS support" OFF) # Set env HADOOP_HDFS_HOME if needed
 dgl_option(REBUILD_LIBXSMM "Clean LIBXSMM build cache at every build" OFF) # Set env HADOOP_HDFS_HOME if needed
 dgl_option(USE_EPOLL "Build with epoll for socket communicator" ON)
 dgl_option(BUILD_TORCH "Build the PyTorch plugin" OFF)
-dgl_option(BUILD_SPARSE "Build DGL sparse library" ON)
+dgl_option(BUILD_SPARSE "Build DGL sparse library" OFF)
 dgl_option(BUILD_GRAPHBOLT "Build Graphbolt library" OFF)
 dgl_option(TORCH_PYTHON_INTERPS "Python interpreter used to build tensoradapter and DGL sparse library" python3)
 
