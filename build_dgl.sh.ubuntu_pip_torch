@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+ENV_BASE=$HOME/env
+TORCH_BASE=$ENV_BASE/lib/python3.8/site-packages/torch/lib/
+cmake \
+    -DCMAKE_CXX_COMPILER=g++ \
+    -DCMAKE_C_COMPILER=gcc \
+    -DUSE_CUDA=ON \
+    -DCMAKE_CUDA_ARCHITECTURES=80 \
+    -DBUILD_TORCH=ON \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCUDA_ARCH_NAME="Ampere" \
+    -DCMAKE_INSTALL_PREFIX="../install_ubuntu" \
+    -DCMAKE_INSTALL_RPATH="$ENV_BASE/lib:$TORCH_BASE" \
+    -DCMAKE_BUILD_RPATH="$ENV_BASE/lib:$TORCH_BASE" \
+    ..
