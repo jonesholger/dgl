@@ -12,6 +12,7 @@ else
   CPSOURCE=*.so
 fi
 
+CMAKE_FLAGS="-DCMAKE_CXX_STANDARD=17 -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda"
 echo $CMAKE_FLAGS
 
 if [ $# -eq 0 ]; then

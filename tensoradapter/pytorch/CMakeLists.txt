@@ -18,6 +18,7 @@ list(GET TORCH_PREFIX_VER 1 TORCH_VER)
 message(STATUS "Configuring for PyTorch ${TORCH_VER}")
 
 if(USE_CUDA)
+  message(STATUS "tensor adapter is using cuda")
   add_definitions(-DDGL_USE_CUDA)
 endif()
 
