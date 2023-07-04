@@ -1,0 +1,16 @@
+  warning: ./src/graph/transform/cuda/knn.cu:532: unsupported identifier "cudaDevAttrMax"
+
+[HIPIFY] info: file './src/graph/transform/cuda/knn.cu' statisitics:
+  CONVERTED refs count: 20
+  TOTAL lines of code: 997
+  WARNINGS: 1
+[HIPIFY] info: CONVERTED refs by names:
+  cudaDevAttrMaxSharedMemoryPerBlock => hipDeviceAttributeMaxSharedMemoryPerBlock: 1
+  cudaDevAttrWarpSize => hipDeviceAttributeWarpSize: 1
+  cudaDeviceGetAttribute => hipDeviceGetAttribute: 2
+  cudaStreamSynchronize => hipStreamSynchronize: 1
+  cudaStream_t => hipStream_t: 3
+  curand => hiprand: 3
+  curandState => hiprandState: 3
+  curand_init => hiprand_init: 3
+  curand_kernel.h => hiprand_kernel.h: 1

@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/partition/cuda/partition_op.cu' statisitics:
+  CONVERTED refs count: 7
+  TOTAL lines of code: 612
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 6

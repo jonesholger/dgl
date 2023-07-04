@@ -1,0 +1,14 @@
+  warning: ./src/array/cuda/cuda_filter.cu:#47 :   hipStream_t cudaStream = runtime::getCurrentCUDAStream();
+  warning: ./src/array/cuda/cuda_filter.cu:#68 :         (_IsInKernel<IdType, include>), grid, block, 0, cudaStream,
+  warning: ./src/array/cuda/cuda_filter.cu:#78 :         static_cast<IdType*>(nullptr), size + 1, cudaStream));
+  warning: ./src/array/cuda/cuda_filter.cu:#82 :         workspace, workspace_bytes, prefix, prefix, size + 1, cudaStream));
+  warning: ./src/array/cuda/cuda_filter.cu:#98 :         _InsertKernel, grid, block, 0, cudaStream, prefix, size,
+  warning: ./src/array/cuda/cuda_filter.cu:#111 :     hipStream_t cudaStream = runtime::getCurrentCUDAStream();
+  warning: ./src/array/cuda/cuda_filter.cu:#113 :         static_cast<const IdType*>(array->data), array->shape[0], cudaStream);
+
+[HIPIFY] info: file './src/array/cuda/cuda_filter.cu' statisitics:
+  CONVERTED refs count: 2
+  TOTAL lines of code: 139
+  WARNINGS: 7
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 2

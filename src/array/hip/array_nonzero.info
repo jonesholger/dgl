@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/array/cuda/array_nonzero.cu' statisitics:
+  CONVERTED refs count: 1
+  TOTAL lines of code: 70
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 1

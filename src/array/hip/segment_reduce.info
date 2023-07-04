@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/array/cuda/segment_reduce.cuh' statisitics:
+  CONVERTED refs count: 4
+  TOTAL lines of code: 262
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 4

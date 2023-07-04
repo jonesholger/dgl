@@ -1,0 +1,8 @@
+
+[HIPIFY] info: file './src/graph/transform/cuda/cuda_map_edges.cuh' statisitics:
+  CONVERTED refs count: 4
+  TOTAL lines of code: 240
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 2
+  cuda_runtime.h => hip/hip_runtime.h: 1

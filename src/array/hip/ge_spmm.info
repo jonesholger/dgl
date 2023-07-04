@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/array/cuda/ge_spmm.cuh' statisitics:
+  CONVERTED refs count: 2
+  TOTAL lines of code: 144
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 1

@@ -1,0 +1,9 @@
+
+[HIPIFY] info: file './src/graph/transform/cuda/cuda_compact_graph.cu' statisitics:
+  CONVERTED refs count: 4
+  TOTAL lines of code: 247
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaMemsetAsync => hipMemsetAsync: 1
+  cudaStream_t => hipStream_t: 2
+  cuda_runtime.h => hip/hip_runtime.h: 1

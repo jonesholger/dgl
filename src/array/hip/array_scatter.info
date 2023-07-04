@@ -1,0 +1,12 @@
+  warning: ./src/array/cuda/array_scatter.cu:44: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/array_scatter.cu:44: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/array_scatter.cu:53: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/array_scatter.cu:53: unsupported identifier "__nv_bfloat16"
+
+[HIPIFY] info: file './src/array/cuda/array_scatter.cu' statisitics:
+  CONVERTED refs count: 3
+  TOTAL lines of code: 61
+  WARNINGS: 4
+[HIPIFY] info: CONVERTED refs by names:
+  __half => __half: 2
+  cudaStream_t => hipStream_t: 1

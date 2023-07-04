@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/graph/sampling/randomwalks/get_node_types_gpu.cu' statisitics:
+  CONVERTED refs count: 1
+  TOTAL lines of code: 72
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cuda_runtime.h => hip/hip_runtime.h: 1

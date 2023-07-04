@@ -1,0 +1,128 @@
+src/array/cuda/array_cumsum.cu:38:  CUDA_CALL(cub::DeviceScan::InclusiveSum(
+src/array/cuda/array_cumsum.cu:43:  CUDA_CALL(cub::DeviceScan::InclusiveSum(
+src/array/cuda/array_nonzero.cu:48:  CUDA_CALL(cub::DeviceSelect::If(
+src/array/cuda/array_nonzero.cu:52:  CUDA_CALL(cub::DeviceSelect::If(
+src/array/cuda/array_op_impl.cu:367:  CUDA_CALL(cudaMemsetAsync(
+src/array/cuda/array_sort.cu:38:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/array_sort.cu:44:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/csr_sort.cu:127:  CUDA_CALL(cub::DeviceSegmentedRadixSort::SortPairs(
+src/array/cuda/csr_sort.cu:133:  CUDA_CALL(cub::DeviceSegmentedRadixSort::SortPairs(
+src/array/cuda/cuda_filter.cu:76:    CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/cuda_filter.cu:81:    CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/labor_sampling.cu:358:      CUDA_CALL(cub::DeviceRadixSort::SortKeys(
+src/array/cuda/labor_sampling.cu:364:      CUDA_CALL(cub::DeviceRadixSort::SortKeys(
+src/array/cuda/labor_sampling.cu:374:      CUDA_CALL(cub::DeviceRunLengthEncode::Encode(
+src/array/cuda/labor_sampling.cu:380:      CUDA_CALL(cub::DeviceRunLengthEncode::Encode(
+src/array/cuda/labor_sampling.cu:517:    CUDA_CALL(cub::DeviceSegmentedReduce::Reduce(
+src/array/cuda/labor_sampling.cu:521:    CUDA_CALL(cub::DeviceSegmentedReduce::Reduce(
+src/array/cuda/labor_sampling.cu:541:    CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/labor_sampling.cu:545:    CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/macro.cuh:33:      CUDA_CALL(cudaMemcpy(                                                   \
+src/array/cuda/macro.cuh:38:      CUDA_CALL(cudaMemcpy(                                                   \
+src/array/cuda/negative_sampling.cu:100:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/negative_sampling.cu:104:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/negative_sampling.cu:109:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/negative_sampling.cu:114:  CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/array/cuda/negative_sampling.cu:161:  CUDA_CALL(cub::DeviceSelect::If(
+src/array/cuda/negative_sampling.cu:165:  CUDA_CALL(cub::DeviceSelect::If(
+src/array/cuda/negative_sampling.cu:183:    CUDA_CALL(cub::DeviceSelect::Unique(
+src/array/cuda/negative_sampling.cu:189:    CUDA_CALL(cub::DeviceSelect::Unique(
+src/array/cuda/rowwise_sampling.cu:282:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling.cu:285:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling.cu:291:  CUDA_CALL(cudaEventCreate(&copyEvent));
+src/array/cuda/rowwise_sampling.cu:304:  CUDA_CALL(cudaMemcpyAsync(
+src/array/cuda/rowwise_sampling.cu:307:  CUDA_CALL(cudaEventRecord(copyEvent, stream));
+src/array/cuda/rowwise_sampling.cu:332:  CUDA_CALL(cudaEventSynchronize(copyEvent));
+src/array/cuda/rowwise_sampling.cu:333:  CUDA_CALL(cudaEventDestroy(copyEvent));
+src/array/cuda/rowwise_sampling_prob.cu:533:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling_prob.cu:536:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling_prob.cu:554:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling_prob.cu:557:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/array/cuda/rowwise_sampling_prob.cu:563:  CUDA_CALL(cudaEventCreate(&copyEvent));
+src/array/cuda/rowwise_sampling_prob.cu:571:  CUDA_CALL(cudaEventRecord(copyEvent, stream));
+src/array/cuda/rowwise_sampling_prob.cu:620:    CUDA_CALL(cub::DeviceSegmentedSort::SortPairsDescending(
+src/array/cuda/rowwise_sampling_prob.cu:624:    CUDA_CALL(cub::DeviceSegmentedSort::SortPairsDescending(
+src/array/cuda/rowwise_sampling_prob.cu:644:  CUDA_CALL(cudaEventSynchronize(copyEvent));
+src/array/cuda/rowwise_sampling_prob.cu:645:  CUDA_CALL(cudaEventDestroy(copyEvent));
+src/array/cuda/spmat_op_impl_csr.cu:584:  CUDA_CALL(
+src/array/cuda/spmm_hetero.cu:53:      CUDA_CALL(cudaMemset(out, 0, m * n * sizeof(DType)));
+src/array/cuda/utils.cu:20:  CUDA_CALL(cub::DeviceReduce::Min(
+src/array/cuda/utils.cu:23:  CUDA_CALL(cub::DeviceReduce::Min(
+src/array/cuda/utils.h:259:  CUDA_CALL(cub::DeviceSelect::Flagged(
+src/array/cuda/utils.h:262:  CUDA_CALL(cub::DeviceSelect::Flagged(
+src/array/cuda/utils.h:270:    CUDA_CALL(cudaHostGetDevicePointer(&ptr, ptr, 0));
+src/geometry/cuda/edge_coarsening_impl.cu:135:  CUDA_CALL(cudaMemcpyFromSymbol(
+src/geometry/cuda/geometry_op_impl.cu:113:  CUDA_CALL(cudaSetDevice(array->ctx.device_id));
+src/graph/sampling/randomwalks/frequency_hashmap.cu:262:  CUDA_CALL(cudaMemset(dst_unique_edges, 0, (num_dst) * sizeof(IdxType)));
+src/graph/sampling/randomwalks/frequency_hashmap.cu:303:  CUDA_CALL(cudaMemset(is_first_position, 0, sizeof(bool) * (num_edges)));
+src/graph/sampling/randomwalks/frequency_hashmap.cu:330:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:334:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:368:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:372:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:388:    CUDA_CALL(cub::DeviceRadixSort::SortPairsDescending(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:393:    CUDA_CALL(cub::DeviceSegmentedRadixSort::SortPairsDescending(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:401:    CUDA_CALL(cub::DeviceRadixSort::SortPairsDescending(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:406:    CUDA_CALL(cub::DeviceSegmentedRadixSort::SortPairsDescending(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:425:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/frequency_hashmap.cu:429:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/sampling/randomwalks/randomwalk_gpu.cu:300:    CUDA_CALL(cub::DeviceSegmentedReduce::Sum(
+src/graph/sampling/randomwalks/randomwalk_gpu.cu:304:    CUDA_CALL(cub::DeviceSegmentedReduce::Sum(
+src/graph/transform/cuda/cuda_compact_graph.cu:61:  CUDA_CALL(cudaMemsetAsync(
+src/graph/transform/cuda/cuda_to_block.cu:75:    CUDA_CALL(cudaMemsetAsync(
+src/graph/transform/cuda/cuda_to_block.cu:182:      CUDA_CALL(cudaEventCreate(&copyEvent));
+src/graph/transform/cuda/cuda_to_block.cu:193:      CUDA_CALL(cudaMemcpyAsync(
+src/graph/transform/cuda/cuda_to_block.cu:197:      CUDA_CALL(cudaEventRecord(copyEvent, stream));
+src/graph/transform/cuda/cuda_to_block.cu:212:      CUDA_CALL(cudaEventSynchronize(copyEvent));
+src/graph/transform/cuda/cuda_to_block.cu:213:      CUDA_CALL(cudaEventDestroy(copyEvent));
+src/graph/transform/cuda/knn.cu:531:  CUDA_CALL(cudaDeviceGetAttribute(
+src/graph/transform/cuda/knn.cu:555:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/transform/cuda/knn.cu:559:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/graph/transform/cuda/knn.cu:565:  CUDA_CALL(cudaStreamSynchronize(stream));
+src/graph/transform/cuda/knn.cu:889:  CUDA_CALL(
+src/graph/transform/cuda/knn.cu:914:  CUDA_CALL(cub::DeviceReduce::Sum(
+src/graph/transform/cuda/knn.cu:945:    CUDA_CALL(cub::DeviceReduce::Sum(
+src/partition/cuda/partition_op.cu:297:    CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/partition/cuda/partition_op.cu:303:    CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/partition/cuda/partition_op.cu:329:    CUDA_CALL(cub::DeviceHistogram::HistogramEven(
+src/partition/cuda/partition_op.cu:336:    CUDA_CALL(cub::DeviceHistogram::HistogramEven(
+src/partition/cuda/partition_op.cu:472:    CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/partition/cuda/partition_op.cu:478:    CUDA_CALL(cub::DeviceRadixSort::SortPairs(
+src/partition/cuda/partition_op.cu:504:    CUDA_CALL(cub::DeviceHistogram::HistogramEven(
+src/partition/cuda/partition_op.cu:511:    CUDA_CALL(cub::DeviceHistogram::HistogramEven(
+src/runtime/cuda/cuda_common.h:90:#define CUDA_CALL(func)                                      \
+src/runtime/cuda/cuda_device_api.cc:35:    CUDA_CALL(cudaSetDevice(ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:47:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:52:        CUDA_CALL(
+src/runtime/cuda/cuda_device_api.cc:57:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:63:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:66:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:74:        CUDA_CALL(cudaGetDeviceProperties(&props, ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:79:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:84:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:90:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:92:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:94:        CUDA_CALL(cudaDeviceGetAttribute(
+src/runtime/cuda/cuda_device_api.cc:117:    CUDA_CALL(cudaMalloc(&ret, nbytes));
+src/runtime/cuda/cuda_device_api.cc:127:    CUDA_CALL(cudaFree(ptr));
+src/runtime/cuda/cuda_device_api.cc:138:      CUDA_CALL(cudaSetDevice(ctx_from.device_id));
+src/runtime/cuda/cuda_device_api.cc:142:        CUDA_CALL(cudaMemcpyPeerAsync(
+src/runtime/cuda/cuda_device_api.cc:147:      CUDA_CALL(cudaSetDevice(ctx_from.device_id));
+src/runtime/cuda/cuda_device_api.cc:151:      CUDA_CALL(cudaSetDevice(ctx_to.device_id));
+src/runtime/cuda/cuda_device_api.cc:191:    CUDA_CALL(cudaSetDevice(ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:194:    CUDA_CALL(cudaStreamCreateWithFlags(&retval, cudaStreamNonBlocking));
+src/runtime/cuda/cuda_device_api.cc:199:    CUDA_CALL(cudaSetDevice(ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:201:    CUDA_CALL(cudaStreamDestroy(cu_stream));
+src/runtime/cuda/cuda_device_api.cc:206:    CUDA_CALL(cudaSetDevice(ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:210:    CUDA_CALL(cudaEventCreate(&evt));
+src/runtime/cuda/cuda_device_api.cc:211:    CUDA_CALL(cudaEventRecord(evt, src_stream));
+src/runtime/cuda/cuda_device_api.cc:212:    CUDA_CALL(cudaStreamWaitEvent(dst_stream, evt, 0));
+src/runtime/cuda/cuda_device_api.cc:213:    CUDA_CALL(cudaEventDestroy(evt));
+src/runtime/cuda/cuda_device_api.cc:217:    CUDA_CALL(cudaSetDevice(ctx.device_id));
+src/runtime/cuda/cuda_device_api.cc:218:    CUDA_CALL(cudaStreamSynchronize(static_cast<cudaStream_t>(stream)));
+src/runtime/cuda/cuda_device_api.cc:247:    CUDA_CALL(cudaHostRegister(ptr, nbytes, cudaHostRegisterDefault));
+src/runtime/cuda/cuda_device_api.cc:253:    CUDA_CALL(cudaHostUnregister(ptr));
+src/runtime/cuda/cuda_device_api.cc:343:    CUDA_CALL(cudaMemcpyAsync(to, from, size, kind, stream));
+src/runtime/cuda/cuda_device_api.cc:347:      CUDA_CALL(cudaStreamSynchronize(stream));
+src/runtime/cuda/cuda_hashtable.cu:371:  CUDA_CALL(cudaMemsetAsync(
+src/runtime/cuda/cuda_hashtable.cu:407:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(
+src/runtime/cuda/cuda_hashtable.cu:412:  CUDA_CALL(cub::DeviceScan::ExclusiveSum(

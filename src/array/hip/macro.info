@@ -1,0 +1,8 @@
+
+[HIPIFY] info: file './src/array/cuda/macro.cuh' statisitics:
+  CONVERTED refs count: 4
+  TOTAL lines of code: 53
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaMemcpy => hipMemcpy: 2
+  cudaMemcpyHostToDevice => hipMemcpyHostToDevice: 2

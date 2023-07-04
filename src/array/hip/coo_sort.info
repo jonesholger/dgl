@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/array/cuda/coo_sort.cu' statisitics:
+  CONVERTED refs count: 2
+  TOTAL lines of code: 186
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 2

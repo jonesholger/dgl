@@ -1,0 +1,18 @@
+
+[HIPIFY] info: file './src/array/cuda/rowwise_sampling.cu' statisitics:
+  CONVERTED refs count: 17
+  TOTAL lines of code: 366
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaEventCreate => hipEventCreate: 1
+  cudaEventDestroy => hipEventDestroy: 1
+  cudaEventRecord => hipEventRecord: 1
+  cudaEventSynchronize => hipEventSynchronize: 1
+  cudaEvent_t => hipEvent_t: 1
+  cudaMemcpyAsync => hipMemcpyAsync: 1
+  cudaMemcpyDeviceToHost => hipMemcpyDeviceToHost: 1
+  cudaStream_t => hipStream_t: 1
+  curand => hiprand: 2
+  curandStatePhilox4_32_10_t => hiprandStatePhilox4_32_10_t: 2
+  curand_init => hiprand_init: 2
+  curand_kernel.h => hiprand_kernel.h: 1

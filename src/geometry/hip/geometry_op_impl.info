@@ -1,0 +1,8 @@
+
+[HIPIFY] info: file './src/geometry/cuda/geometry_op_impl.cu' statisitics:
+  CONVERTED refs count: 3
+  TOTAL lines of code: 135
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaSetDevice => hipSetDevice: 1
+  cudaStream_t => hipStream_t: 1

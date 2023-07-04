@@ -1,0 +1,54 @@
+  warning: cuda_common.h:85: experimental identifier "cuGetErrorName" in HIP 5.4.0
+  warning: cuda_common.h:175: unsupported identifier "nv_bfloat16"
+  warning: cuda_common.h:175: unsupported identifier "__nv_bfloat16"
+  warning: cuda_common.h:205: unsupported identifier "nv_bfloat16"
+  warning: cuda_common.h:205: unsupported identifier "__nv_bfloat16"
+  warning: cuda_common.h:#100 :       (kernel)<<<(nblks), (nthrs), (shmem), (stream)>>>(__VA_ARGS__);         \
+
+[HIPIFY] info: file 'cuda_common.h' statisitics:
+  CONVERTED refs count: 73
+  TOTAL lines of code: 259
+  WARNINGS: 6
+[HIPIFY] info: CONVERTED refs by names:
+  CUBLAS_STATUS_SUCCESS => HIPBLAS_STATUS_SUCCESS: 1
+  CUDA_ERROR_DEINITIALIZED => hipErrorDeinitialized: 3
+  CUDA_R_16BF => HIPBLAS_R_16B: 1
+  CUDA_R_16F => HIPBLAS_R_16F: 1
+  CUDA_R_32F => HIPBLAS_R_32F: 2
+  CUDA_R_64F => HIPBLAS_R_64F: 1
+  CUDA_SUCCESS => hipSuccess: 3
+  CURAND_STATUS_ALLOCATION_FAILED => HIPRAND_STATUS_ALLOCATION_FAILED: 2
+  CURAND_STATUS_ARCH_MISMATCH => HIPRAND_STATUS_ARCH_MISMATCH: 2
+  CURAND_STATUS_DOUBLE_PRECISION_REQUIRED => HIPRAND_STATUS_DOUBLE_PRECISION_REQUIRED: 2
+  CURAND_STATUS_INITIALIZATION_FAILED => HIPRAND_STATUS_INITIALIZATION_FAILED: 2
+  CURAND_STATUS_INTERNAL_ERROR => HIPRAND_STATUS_INTERNAL_ERROR: 2
+  CURAND_STATUS_LAUNCH_FAILURE => HIPRAND_STATUS_LAUNCH_FAILURE: 2
+  CURAND_STATUS_LENGTH_NOT_MULTIPLE => HIPRAND_STATUS_LENGTH_NOT_MULTIPLE: 2
+  CURAND_STATUS_NOT_INITIALIZED => HIPRAND_STATUS_NOT_INITIALIZED: 2
+  CURAND_STATUS_OUT_OF_RANGE => HIPRAND_STATUS_OUT_OF_RANGE: 2
+  CURAND_STATUS_PREEXISTING_FAILURE => HIPRAND_STATUS_PREEXISTING_FAILURE: 2
+  CURAND_STATUS_SUCCESS => HIPRAND_STATUS_SUCCESS: 3
+  CURAND_STATUS_TYPE_ERROR => HIPRAND_STATUS_TYPE_ERROR: 2
+  CURAND_STATUS_VERSION_MISMATCH => HIPRAND_STATUS_VERSION_MISMATCH: 2
+  CUSPARSE_INDEX_32I => HIPSPARSE_INDEX_32I: 2
+  CUSPARSE_INDEX_64I => HIPSPARSE_INDEX_64I: 1
+  CUSPARSE_STATUS_SUCCESS => HIPSPARSE_STATUS_SUCCESS: 1
+  CUresult => hipError_t: 3
+  __half => __half: 2
+  cublasHandle_t => hipblasHandle_t: 1
+  cublasStatus_t => hipblasStatus_t: 1
+  cublas_v2.h => hipblas.h: 1
+  cudaDataType_t => hipblasDatatype_t: 6
+  cudaErrorCudartUnloading => hipErrorDeinitialized: 3
+  cudaError_t => hipError_t: 3
+  cudaGetErrorString => hipGetErrorString: 2
+  cudaGetLastError => hipGetLastError: 1
+  cudaStream_t => hipStream_t: 1
+  cudaSuccess => hipSuccess: 3
+  cuda_runtime.h => hip/hip_runtime.h: 1
+  curand => hiprand: 2
+  curandStatus_t => hiprandStatus_t: 2
+  cusparse.h => hipsparse.h: 1
+  cusparseHandle_t => hipsparseHandle_t: 1
+  cusparseIndexType_t => hipsparseIndexType_t: 4
+  cusparseStatus_t => hipsparseStatus_t: 1

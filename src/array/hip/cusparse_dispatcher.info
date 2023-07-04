@@ -1,0 +1,50 @@
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:30: deprecated identifier "cusparseXcsrgemm2Nnz" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:52: deprecated identifier "cusparseXcsrgemm2Nnz" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:66: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:66: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:78: deprecated identifier "cusparseXcsrgemm2Nnz" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:95: removed identifier "cusparseScsrgemm" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:95: deprecated identifier "cusparseScsrgemm2_bufferSizeExt" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:95: deprecated identifier "cusparseScsrgemm2" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:95: deprecated identifier "cusparseScsrgemm" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:100: deprecated identifier "cusparseXcsrgemm2Nnz" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:105: removed identifier "cusparseScsrgemm" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:105: deprecated identifier "cusparseScsrgemm2" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:105: deprecated identifier "cusparseScsrgemm" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:113: removed identifier "cusparseDcsrgemm" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:113: deprecated identifier "cusparseDcsrgemm" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:113: deprecated identifier "cusparseDcsrgemm2_bufferSizeExt" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:113: deprecated identifier "cusparseDcsrgemm2" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:118: deprecated identifier "cusparseXcsrgemm2Nnz" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:123: removed identifier "cusparseDcsrgemm" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:123: deprecated identifier "cusparseDcsrgemm" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:123: deprecated identifier "cusparseDcsrgemm2" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:174: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:174: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:203: removed identifier "cusparseScsrgeam" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:203: deprecated identifier "cusparseScsrgeam" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:213: removed identifier "cusparseScsrgeam" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:213: deprecated identifier "cusparseScsrgeam" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:221: removed identifier "cusparseDcsrgeam" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:221: deprecated identifier "cusparseDcsrgeam" since CUDA 10.2
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:231: removed identifier "cusparseDcsrgeam" since CUDA 11.0
+  warning: ./src/array/cuda/cusparse_dispatcher.cuh:231: deprecated identifier "cusparseDcsrgeam" since CUDA 10.2
+
+[HIPIFY] info: file './src/array/cuda/cusparse_dispatcher.cuh' statisitics:
+  CONVERTED refs count: 63
+  TOTAL lines of code: 238
+  WARNINGS: 31
+[HIPIFY] info: CONVERTED refs by names:
+  __half => __half: 2
+  cusparse.h => hipsparse.h: 1
+  cusparseDcsrgeam2 => hipsparseDcsrgeam2: 1
+  cusparseDcsrgeam2_bufferSizeExt => hipsparseDcsrgeam2_bufferSizeExt: 1
+  cusparseDcsrgemm2 => hipsparseDcsrgemm2: 1
+  cusparseDcsrgemm2_bufferSizeExt => hipsparseDcsrgemm2_bufferSizeExt: 1
+  cusparseScsrgeam2 => hipsparseScsrgeam2: 1
+  cusparseScsrgeam2_bufferSizeExt => hipsparseScsrgeam2_bufferSizeExt: 1
+  cusparseScsrgemm2 => hipsparseScsrgemm2: 1
+  cusparseScsrgemm2_bufferSizeExt => hipsparseScsrgemm2_bufferSizeExt: 1
+  cusparseStatus_t => hipsparseStatus_t: 42
+  cusparseXcsrgeam2Nnz => hipsparseXcsrgeam2Nnz: 5
+  cusparseXcsrgemm2Nnz => hipsparseXcsrgemm2Nnz: 5

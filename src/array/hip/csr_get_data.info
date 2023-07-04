@@ -1,0 +1,16 @@
+  warning: ./src/array/cuda/csr_get_data.cu:70: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:70: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:72: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:72: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:73: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:73: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:75: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/csr_get_data.cu:75: unsupported identifier "__nv_bfloat16"
+
+[HIPIFY] info: file './src/array/cuda/csr_get_data.cu' statisitics:
+  CONVERTED refs count: 5
+  TOTAL lines of code: 100
+  WARNINGS: 8
+[HIPIFY] info: CONVERTED refs by names:
+  __half => __half: 4
+  cudaStream_t => hipStream_t: 1

@@ -1,0 +1,13 @@
+
+[HIPIFY] info: file './src/geometry/cuda/edge_coarsening_impl.cu' statisitics:
+  CONVERTED refs count: 10
+  TOTAL lines of code: 239
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaMemcpyDeviceToHost => hipMemcpyDeviceToHost: 1
+  cudaMemcpyFromSymbol => hipMemcpyFromSymbol: 1
+  cudaStream_t => hipStream_t: 3
+  curandState => hiprandState: 1
+  curand_init => hiprand_init: 1
+  curand_kernel.h => hiprand_kernel.h: 1
+  curand_uniform => hiprand_uniform: 1

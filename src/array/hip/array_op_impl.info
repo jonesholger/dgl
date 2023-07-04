@@ -1,0 +1,13 @@
+  warning: ./src/array/cuda/array_op_impl.cu:295: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/array_op_impl.cu:295: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/array_op_impl.cu:296: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/array_op_impl.cu:296: unsupported identifier "__nv_bfloat16"
+
+[HIPIFY] info: file './src/array/cuda/array_op_impl.cu' statisitics:
+  CONVERTED refs count: 11
+  TOTAL lines of code: 441
+  WARNINGS: 4
+[HIPIFY] info: CONVERTED refs by names:
+  __half => __half: 2
+  cudaMemsetAsync => hipMemsetAsync: 1
+  cudaStream_t => hipStream_t: 8

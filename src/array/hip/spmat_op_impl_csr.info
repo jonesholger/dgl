@@ -1,0 +1,8 @@
+
+[HIPIFY] info: file './src/array/cuda/spmat_op_impl_csr.cu' statisitics:
+  CONVERTED refs count: 10
+  TOTAL lines of code: 654
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaMemset => hipMemset: 1
+  cudaStream_t => hipStream_t: 7

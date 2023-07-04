@@ -1,0 +1,9 @@
+
+[HIPIFY] info: file './src/array/cuda/fp16.cuh' statisitics:
+  CONVERTED refs count: 73
+  TOTAL lines of code: 131
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  __CUDACC__ => __HIPCC__: 2
+  __half => __half: 69
+  cuda_fp16.h => hip/hip_fp16.h: 2

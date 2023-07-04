@@ -1,0 +1,11 @@
+
+[HIPIFY] info: file './src/array/cuda/labor_sampling.cu' statisitics:
+  CONVERTED refs count: 11
+  TOTAL lines of code: 753
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 1
+  curandStatePhilox4_32_10_t => hiprandStatePhilox4_32_10_t: 2
+  curand_init => hiprand_init: 2
+  curand_kernel.h => hiprand_kernel.h: 1
+  curand_uniform => hiprand_uniform: 2

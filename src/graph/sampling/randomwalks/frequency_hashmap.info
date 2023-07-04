@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/graph/sampling/randomwalks/frequency_hashmap.cuh' statisitics:
+  CONVERTED refs count: 2
+  TOTAL lines of code: 79
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaStream_t => hipStream_t: 2

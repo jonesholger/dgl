@@ -1,0 +1,13 @@
+  warning: ./src/array/cuda/spmm_hetero.cu:212: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/spmm_hetero.cu:212: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/spmm_hetero.cu:219: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/spmm_hetero.cu:219: unsupported identifier "__nv_bfloat16"
+
+[HIPIFY] info: file './src/array/cuda/spmm_hetero.cu' statisitics:
+  CONVERTED refs count: 4
+  TOTAL lines of code: 257
+  WARNINGS: 4
+[HIPIFY] info: CONVERTED refs by names:
+  __half => __half: 2
+  cudaMemset => hipMemset: 1
+  cudaStream_t => hipStream_t: 1

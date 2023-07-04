@@ -1,0 +1,7 @@
+
+[HIPIFY] info: file './src/array/cuda/dgl_cub.cuh' statisitics:
+  CONVERTED refs count: 1
+  TOTAL lines of code: 17
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cub/cub.cuh => hipcub/hipcub.hpp: 1

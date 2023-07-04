@@ -1,0 +1,62 @@
+  warning: cuda_device_api.cc:43: unsupported identifier "cudaDevAttrMax"
+  warning: cuda_device_api.cc:48: unsupported identifier "cudaDevAttrMax"
+  warning: cuda_device_api.cc:58: unsupported identifier "cudaDevAttrMax"
+  warning: cuda_device_api.cc:91: unsupported identifier "cudaDevAttrMax"
+  warning: cuda_device_api.cc:93: unsupported identifier "cudaDevAttrMax"
+  warning: cuda_device_api.cc:95: unsupported identifier "cudaDevAttrMax"
+
+[HIPIFY] info: file 'cuda_device_api.cc' statisitics:
+  CONVERTED refs count: 88
+  TOTAL lines of code: 377
+  WARNINGS: 6
+[HIPIFY] info: CONVERTED refs by names:
+  cudaDevAttrClockRate => hipDeviceAttributeClockRate: 1
+  cudaDevAttrComputeCapabilityMajor => hipDeviceAttributeComputeCapabilityMajor: 1
+  cudaDevAttrComputeCapabilityMinor => hipDeviceAttributeComputeCapabilityMinor: 1
+  cudaDevAttrMaxBlockDimX => hipDeviceAttributeMaxBlockDimX: 1
+  cudaDevAttrMaxBlockDimY => hipDeviceAttributeMaxBlockDimY: 1
+  cudaDevAttrMaxBlockDimZ => hipDeviceAttributeMaxBlockDimZ: 1
+  cudaDevAttrMaxSharedMemoryPerBlock => hipDeviceAttributeMaxSharedMemoryPerBlock: 1
+  cudaDevAttrMaxThreadsPerBlock => hipDeviceAttributeMaxThreadsPerBlock: 2
+  cudaDevAttrMultiProcessorCount => hipDeviceAttributeMultiprocessorCount: 1
+  cudaDevAttrWarpSize => hipDeviceAttributeWarpSize: 1
+  cudaDeviceGetAttribute => hipDeviceGetAttribute: 11
+  cudaDeviceProp => hipDeviceProp_t: 1
+  cudaErrorInitializationError => hipErrorNotInitialized: 1
+  cudaErrorInsufficientDriver => hipErrorInsufficientDriver: 1
+  cudaErrorInvalidDevice => hipErrorInvalidDevice: 1
+  cudaErrorInvalidValue => hipErrorInvalidValue: 1
+  cudaErrorNoDevice => hipErrorNoDevice: 1
+  cudaError_t => hipError_t: 1
+  cudaEventCreate => hipEventCreate: 1
+  cudaEventDestroy => hipEventDestroy: 1
+  cudaEventRecord => hipEventRecord: 1
+  cudaEvent_t => hipEvent_t: 1
+  cudaFree => hipFree: 1
+  cudaFreeHost => hipHostFree: 1
+  cudaGetDeviceCount => hipGetDeviceCount: 1
+  cudaGetDeviceProperties => hipGetDeviceProperties: 1
+  cudaGetErrorString => hipGetErrorString: 1
+  cudaGetLastError => hipGetLastError: 3
+  cudaHostRegister => hipHostRegister: 2
+  cudaHostRegisterDefault => hipHostRegisterDefault: 1
+  cudaHostUnregister => hipHostUnregister: 1
+  cudaMalloc => hipMalloc: 1
+  cudaMemcpyAsync => hipMemcpyAsync: 2
+  cudaMemcpyDeviceToDevice => hipMemcpyDeviceToDevice: 1
+  cudaMemcpyDeviceToHost => hipMemcpyDeviceToHost: 2
+  cudaMemcpyHostToDevice => hipMemcpyHostToDevice: 1
+  cudaMemcpyKind => hipMemcpyKind: 1
+  cudaMemcpyPeerAsync => hipMemcpyPeerAsync: 1
+  cudaMemoryTypeHost => hipMemoryTypeHost: 1
+  cudaPointerAttributes => hipPointerAttribute_t: 1
+  cudaPointerGetAttributes => hipPointerGetAttributes: 1
+  cudaSetDevice => hipSetDevice: 8
+  cudaStreamCreateWithFlags => hipStreamCreateWithFlags: 1
+  cudaStreamDestroy => hipStreamDestroy: 1
+  cudaStreamNonBlocking => hipStreamNonBlocking: 1
+  cudaStreamSynchronize => hipStreamSynchronize: 2
+  cudaStreamWaitEvent => hipStreamWaitEvent: 1
+  cudaStream_t => hipStream_t: 13
+  cudaSuccess => hipSuccess: 3
+  cuda_runtime.h => hip/hip_runtime.h: 1

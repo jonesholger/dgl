@@ -1,0 +1,16 @@
+
+[HIPIFY] info: file './src/graph/transform/cuda/cuda_to_block.cu' statisitics:
+  CONVERTED refs count: 12
+  TOTAL lines of code: 258
+  WARNINGS: 0
+[HIPIFY] info: CONVERTED refs by names:
+  cudaEventCreate => hipEventCreate: 1
+  cudaEventDestroy => hipEventDestroy: 1
+  cudaEventRecord => hipEventRecord: 1
+  cudaEventSynchronize => hipEventSynchronize: 1
+  cudaEvent_t => hipEvent_t: 1
+  cudaMemcpyAsync => hipMemcpyAsync: 1
+  cudaMemcpyDeviceToHost => hipMemcpyDeviceToHost: 1
+  cudaMemsetAsync => hipMemsetAsync: 1
+  cudaStream_t => hipStream_t: 3
+  cuda_runtime.h => hip/hip_runtime.h: 1

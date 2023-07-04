@@ -1,0 +1,49 @@
+  warning: ./src/array/cuda/gather_mm.cu:42: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:42: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:44: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:44: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:45: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:45: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:46: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:46: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:47: unsupported device function "__bfloat162float":   float alpha_float = __bfloat162float(*alpha);
+  warning: ./src/array/cuda/gather_mm.cu:48: unsupported device function "__bfloat162float":   float beta_float = __bfloat162float(*beta);
+  warning: ./src/array/cuda/gather_mm.cu:51: unsupported identifier "CUBLAS_COMPUTE_32F"
+  warning: ./src/array/cuda/gather_mm.cu:52: unsupported identifier "CUBLAS_GEMM_DEFAULT_TENSOR_OP"
+  warning: ./src/array/cuda/gather_mm.cu:370: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:370: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:373: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:373: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:397: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:397: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:400: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:400: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:424: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:424: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:427: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:427: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:449: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:449: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:451: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/cuda/gather_mm.cu:451: unsupported identifier "__nv_bfloat16"
+
+[HIPIFY] info: file './src/array/cuda/gather_mm.cu' statisitics:
+  CONVERTED refs count: 59
+  TOTAL lines of code: 464
+  WARNINGS: 28
+[HIPIFY] info: CONVERTED refs by names:
+  CUBLAS_OP_N => HIPBLAS_OP_N: 3
+  CUBLAS_OP_T => HIPBLAS_OP_T: 2
+  CUBLAS_STATUS_EXECUTION_FAILED => HIPBLAS_STATUS_EXECUTION_FAILED: 1
+  CUDA_R_16BF => HIPBLAS_R_16B: 3
+  __half => __half: 14
+  cublasCreate => hipblasCreate: 2
+  cublasDgemm => hipblasDgemm: 1
+  cublasGemmEx => hipblasGemmEx: 1
+  cublasHandle_t => hipblasHandle_t: 5
+  cublasHgemm => hipblasHgemm: 1
+  cublasOperation_t => hipblasOperation_t: 14
+  cublasSetStream => hipblasSetStream: 2
+  cublasSgemm => hipblasSgemm: 1
+  cublasStatus_t => hipblasStatus_t: 5
+  cudaStream_t => hipStream_t: 4

@@ -1,0 +1,19 @@
+  warning: ./src/array/cuda/csr_sort.cu:90: unsupported identifier "cusparseMatDescr"
+
+[HIPIFY] info: file './src/array/cuda/csr_sort.cu' statisitics:
+  CONVERTED refs count: 14
+  TOTAL lines of code: 150
+  WARNINGS: 1
+[HIPIFY] info: CONVERTED refs by names:
+  CUSPARSE_INDEX_BASE_ZERO => HIPSPARSE_INDEX_BASE_ZERO: 1
+  CUSPARSE_MATRIX_TYPE_GENERAL => HIPSPARSE_MATRIX_TYPE_GENERAL: 1
+  cudaStream_t => hipStream_t: 3
+  cusparseCreate => hipsparseCreate: 1
+  cusparseCreateMatDescr => hipsparseCreateMatDescr: 1
+  cusparseDestroyMatDescr => hipsparseDestroyMatDescr: 1
+  cusparseMatDescr_t => hipsparseMatDescr_t: 1
+  cusparseSetMatIndexBase => hipsparseSetMatIndexBase: 1
+  cusparseSetMatType => hipsparseSetMatType: 1
+  cusparseSetStream => hipsparseSetStream: 1
+  cusparseXcsrsort => hipsparseXcsrsort: 1
+  cusparseXcsrsort_bufferSizeExt => hipsparseXcsrsort_bufferSizeExt: 1
