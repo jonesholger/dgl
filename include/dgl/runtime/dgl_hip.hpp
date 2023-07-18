@@ -1,6 +1,6 @@
 #pragma once
 
-#include <hipsolver.h>
+#include <hipsolver/hipsolver.h>
 #include <hip/hip_runtime_api.h>
 #include <hip/hip_runtime.h>
 #include <hipblas/hipblas.h>
@@ -9,9 +9,6 @@
 // Definitions
 // -----------------------------------------------------
 namespace dgl
-{
-
-namespace detail
 {
 
 extern hipblasHandle_t hipblas_handle;
@@ -59,7 +56,7 @@ inline void hip_memset(T* ptr, int val, size_t nelems)
 template < typename T >
 inline void hip_memcpy(T* dst, const T* src, size_t nelems)
 {
-  boba_assert( nelems > 0u , "can't copy nonpositve nelems" );
+  //hip_assert( nelems > 0u , "can't copy nonpositve nelems" );
   if (nelems > 0u) {
     hipStream_t stream = 0;
     hipMemcpyKind kind = hipMemcpyDefault;
@@ -194,7 +191,7 @@ inline void hipsolver_assert_info_(
 // -----------------------------------------------------
 template < int block_size, typename Lambda >
 __launch_bounds__(block_size)
-__global__ void boba_lambda_kernel(int begin, int end, Lambda lambda)
+__global__ void dgl_lambda_kernel(int begin, int end, Lambda lambda)
 {
   int i = begin + threadIdx.x + block_size*blockIdx.x;
   if (i < end) {
@@ -204,7 +201,7 @@ __global__ void boba_lambda_kernel(int begin, int end, Lambda lambda)
 
 template < int block_size0, int block_size1, typename Lambda >
 __launch_bounds__(block_size0 * block_size1)
-__global__ void boba_lambda_kernel_2d(
+__global__ void dgl_lambda_kernel_2d(
   int begin0, int end0,
   int begin1, int end1,
   Lambda lambda)
@@ -218,7 +215,7 @@ __global__ void boba_lambda_kernel_2d(
 
 template < int block_size0, int block_size1, int block_size2, typename Lambda >
 __launch_bounds__(block_size0 * block_size1 * block_size2)
-__global__ void boba_lambda_kernel_3d(
+__global__ void dgl_lambda_kernel_3d(
   int begin0, int end0,
   int begin1, int end1,
   int begin2, int end2,
@@ -234,7 +231,7 @@ __global__ void boba_lambda_kernel_3d(
 
 template < int block_size0, int block_size1, int block_size2, typename Lambda >
 __launch_bounds__(block_size0 * block_size1 * block_size2)
-__global__ void boba_lambda_kernel_4d(
+__global__ void dgl_lambda_kernel_4d(
   int begin0, int end0,
   int begin1, int end1,
   int begin2, int end2,
@@ -260,7 +257,7 @@ inline void hip_launch(int begin, int end, Lambda&& lambda)
   int grid_size = (end-begin + block_size-1) / block_size;
   void* args[] = {(void*)&begin, (void*)&end, (void*)&lambda};
   hip_assert(hipLaunchKernel(
-      (const void*)boba_lambda_kernel<block_size, std::decay_t<Lambda>>,
+      (const void*)dgl_lambda_kernel<block_size, std::decay_t<Lambda>>,
       grid_size, block_size, args, shmem, stream));
 }
 
@@ -280,7 +277,7 @@ inline void hip_launch_2d(
                   (void*)&begin1, (void*)&end1,
                   (void*)&lambda};
   hip_assert(hipLaunchKernel(
-      (const void*)boba_lambda_kernel_2d<block_size0, block_size1, std::decay_t<Lambda>>,
+      (const void*)dgl_lambda_kernel_2d<block_size0, block_size1, std::decay_t<Lambda>>,
       dim3(grid_size0, grid_size1), dim3(block_size0, block_size1), args, shmem, stream));
 }
 
@@ -304,7 +301,7 @@ inline void hip_launch_3d(
                   (void*)&begin2, (void*)&end2,
                   (void*)&lambda};
   hip_assert(hipLaunchKernel(
-      (const void*)boba_lambda_kernel_3d<block_size0, block_size1, block_size2, std::decay_t<Lambda>>,
+      (const void*)dgl_lambda_kernel_3d<block_size0, block_size1, block_size2, std::decay_t<Lambda>>,
       dim3(grid_size0, grid_size1, grid_size2), dim3(block_size0, block_size1, block_size2), args, shmem, stream));
 }
 
@@ -330,7 +327,7 @@ inline void hip_launch_4d(
                   (void*)&begin3, (void*)&end3,
                   (void*)&lambda};
   hip_assert(hipLaunchKernel(
-      (const void*)boba_lambda_kernel_4d<block_size0, block_size1, block_size2, std::decay_t<Lambda>>,
+      (const void*)dgl_lambda_kernel_4d<block_size0, block_size1, block_size2, std::decay_t<Lambda>>,
       dim3(grid_size0, grid_size1, grid_size2), dim3(block_size0, block_size1, block_size2), args, shmem, stream));
 }
 
@@ -340,7 +337,6 @@ inline void hip_syncronize()
   hip_assert(hipStreamSynchronize(stream));
 }
 
-}; // namespace detail
 }; // namespace dgl
 
 

@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
+
+
+if (ENABLE_HIP OR USE_HIP)
+    cmake_minimum_required(VERSION 3.23)
+endif()
+
+
 ########################################
 # Borrowed and adapted from TVM project
 ########################################
@@ -18,14 +25,34 @@ else()
   endif()
 endif()
 
+# BLT Options need to be set in the CACHE
+set(ENABLE_OPENMP On CACHE STRING "Enable OpenMP")
+set(ENABLE_CUDA Off CACHE STRING "Enable CUDA")
+set(ENABLE_HIP ON CACHE STRING "Enable HIP")
+set(ENABLE_MPI Off CACHE STRING "Enable MPI.")
+set(ENABLE_TESTS On CACHE STRING "Enable Tests.")
+set(ENABLE_EXAMPLES Off CACHE STRING "Enable Examples.")
+set(ENABLE_DOCS Off CACHE STRING "Enable Docs.")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS Off)
+set(BLT_CXX_STD "c++17" CACHE STRING "Version of C++ standard")
+
+
 # NOTE: do not modify this file to change option values.
 # You can create a config.cmake at build folder
 # and add set(OPTION VALUE) to override these build options.
 # Alernatively, use cmake -DOPTION=VALUE through command-line.
-dgl_option(USE_CUDA "Build with CUDA" OFF)
-dgl_option(USE_OPENMP "Build with OpenMP" ON)
+#dgl_option(USE_CUDA "Build with CUDA" OFF)
+#dgl_option(USE_HIP "Build with HIP" OFF)
+#dgl_option(USE_OPENMP "Build with OpenMP" ON)
+#dgl_option(BUILD_CPP_TEST "Build cpp unittest executables" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(USE_CUDA "Build with CUDA" ON ${ENABLE_CUDA} OFF)
+cmake_dependent_option(USE_HIP "Build with HIP" ON ${ENABLE_HIP} OFF)
+cmake_dependent_option(USE_OPENMP "Build with OpenMP" ON ${ENABLE_OPENMP} OFF)
+cmake_dependent_option(BUILD_CPP_TEST "Build CPP Unit Tests" ON ${ENABLE_TESTS} OFF)
+
 dgl_option(USE_LIBXSMM "Build with LIBXSMM library optimization" ON)
-dgl_option(BUILD_CPP_TEST "Build cpp unittest executables" ON)
 dgl_option(LIBCXX_ENABLE_PARALLEL_ALGORITHMS "Enable the parallel algorithms library. This requires the PSTL to be available." OFF)
 dgl_option(USE_S3 "Build with S3 support" OFF)
 dgl_option(USE_HDFS "Build with HDFS support" OFF) # Set env HADOOP_HDFS_HOME if needed
@@ -35,6 +62,14 @@ dgl_option(BUILD_TORCH "Build the PyTorch plugin" OFF)
 dgl_option(BUILD_SPARSE "Build DGL sparse library" OFF)
 dgl_option(BUILD_GRAPHBOLT "Build Graphbolt library" OFF)
 dgl_option(TORCH_PYTHON_INTERPS "Python interpreter used to build tensoradapter and DGL sparse library" python3)
+
+
+#------------------------------------------------------------------------------
+# Include build system logic and options
+#------------------------------------------------------------------------------
+include(cmake/SetupDGLBLT.cmake)
+
+
 
 # Set debug compile option for gdb, only happens when -DCMAKE_BUILD_TYPE=DEBUG
 if (NOT MSVC)
@@ -56,6 +91,13 @@ endif(USE_CUDA)
 if(NOT MSVC)
 set(DGL_LINKER_LIBS "dl")
 endif(NOT MSVC)
+
+blt_list_append(TO DGL_LINKER_LIBS ELEMENTS blt_hip blt_hip_runtime IF ENABLE_HIP)
+blt_list_append(TO DGL_LINKER_LIBS ELEMENTS roc::hipblas IF HIPBLAS_FOUND )
+blt_list_append(TO DLG_LINKER_LIBS ELEMENTS roc::hipsolver IF HIPSOLVER_FOUND )
+
+message(STATUS "HIP_DIAG: ${DGL_LINKER_LIBS}")
+
 
 if(MSVC OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 set(DGL_RUNTIME_LINKER_LIBS "")
@@ -91,14 +133,14 @@ else(MSVC)
   endif(NOT APPLE)
 endif(MSVC)
 
-if(USE_OPENMP)
-  include(FindOpenMP)
-  if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${OpenMP_C_FLAGS} ${CMAKE_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-  endif(OPENMP_FOUND)
-  message(STATUS "Build with OpenMP.")
-endif(USE_OPENMP)
+#if(USE_OPENMP)
+#  include(FindOpenMP)
+#  if(OPENMP_FOUND)
+#    set(CMAKE_C_FLAGS "${OpenMP_C_FLAGS} ${CMAKE_C_FLAGS}")
+#    set(CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+#  endif(OPENMP_FOUND)
+#  message(STATUS "Build with OpenMP.")
+#endif(USE_OPENMP)
 
 if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
   message(STATUS "Disabling LIBXSMM on ${CMAKE_SYSTEM_PROCESSOR}.")
@@ -163,14 +205,34 @@ list(APPEND DGL_SRC ${DGL_RPC_SRC})
 
 # Configure cuda
 if(USE_CUDA)
-  dgl_config_cuda(DGL_CUDA_SRC)
+#  dgl_config_cuda(DGL_CUDA_SRC)
   list(APPEND DGL_SRC ${DGL_CUDA_SRC})
-  cuda_add_library(dgl SHARED ${DGL_SRC})
-else(USE_CUDA)
-  add_library(dgl SHARED ${DGL_SRC})
+#  cuda_add_library(dgl SHARED ${DGL_SRC})
+#else(USE_CUDA)
+#  add_library(dgl SHARED ${DGL_SRC})
 endif(USE_CUDA)
 
-set_property(TARGET dgl PROPERTY CXX_STANDARD 14)
+if(ENABLE_HIP)
+  message(STATUS "Addding HIP Device SRC")
+  file(GLOB_RECURSE DGL_DEVICE_SRC
+    src/array/hip/*.cpp
+    src/array/cuda/uvm/*.cpp
+    src/partition/hip/*.cpp
+    src/runtime/hip/*.cpp
+    src/geometry/hip/*.cpp
+    src/graph/transform/hip/*.cpp
+#    src/graph/sampling/randomwalks/*.cu
+  )
+  list(APPEND DGL_SRC ${DGL_DEVICE_SRC})
+endif(ENABLE_HIP)
+
+blt_add_library(
+  NAME dgl
+  SOURCES ${DGL_SRC}
+  SHARED TRUE
+)
+
+#set_property(TARGET dgl PROPERTY CXX_STANDARD 14)
 
 # include directories
 target_include_directories(dgl PRIVATE "include")
@@ -222,8 +284,8 @@ endif((NOT MSVC) AND USE_LIBXSMM)
 
 # Avoid exposing third-party symbols when using DGL as a library.
 if((NOT MSVC) AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,--exclude-libs,ALL")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--exclude-libs,ALL")
+  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,--exclude-libs,ALL")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--exclude-libs,ALL")
 endif()
 
 # support PARALLEL_ALGORITHMS
@@ -273,6 +335,7 @@ if(BUILD_TORCH)
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tensoradapter/pytorch)
   endif(MSVC)
   add_dependencies(dgl tensoradapter_pytorch)
+  message(STATUS "setting up tensoradapter build ${CMAKE_CURRENT_BINARY_DIR}")
 endif(BUILD_TORCH)
 
 # Installation rules
@@ -281,7 +344,7 @@ install(TARGETS dgl DESTINATION lib${LIB_SUFFIX})
 # Testing
 if(BUILD_CPP_TEST)
   message(STATUS "Build with unittest")
-  add_subdirectory(./third_party/googletest)
+  #add_subdirectory(./third_party/googletest)
   enable_testing()
   include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
   include_directories("include")

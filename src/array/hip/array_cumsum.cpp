@@ -5,8 +5,6 @@
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
 #include "./utils.h"
 
 namespace dgl {

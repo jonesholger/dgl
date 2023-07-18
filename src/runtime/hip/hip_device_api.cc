@@ -8,15 +8,14 @@
 #include <dgl/runtime/registry.h>
 #include <dgl/runtime/tensordispatch.h>
 #include <dmlc/thread_local.h>
-
-#include "cuda_common.h"
+#include <dgl/runtime/dgl_hip.hpp>
 
 namespace dgl {
 namespace runtime {
 
-class CUDADeviceAPI final : public DeviceAPI {
+class HIPDeviceAPI final : public DeviceAPI {
  public:
-  CUDADeviceAPI() {
+  HIPDeviceAPI() {
     int count;
     auto err = hipGetDeviceCount(&count);
     switch (err) {
@@ -32,7 +31,7 @@ class CUDADeviceAPI final : public DeviceAPI {
   bool IsAvailable() final { return is_available_; }
 
   void SetDevice(DGLContext ctx) final {
-    CUDA_CALL(hipSetDevice(ctx.device_id));
+    hip_assert(hipSetDevice(ctx.device_id));
   }
   void GetAttr(DGLContext ctx, DeviceAttrKind kind, DGLRetValue* rv) final {
     int value = 0;
@@ -44,26 +43,26 @@ class CUDADeviceAPI final : public DeviceAPI {
              hipSuccess);
         break;
       case kMaxThreadsPerBlock: {
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeMaxThreadsPerBlock, ctx.device_id));
         break;
       }
       case kWarpSize: {
-        CUDA_CALL(
+        hip_assert(
             hipDeviceGetAttribute(&value, hipDeviceAttributeWarpSize, ctx.device_id));
         break;
       }
       case kMaxSharedMemoryPerBlock: {
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeMaxSharedMemoryPerBlock, ctx.device_id));
         break;
       }
       case kComputeVersion: {
         std::ostringstream os;
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeComputeCapabilityMajor, ctx.device_id));
         os << value << ".";
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeComputeCapabilityMinor, ctx.device_id));
         os << value;
         *rv = os.str();
@@ -71,27 +70,27 @@ class CUDADeviceAPI final : public DeviceAPI {
       }
       case kDeviceName: {
         hipDeviceProp_t props;
-        CUDA_CALL(hipGetDeviceProperties(&props, ctx.device_id));
+        hip_assert(hipGetDeviceProperties(&props, ctx.device_id));
         *rv = std::string(props.name);
         return;
       }
       case kMaxClockRate: {
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeClockRate, ctx.device_id));
         break;
       }
       case kMultiProcessorCount: {
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &value, hipDeviceAttributeMultiprocessorCount, ctx.device_id));
         break;
       }
       case kMaxThreadDimensions: {
         int dims[3];
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &dims[0], hipDeviceAttributeMaxBlockDimX, ctx.device_id));
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &dims[1], hipDeviceAttributeMaxBlockDimY, ctx.device_id));
-        CUDA_CALL(hipDeviceGetAttribute(
+        hip_assert(hipDeviceGetAttribute(
             &dims[2], hipDeviceAttributeMaxBlockDimZ, ctx.device_id));
 
         std::stringstream ss;  // use json string to return multiple int values;
@@ -110,11 +109,11 @@ class CUDADeviceAPI final : public DeviceAPI {
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable()) {
       return tensor_dispatcher->CUDAAllocWorkspace(
-          nbytes, getCurrentCUDAStream());
+          nbytes, getCurrentHIPStream());
     }
-    CHECK_EQ(256 % alignment, 0U) << "CUDA space is aligned at 256 bytes";
+    CHECK_EQ(256 % alignment, 0U) << "Device space is aligned at 256 bytes";
     void* ret;
-    CUDA_CALL(hipMalloc(&ret, nbytes));
+    hip_assert(hipMalloc(&ret, nbytes));
     return ret;
   }
 
@@ -124,7 +123,7 @@ class CUDADeviceAPI final : public DeviceAPI {
     if (tensor_dispatcher->IsAvailable()) {
       return tensor_dispatcher->CUDAFreeWorkspace(ptr);
     }
-    CUDA_CALL(hipFree(ptr));
+    hip_assert(hipFree(ptr));
   }
 
   void CopyDataFromTo(
@@ -135,20 +134,20 @@ class CUDADeviceAPI final : public DeviceAPI {
     from = static_cast<const char*>(from) + from_offset;
     to = static_cast<char*>(to) + to_offset;
     if (ctx_from.device_type == kDGLCUDA && ctx_to.device_type == kDGLCUDA) {
-      CUDA_CALL(hipSetDevice(ctx_from.device_id));
+      hip_assert(hipSetDevice(ctx_from.device_id));
       if (ctx_from.device_id == ctx_to.device_id) {
         GPUCopy(from, to, size, hipMemcpyDeviceToDevice, cu_stream);
       } else {
-        CUDA_CALL(hipMemcpyPeerAsync(
+        hip_assert(hipMemcpyPeerAsync(
             to, ctx_to.device_id, from, ctx_from.device_id, size, cu_stream));
       }
     } else if (
         ctx_from.device_type == kDGLCUDA && ctx_to.device_type == kDGLCPU) {
-      CUDA_CALL(hipSetDevice(ctx_from.device_id));
+      hip_assert(hipSetDevice(ctx_from.device_id));
       GPUCopy(from, to, size, hipMemcpyDeviceToHost, cu_stream);
     } else if (
         ctx_from.device_type == kDGLCPU && ctx_to.device_type == kDGLCUDA) {
-      CUDA_CALL(hipSetDevice(ctx_to.device_id));
+      hip_assert(hipSetDevice(ctx_to.device_id));
       GPUCopy(from, to, size, hipMemcpyHostToDevice, cu_stream);
     } else {
       LOG(FATAL) << "expect copy from/to GPU or between GPU";
@@ -188,34 +187,34 @@ class CUDADeviceAPI final : public DeviceAPI {
   }
 
   DGLStreamHandle CreateStream(DGLContext ctx) {
-    CUDA_CALL(hipSetDevice(ctx.device_id));
+    hip_assert(hipSetDevice(ctx.device_id));
     hipStream_t retval;
     // make sure the legacy default stream won't block on this stream
-    CUDA_CALL(hipStreamCreateWithFlags(&retval, hipStreamNonBlocking));
+    hip_assert(hipStreamCreateWithFlags(&retval, hipStreamNonBlocking));
     return static_cast<DGLStreamHandle>(retval);
   }
 
   void FreeStream(DGLContext ctx, DGLStreamHandle stream) {
-    CUDA_CALL(hipSetDevice(ctx.device_id));
+    hip_assert(hipSetDevice(ctx.device_id));
     hipStream_t cu_stream = static_cast<hipStream_t>(stream);
-    CUDA_CALL(hipStreamDestroy(cu_stream));
+    hip_assert(hipStreamDestroy(cu_stream));
   }
 
   void SyncStreamFromTo(
       DGLContext ctx, DGLStreamHandle event_src, DGLStreamHandle event_dst) {
-    CUDA_CALL(hipSetDevice(ctx.device_id));
+    hip_assert(hipSetDevice(ctx.device_id));
     hipStream_t src_stream = static_cast<hipStream_t>(event_src);
     hipStream_t dst_stream = static_cast<hipStream_t>(event_dst);
     hipEvent_t evt;
-    CUDA_CALL(hipEventCreate(&evt));
-    CUDA_CALL(hipEventRecord(evt, src_stream));
-    CUDA_CALL(hipStreamWaitEvent(dst_stream, evt, 0));
-    CUDA_CALL(hipEventDestroy(evt));
+    hip_assert(hipEventCreate(&evt));
+    hip_assert(hipEventRecord(evt, src_stream));
+    hip_assert(hipStreamWaitEvent(dst_stream, evt, 0));
+    hip_assert(hipEventDestroy(evt));
   }
 
   void StreamSync(DGLContext ctx, DGLStreamHandle stream) final {
-    CUDA_CALL(hipSetDevice(ctx.device_id));
-    CUDA_CALL(hipStreamSynchronize(static_cast<hipStream_t>(stream)));
+    hip_assert(hipSetDevice(ctx.device_id));
+    hip_assert(hipStreamSynchronize(static_cast<hipStream_t>(stream)));
   }
 
   /** NOTE: If the backend is PyTorch, we will use PyTorch's stream management,
@@ -244,13 +243,13 @@ class CUDADeviceAPI final : public DeviceAPI {
     if (tensor_dispatcher->IsAvailable()) {
       tensor_dispatcher->CUDAHostAllocatorEmptyCache();
     }
-    CUDA_CALL(hipHostRegister(ptr, nbytes, hipHostRegisterDefault));
+    hip_assert(hipHostRegister(ptr, nbytes, hipHostRegisterDefault));
     return true;
   }
 
   void UnpinData(void* ptr) {
     if (ptr == nullptr) return;
-    CUDA_CALL(hipHostUnregister(ptr));
+    hip_assert(hipHostUnregister(ptr));
   }
 
   void* AllocPinnedDataSpace(
@@ -318,7 +317,7 @@ class CUDADeviceAPI final : public DeviceAPI {
       return tensor_dispatcher->CUDAAllocWorkspace(
           size, getCurrentCUDAStream());
 
-    return CUDAThreadEntry::ThreadLocal()->pool.AllocWorkspace(ctx, size);
+    return HIPThreadEntry::ThreadLocal()->pool.AllocWorkspace(ctx, size);
   }
 
   void FreeWorkspace(DGLContext ctx, void* data) final {
@@ -327,12 +326,12 @@ class CUDADeviceAPI final : public DeviceAPI {
     if (tensor_dispatcher->IsAvailable())
       return tensor_dispatcher->CUDAFreeWorkspace(data);
 
-    CUDAThreadEntry::ThreadLocal()->pool.FreeWorkspace(ctx, data);
+    HIPThreadEntry::ThreadLocal()->pool.FreeWorkspace(ctx, data);
   }
 
-  static const std::shared_ptr<CUDADeviceAPI>& Global() {
-    static std::shared_ptr<CUDADeviceAPI> inst =
-        std::make_shared<CUDADeviceAPI>();
+  static const std::shared_ptr<HIPDeviceAPI>& Global() {
+    static std::shared_ptr<HIPDeviceAPI> inst =
+        std::make_shared<HIPDeviceAPI>();
     return inst;
   }
 
@@ -340,26 +339,26 @@ class CUDADeviceAPI final : public DeviceAPI {
   static void GPUCopy(
       const void* from, void* to, size_t size, hipMemcpyKind kind,
       hipStream_t stream) {
-    CUDA_CALL(hipMemcpyAsync(to, from, size, kind, stream));
+    hip_assert(hipMemcpyAsync(to, from, size, kind, stream));
     if (stream == 0 && kind == hipMemcpyDeviceToHost) {
       // only wait for the copy, when it's on the default stream, and it's to
       // host memory
-      CUDA_CALL(hipStreamSynchronize(stream));
+      hip_assert(hipStreamSynchronize(stream));
     }
   }
 
   bool is_available_ = true;
 };
 
-typedef dmlc::ThreadLocalStore<CUDAThreadEntry> CUDAThreadStore;
+typedef dmlc::ThreadLocalStore<HIPThreadEntry> HIPThreadStore;
 
-CUDAThreadEntry::CUDAThreadEntry() : pool(kDGLCUDA, CUDADeviceAPI::Global()) {}
+HIPThreadEntry::HIPThreadEntry() : pool(kDGLCUDA, HIPDeviceAPI::Global()) {}
 
-CUDAThreadEntry* CUDAThreadEntry::ThreadLocal() {
-  return CUDAThreadStore::Get();
+HIPThreadEntry* HIPThreadEntry::ThreadLocal() {
+  return HIPThreadStore::Get();
 }
 
-hipStream_t getCurrentCUDAStream() {
+hipStream_t getCurrentHIPStream() {
   TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
   if (tensor_dispatcher->IsAvailable())
     return tensor_dispatcher->CUDAGetCurrentStream();
@@ -367,9 +366,9 @@ hipStream_t getCurrentCUDAStream() {
     return nullptr;
 }
 
-DGL_REGISTER_GLOBAL("device_api.cuda")
+DGL_REGISTER_GLOBAL("device_api.hip")
     .set_body([](DGLArgs args, DGLRetValue* rv) {
-      DeviceAPI* ptr = CUDADeviceAPI::Global().get();
+      DeviceAPI* ptr = HIPDeviceAPI::Global().get();
       *rv = static_cast<void*>(ptr);
     });
 

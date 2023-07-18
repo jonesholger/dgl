@@ -25,3 +25,7 @@
 [submodule "third_party/pcg"]
 	path = third_party/pcg
 	url = https://github.com/imneme/pcg-cpp.git
+[submodule "cmake/blt"]
+	path = cmake/blt
+	url = https://github.com/LLNL/blt.git
+

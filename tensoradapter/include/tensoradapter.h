@@ -10,7 +10,8 @@
 #ifndef TENSORADAPTER_H_
 #define TENSORADAPTER_H_
 
-#ifdef DGL_USE_CUDA
+//#ifdef DGL_USE_CUDA
+#if 0
 #include <cuda_runtime.h>
 #endif  // DGL_USE_CUDA
 
@@ -35,6 +36,10 @@ void* CPURawAlloc(size_t nbytes);
 void CPURawDelete(void* ptr);
 
 #ifdef DGL_USE_CUDA
+    using deviceStream_t = cudaStream_t;
+#elif DGL_USE_HIP
+    using deviceStream_t = hipStream_t;
+#endif
 /**
  * @brief Allocate a piece of GPU memory via
  * PyTorch's THCCachingAllocator.
@@ -43,7 +48,7 @@ void CPURawDelete(void* ptr);
  * @param stream The stream to be allocated on.
  * @return Pointer to the allocated memory.
  */
-void* CUDARawAlloc(size_t nbytes, cudaStream_t stream);
+void* CUDARawAlloc(size_t nbytes, deviceStream_t stream);
 
 /**
  * @brief Free the GPU memory.
@@ -55,7 +60,7 @@ void CUDARawDelete(void* ptr);
 /**
  * @brief Get the current CUDA stream.
  */
-cudaStream_t CUDACurrentStream();
+deviceStream_t CUDACurrentStream();
 
 /**
  * @brief Let the caching allocator know which streams are using this tensor.
@@ -64,7 +69,7 @@ cudaStream_t CUDACurrentStream();
  * @param stream The stream that is using this tensor.
  * @param device_id Device of the tensor.
  */
-void RecordStream(void* ptr, cudaStream_t stream, int device_id);
+void RecordStream(void* ptr, deviceStream_t stream, int device_id);
 
 /**
  * @brief Allocate a piece of pinned CPU memory via
@@ -98,7 +103,7 @@ void CUDARawHostDelete(void** raw_deleter);
  * @param device_id Device of the tensor.
  */
 void CUDARecordHostAlloc(
-    void* data, void* ctx, cudaStream_t stream, int device_id);
+    void* data, void* ctx, deviceStream_t stream, int device_id);
 
 /**
  * @brief Release cached pinned memory allocations via cudaHostFree.

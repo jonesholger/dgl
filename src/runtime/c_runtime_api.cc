@@ -79,7 +79,7 @@ class DeviceAPIManager {
     }
   }
   DeviceAPI* GetAPI(const std::string name, bool allow_missing) {
-    print_stacktrace();
+    //print_stacktrace();
     std::string factory = "device_api." + name;
     std::cerr << "GetAPI: " << factory << std::endl;
     auto* f = Registry::Get(factory);

@@ -25,6 +25,7 @@ endif()
 set(Torch_DIR "${TORCH_PREFIX}/Torch")
 message(STATUS "Setting directory to ${Torch_DIR}")
 find_package(Torch REQUIRED)
+message(STATUS "torch ${TORCH_LIBRARIES} ${TORCH_INCLUDE_DIRS} ${TORCH_CXX_FLAGS} ${TORCH_C_FLAGS} ${TORCH_FIND_COMPONENTS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TORCH_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3 -ggdb")
@@ -44,6 +45,20 @@ target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/dlpack/include")
 target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${TORCH_INCLUDE_DIRS}")
+#target_link_directories(${TENSORADAPTER_TORCH_LIBS} BEFORE 
+#  INTERFACE /opt/rocm-5.5.0/lib
+#  INTERFACE /opt/rocm-5.5.0/hip/lib
+#  INTERFACE /opt/rocm-5.5.0/hsa/lib )
 target_link_libraries(${TORCH_TARGET_NAME} PRIVATE "${TENSORADAPTER_TORCH_LIBS}")
+target_link_directories(${TORCH_TARGET_NAME} BEFORE 
+  PUBLIC /opt/rocm-5.5.0/lib
+  PUBLIC /opt/rocm-5.5.0/hip/lib
+  PUBLIC /opt/rocm-5.5.0/hsa/lib )
 set_property(TARGET ${TORCH_TARGET_NAME} PROPERTY CXX_STANDARD 17)
 message(STATUS "Configured target ${TORCH_TARGET_NAME}")
+get_property(import_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS )
+message(STATUS "other imported targets: ${import_targets}")
+get_property(link_dirs TARGET torch PROPERTY LINK_DIRECTORIES )
+message(STATUS "link dirs: ${link_dirs}")
+get_property(import_dirs TARGET torch PROPERTY INTERFACE_LINK_DIRECTORIES )
+message(STATUS "other imported dirs: ${import_dirs}")
