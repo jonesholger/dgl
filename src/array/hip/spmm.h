@@ -138,7 +138,7 @@ void _Transpose<__half>(const __half* in, __half* out, int row, int col) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = FindNumThreads(row);
   int nb = col;
-  CUDA_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
+  HIP_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
 }
 
 #if BF16_ENABLED
@@ -152,7 +152,7 @@ void _Transpose<__nv_bfloat16>(
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = FindNumThreads(row);
   int nb = col;
-  CUDA_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
+  HIP_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
 }
 #endif  // BF16_ENABLED
 
@@ -648,7 +648,7 @@ void SpMMCoo(
   int64_t out_size = out.NumElements();
   const int nt = FindNumThreads(out_size);
   const int nb = (out_size + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _FillKernel, nb, nt, 0, stream, out_data, out_size, ReduceOp::zero());
 
   const int ntx = FindNumThreads(len);
@@ -660,13 +660,13 @@ void SpMMCoo(
   const bool use_idx = !IsNullArray(coo.data);
 
   BCAST_IDX_CTX_SWITCH(bcast, use_idx, ufeat->ctx, ubcast_off, ebcast_off, {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (SpMMCooKernel<Idx, DType, BinaryOp, ReduceOp, UseBcast, UseIdx>),
         nblks, nthrs, 0, stream, ufeat_data, efeat_data, out_data, argu_data,
         arge_data, row, col, edge_map, N, M, E, ubcast_off, ebcast_off, lhs_len,
         rhs_len, len);
     if (ReduceOp::require_arg) {
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           (ArgSpMMCooKernel<Idx, DType, BinaryOp, ReduceOp, UseBcast, UseIdx>),
           nblks, nthrs, 0, stream, ufeat_data, efeat_data, out_data, argu_data,
           arge_data, row, col, edge_map, N, M, E, ubcast_off, ebcast_off,
@@ -718,7 +718,7 @@ void SpMMCsr(
 
   BCAST_IDX_CTX_SWITCH(
       bcast, use_idx, ufeat->ctx, ubcast_off, ebcast_off,
-      {CUDA_KERNEL_CALL(
+      {HIP_KERNEL_CALL(
           (SpMMCsrKernel<Idx, DType, BinaryOp, ReduceOp, UseBcast, UseIdx>),
           nblks, nthrs, 0, stream, ufeat_data, efeat_data, out_data, argu_data,
           arge_data, indptr, indices, edge_map, csr.num_rows, csr.num_cols,
@@ -779,7 +779,7 @@ void SpMMCmpCsrHetero(
 
   BCAST_IDX_CTX_SWITCH(
       bcast, use_idx, ufeat->ctx, ubcast_off, ebcast_off,
-      {CUDA_KERNEL_CALL(
+      {HIP_KERNEL_CALL(
           (SpMMCmpCsrHeteroKernel<
               Idx, DType, BinaryOp, ReduceOp, UseBcast, UseIdx>),
           nblks, nthrs, 0, stream, ufeat_data, efeat_data, out_data, argu_data,

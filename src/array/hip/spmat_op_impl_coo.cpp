@@ -80,7 +80,7 @@ int64_t COOGetRowNNZ(COOMatrix coo, int64_t row) {
   IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
   NDArray rst = NDArray::Empty({1}, coo.row->dtype, coo.row->ctx);
   _Fill(rst.Ptr<IdType>(), 1, IdType(0));
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _COOGetRowNNZKernel, nb, nt, 0, stream, coo.row.Ptr<IdType>(),
       rst.Ptr<IdType>(), row, nnz);
   rst = rst.CopyTo(DGLContext{kDGLCPU, 0});
@@ -116,7 +116,7 @@ NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
     IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
     NDArray rst = NDArray::Empty({1}, coo.row->dtype, coo.row->ctx);
     _Fill(rst.Ptr<IdType>(), 1, IdType(0));
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _COOGetRowNNZKernel, nb, nt, 0, stream, coo.row.Ptr<IdType>(),
         rst.Ptr<IdType>(), row, nnz);
     return rst;
@@ -125,7 +125,7 @@ NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
     IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
     NDArray in_degrees = NDArray::Empty({num_rows}, rows->dtype, rows->ctx);
     _Fill(in_degrees.Ptr<IdType>(), num_rows, IdType(0));
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _COOGetAllRowNNZKernel, nb, nt, 0, stream, coo.row.Ptr<IdType>(),
         in_degrees.Ptr<IdType>(), nnz);
     return IndexSelect(in_degrees, rows);

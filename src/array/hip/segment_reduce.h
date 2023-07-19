@@ -138,7 +138,7 @@ void SegmentReduce(NDArray feat, NDArray offsets, NDArray out, NDArray arg) {
   const dim3 nblks(nbx, nby);
   const dim3 nthrs(ntx, nty);
   // TODO(zihao): try cub's DeviceSegmentedReduce and compare the performance.
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (SegmentReduceKernel<IdType, DType, ReduceOp>), nblks, nthrs, 0, stream,
       feat_data, offsets_data, out_data, arg_data, n, dim);
 }
@@ -167,7 +167,7 @@ void ScatterAdd(NDArray feat, NDArray idx, NDArray out) {
   const int nty = 1;
   const dim3 nblks(nbx, nby);
   const dim3 nthrs(ntx, nty);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (ScatterAddKernel<IdType, DType>), nblks, nthrs, 0, stream, feat_data,
       idx_data, out_data, n, dim);
 }
@@ -218,7 +218,7 @@ void UpdateGradMinMax_hetero(
       const int nbx = FindNumBlocks<'x'>((n * th_per_row + ntx - 1) / ntx);
       const dim3 nblks(nbx);
       const dim3 nthrs(ntx);
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           (UpdateGradMinMaxHeteroKernel<IdType, DType>), nblks, nthrs, 0,
           stream, feat_data, idx_data, idx_type_data, out_data, n, dim, type);
     }
@@ -251,7 +251,7 @@ void BackwardSegmentCmp(NDArray feat, NDArray arg, NDArray out) {
   const int nty = 1;
   const dim3 nblks(nbx, nby);
   const dim3 nthrs(ntx, nty);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (BackwardSegmentCmpKernel<IdType, DType>), nblks, nthrs, 0, stream,
       feat_data, arg_data, out_data, n, dim);
 }

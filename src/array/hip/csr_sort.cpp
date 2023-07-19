@@ -47,7 +47,7 @@ bool CSRIsSorted(CSRMatrix csr) {
       static_cast<int8_t*>(device->AllocWorkspace(ctx, csr.num_rows));
   const int nt = cuda::FindNumThreads(csr.num_rows);
   const int nb = (csr.num_rows + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SegmentIsSorted, nb, nt, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), csr.num_rows, flags);
   bool ret = cuda::AllTrue(flags, csr.num_rows, ctx);
@@ -125,13 +125,13 @@ void CSRSort_<kDGLCUDA, int64_t>(CSRMatrix* csr) {
 
   // Allocate workspace
   size_t workspace_size = 0;
-  CUDA_CALL(hipcub::DeviceSegmentedRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceSegmentedRadixSort::SortPairs(
       nullptr, workspace_size, key_in, key_out, value_in, value_out, nnz,
       csr->num_rows, offsets, offsets + 1, 0, sizeof(int64_t) * 8, stream));
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
 
   // Compute
-  CUDA_CALL(hipcub::DeviceSegmentedRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceSegmentedRadixSort::SortPairs(
       workspace, workspace_size, key_in, key_out, value_in, value_out, nnz,
       csr->num_rows, offsets, offsets + 1, 0, sizeof(int64_t) * 8, stream));
 

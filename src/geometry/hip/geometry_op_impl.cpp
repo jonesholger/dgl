@@ -111,9 +111,9 @@ void FarthestPointSampler(
 
   // sample for each cloud in the batch
   IdType* start_idx_data = static_cast<IdType*>(start_idx->data);
-  CUDA_CALL(hipSetDevice(array->ctx.device_id));
+  HIP_CALL(hipSetDevice(array->ctx.device_id));
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       fps_kernel, batch_size, THREADS, 0, stream, array_data, batch_size,
       sample_points, point_in_batch, dim, start_idx_data, dist_data, ret_data);
 }

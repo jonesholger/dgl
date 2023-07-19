@@ -131,6 +131,7 @@ else(MSVC)
   if(NOT APPLE)
     set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--warn-common ${CMAKE_SHARED_LINKER_FLAGS}")
   endif(NOT APPLE)
+  add_definitions(-DDGL_USE_HIP)
 endif(MSVC)
 
 #if(USE_OPENMP)

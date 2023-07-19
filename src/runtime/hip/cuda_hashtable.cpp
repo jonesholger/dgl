@@ -369,7 +369,7 @@ OrderedHashTable<IdType>::OrderedHashTable(
   table_ = static_cast<Mapping*>(
       device->AllocWorkspace(ctx_, sizeof(Mapping) * size_));
 
-  CUDA_CALL(hipMemsetAsync(
+  HIP_CALL(hipMemsetAsync(
       table_, DeviceOrderedHashTable<IdType>::kEmptyKey,
       sizeof(Mapping) * size_, stream));
 }
@@ -393,29 +393,29 @@ void OrderedHashTable<IdType>::FillWithDuplicates(
 
   auto device_table = MutableDeviceOrderedHashTable<IdType>(this);
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (generate_hashmap_duplicates<IdType, BLOCK_SIZE, TILE_SIZE>), grid, block,
       0, stream, input, num_input, device_table);
 
   IdType* item_prefix = static_cast<IdType*>(
       device->AllocWorkspace(ctx_, sizeof(IdType) * (num_input + 1)));
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (count_hashmap<IdType, BLOCK_SIZE, TILE_SIZE>), grid, block, 0, stream,
       input, num_input, device_table, item_prefix);
 
   size_t workspace_bytes;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       nullptr, workspace_bytes, static_cast<IdType*>(nullptr),
       static_cast<IdType*>(nullptr), grid.x + 1, stream));
   void* workspace = device->AllocWorkspace(ctx_, workspace_bytes);
 
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       workspace, workspace_bytes, item_prefix, item_prefix, grid.x + 1,
       stream));
   device->FreeWorkspace(ctx_, workspace);
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (compact_hashmap<IdType, BLOCK_SIZE, TILE_SIZE>), grid, block, 0, stream,
       input, num_input, device_table, item_prefix, unique, num_unique);
   device->FreeWorkspace(ctx_, item_prefix);
@@ -431,7 +431,7 @@ void OrderedHashTable<IdType>::FillWithUnique(
 
   auto device_table = MutableDeviceOrderedHashTable<IdType>(this);
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (generate_hashmap_unique<IdType, BLOCK_SIZE, TILE_SIZE>), grid, block, 0,
       stream, input, num_input, device_table);
 }

@@ -273,13 +273,13 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRemainder(
 
     if (num_parts < (1 << part_bits)) {
       // num_parts is not a power of 2
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           _MapProcByRemainderKernel, grid, block, 0, stream,
           static_cast<const IdType*>(in_idx->data), num_in, num_parts,
           proc_id_in.get());
     } else {
       // num_parts is a power of 2
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           _MapProcByMaskRemainderKernel, grid, block, 0, stream,
           static_cast<const IdType*>(in_idx->data), num_in,
           static_cast<IdType>(num_parts - 1),  // bit mask
@@ -295,13 +295,13 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRemainder(
     IdArray perm_in = aten::Range(0, num_in, sizeof(IdType) * 8, ctx);
 
     size_t sort_workspace_size;
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
         nullptr, sort_workspace_size, proc_id_in.get(), proc_id_out.get(),
         static_cast<IdType*>(perm_in->data), perm_out, num_in, 0, part_bits,
         stream));
 
     Workspace<void> sort_workspace(device, ctx, sort_workspace_size);
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
         sort_workspace.get(), sort_workspace_size, proc_id_in.get(),
         proc_id_out.get(), static_cast<IdType*>(perm_in->data), perm_out,
         num_in, 0, part_bits, stream));
@@ -327,14 +327,14 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRemainder(
            "value of int.";
 
     size_t hist_workspace_size;
-    CUDA_CALL(hipcub::DeviceHistogram::HistogramEven(
+    HIP_CALL(hipcub::DeviceHistogram::HistogramEven(
         nullptr, hist_workspace_size, proc_id_out.get(),
         reinterpret_cast<AtomicCount*>(out_counts), num_parts + 1,
         static_cast<IdType>(0), static_cast<IdType>(num_parts + 1),
         static_cast<int>(num_in), stream));
 
     Workspace<void> hist_workspace(device, ctx, hist_workspace_size);
-    CUDA_CALL(hipcub::DeviceHistogram::HistogramEven(
+    HIP_CALL(hipcub::DeviceHistogram::HistogramEven(
         hist_workspace.get(), hist_workspace_size, proc_id_out.get(),
         reinterpret_cast<AtomicCount*>(out_counts), num_parts + 1,
         static_cast<IdType>(0), static_cast<IdType>(num_parts + 1),
@@ -361,7 +361,7 @@ IdArray MapToLocalFromRemainder(const int num_parts, IdArray global_idx) {
     const dim3 block(128);
     const dim3 grid((global_idx->shape[0] + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _MapLocalIndexByRemainderKernel, grid, block, 0, stream,
         static_cast<const IdType*>(global_idx->data), global_idx->shape[0],
         num_parts, static_cast<IdType*>(local_idx->data));
@@ -396,7 +396,7 @@ IdArray MapToGlobalFromRemainder(
     const dim3 block(128);
     const dim3 grid((local_idx->shape[0] + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _MapGlobalIndexByRemainderKernel, grid, block, 0, stream,
         static_cast<const IdType*>(local_idx->data), part_id,
         global_idx->shape[0], num_parts,
@@ -455,7 +455,7 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRange(
     const dim3 block(256);
     const dim3 grid((num_in + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _MapProcByRangeKernel, grid, block, 0, stream,
         static_cast<const RangeType*>(range->data),
         static_cast<const IdType*>(in_idx->data), num_in, num_parts,
@@ -470,13 +470,13 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRange(
     IdArray perm_in = aten::Range(0, num_in, sizeof(IdType) * 8, ctx);
 
     size_t sort_workspace_size;
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
         nullptr, sort_workspace_size, proc_id_in.get(), proc_id_out.get(),
         static_cast<IdType*>(perm_in->data), perm_out, num_in, 0, part_bits,
         stream));
 
     Workspace<void> sort_workspace(device, ctx, sort_workspace_size);
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
         sort_workspace.get(), sort_workspace_size, proc_id_in.get(),
         proc_id_out.get(), static_cast<IdType*>(perm_in->data), perm_out,
         num_in, 0, part_bits, stream));
@@ -502,14 +502,14 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRange(
            "value of int.";
 
     size_t hist_workspace_size;
-    CUDA_CALL(hipcub::DeviceHistogram::HistogramEven(
+    HIP_CALL(hipcub::DeviceHistogram::HistogramEven(
         nullptr, hist_workspace_size, proc_id_out.get(),
         reinterpret_cast<AtomicCount*>(out_counts), num_parts + 1,
         static_cast<IdType>(0), static_cast<IdType>(num_parts + 1),
         static_cast<int>(num_in), stream));
 
     Workspace<void> hist_workspace(device, ctx, hist_workspace_size);
-    CUDA_CALL(hipcub::DeviceHistogram::HistogramEven(
+    HIP_CALL(hipcub::DeviceHistogram::HistogramEven(
         hist_workspace.get(), hist_workspace_size, proc_id_out.get(),
         reinterpret_cast<AtomicCount*>(out_counts), num_parts + 1,
         static_cast<IdType>(0), static_cast<IdType>(num_parts + 1),
@@ -545,7 +545,7 @@ IdArray MapToLocalFromRange(
     const dim3 block(128);
     const dim3 grid((global_idx->shape[0] + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _MapLocalIndexByRangeKernel, grid, block, 0, stream,
         static_cast<const RangeType*>(range->data),
         static_cast<const IdType*>(global_idx->data), global_idx->shape[0],
@@ -585,7 +585,7 @@ IdArray MapToGlobalFromRange(
     const dim3 block(128);
     const dim3 grid((local_idx->shape[0] + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _MapGlobalIndexByRangeKernel, grid, block, 0, stream,
         static_cast<const RangeType*>(range->data),
         static_cast<const IdType*>(local_idx->data), part_id,

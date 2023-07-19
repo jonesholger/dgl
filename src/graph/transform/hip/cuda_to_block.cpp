@@ -72,7 +72,7 @@ class DeviceNodeMapMaker {
       std::vector<IdArray>* const lhs_device, hipStream_t stream) {
     const int64_t num_ntypes = lhs_nodes.size() + rhs_nodes.size();
 
-    CUDA_CALL(hipMemsetAsync(
+    HIP_CALL(hipMemsetAsync(
         count_lhs_device, 0, num_ntypes * sizeof(*count_lhs_device), stream));
 
     // possibly dublicate lhs nodes
@@ -179,7 +179,7 @@ struct CUDAIdsMapper {
           src_nodes, rhs_nodes, &node_maps, count_lhs_device, &lhs_nodes,
           stream);
 
-      CUDA_CALL(hipEventCreate(&copyEvent));
+      HIP_CALL(hipEventCreate(&copyEvent));
       if (TensorDispatcher::Global()->IsAvailable()) {
         new_len_tensor = NDArray::PinnedEmpty(
             {num_ntypes}, DGLDataTypeTraits<int64_t>::dtype,
@@ -190,11 +190,11 @@ struct CUDAIdsMapper {
             {num_ntypes}, DGLDataTypeTraits<int64_t>::dtype,
             DGLContext{kDGLCPU, 0});
       }
-      CUDA_CALL(hipMemcpyAsync(
+      HIP_CALL(hipMemcpyAsync(
           new_len_tensor->data, count_lhs_device,
           sizeof(*num_nodes_per_type.data()) * num_ntypes,
           hipMemcpyDeviceToHost, stream));
-      CUDA_CALL(hipEventRecord(copyEvent, stream));
+      HIP_CALL(hipEventRecord(copyEvent, stream));
 
       device->FreeWorkspace(ctx, count_lhs_device);
     } else {
@@ -209,8 +209,8 @@ struct CUDAIdsMapper {
 
     if (generate_lhs_nodes) {
       // wait for the previous copy
-      CUDA_CALL(hipEventSynchronize(copyEvent));
-      CUDA_CALL(hipEventDestroy(copyEvent));
+      HIP_CALL(hipEventSynchronize(copyEvent));
+      HIP_CALL(hipEventDestroy(copyEvent));
 
       // Resize lhs nodes.
       for (int64_t ntype = 0; ntype < num_ntypes; ++ntype) {

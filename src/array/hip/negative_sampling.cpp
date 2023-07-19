@@ -98,21 +98,21 @@ void SortOrderedPairs(
   void* tmp2 = nullptr;
 
   // Radix sort by minor key first, reorder the major key in the progress.
-  CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
       tmp1, s1, minor, tmp_minor, major, tmp_major, n, 0, sizeof(IdType) * 8,
       stream));
   tmp1 = device->AllocWorkspace(ctx, s1);
-  CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
       tmp1, s1, minor, tmp_minor, major, tmp_major, n, 0, sizeof(IdType) * 8,
       stream));
 
   // Radix sort by major key next.
-  CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
       tmp2, s2, tmp_major, major, tmp_minor, minor, n, 0, sizeof(IdType) * 8,
       stream));
   tmp2 = (s2 > s1) ? device->AllocWorkspace(ctx, s2)
                    : tmp1;  // reuse buffer if s2 <= s1
-  CUDA_CALL(hipcub::DeviceRadixSort::SortPairs(
+  HIP_CALL(hipcub::DeviceRadixSort::SortPairs(
       tmp2, s2, tmp_major, major, tmp_minor, minor, n, 0, sizeof(IdType) * 8,
       stream));
 
@@ -147,7 +147,7 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
   std::pair<IdArray, IdArray> result;
   int64_t num_out;
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _GlobalUniformNegativeSamplingKernel, nb, nt, 0, stream,
       csr.indptr.Ptr<IdType>(), csr.indices.Ptr<IdType>(), row_data, col_data,
       num_row, num_col, num_actual_samples, num_trials, exclude_self_loops,
@@ -159,11 +159,11 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
   IsNotMinusOne<IdType> op;
   PairIterator<IdType> begin(row_data, col_data);
   PairIterator<IdType> out_begin(out_row_data, out_col_data);
-  CUDA_CALL(hipcub::DeviceSelect::If(
+  HIP_CALL(hipcub::DeviceSelect::If(
       nullptr, tmp_size, begin, out_begin, num_out_cuda, num_actual_samples, op,
       stream));
   void* tmp = device->AllocWorkspace(ctx, tmp_size);
-  CUDA_CALL(hipcub::DeviceSelect::If(
+  HIP_CALL(hipcub::DeviceSelect::If(
       tmp, tmp_size, begin, out_begin, num_out_cuda, num_actual_samples, op,
       stream));
   num_out = cuda::GetCUDAScalar(device, ctx, num_out_cuda);
@@ -181,13 +181,13 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
 
     size_t tmp_size_unique = 0;
     void* tmp_unique = nullptr;
-    CUDA_CALL(hipcub::DeviceSelect::Unique(
+    HIP_CALL(hipcub::DeviceSelect::Unique(
         nullptr, tmp_size_unique, out_begin, unique_begin, num_out_cuda,
         num_out, stream));
     tmp_unique = (tmp_size_unique > tmp_size)
                      ? device->AllocWorkspace(ctx, tmp_size_unique)
                      : tmp;  // reuse buffer
-    CUDA_CALL(hipcub::DeviceSelect::Unique(
+    HIP_CALL(hipcub::DeviceSelect::Unique(
         tmp_unique, tmp_size_unique, out_begin, unique_begin, num_out_cuda,
         num_out, stream));
     num_out = cuda::GetCUDAScalar(device, ctx, num_out_cuda);

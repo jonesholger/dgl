@@ -91,7 +91,7 @@ void _Merge(
       arrs, 0, arrs_dev, 0, sizeof(IdType*) * n_arrs, DGLContext{kDGLCPU, 0},
       ctx, dtype);
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _DisjointUnionKernel, nb, nt, 0, stream, arrs_dev, prefix, offset, out,
       n_arrs, n_elms);
 

@@ -45,11 +45,11 @@ IdArray NonZero(IdArray array) {
       static_cast<int64_t*>(device->AllocWorkspace(ctx, sizeof(int64_t)));
 
   size_t temp_size = 0;
-  CUDA_CALL(hipcub::DeviceSelect::If(
+  HIP_CALL(hipcub::DeviceSelect::If(
       nullptr, temp_size, counter, out_data, d_num_nonzeros, len, comp,
       stream));
   void* temp = device->AllocWorkspace(ctx, temp_size);
-  CUDA_CALL(hipcub::DeviceSelect::If(
+  HIP_CALL(hipcub::DeviceSelect::If(
       temp, temp_size, counter, out_data, d_num_nonzeros, len, comp, stream));
   device->FreeWorkspace(ctx, temp);
 

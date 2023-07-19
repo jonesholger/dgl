@@ -35,7 +35,7 @@ void Scatter_(IdArray index, NDArray value, NDArray out) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   const int nt = cuda::FindNumThreads(len);
   const int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(_ScatterKernel, nb, nt, 0, stream, idx, val, len, outd);
+  HIP_KERNEL_CALL(_ScatterKernel, nb, nt, 0, stream, idx, val, len, outd);
 }
 
 template void Scatter_<kDGLCUDA, int32_t, int32_t>(IdArray, NDArray, NDArray);

@@ -40,7 +40,7 @@ IdArray BinaryElewise(IdArray lhs, IdArray rhs) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, rhs_data,
       ret_data, len);
   return ret;
@@ -111,7 +111,7 @@ IdArray BinaryElewise(IdArray lhs, IdType rhs) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, rhs,
       ret_data, len);
   return ret;
@@ -182,7 +182,7 @@ IdArray BinaryElewise(IdType lhs, IdArray rhs) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs, rhs_data,
       ret_data, len);
   return ret;
@@ -253,7 +253,7 @@ IdArray UnaryElewise(IdArray lhs) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_UnaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, ret_data,
       len);
   return ret;
@@ -281,7 +281,7 @@ NDArray Full(DType val, int64_t length, DGLContext ctx) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_FullKernel<DType>), nb, nt, 0, stream, ret_data, length, val);
   return ret;
 }
@@ -323,7 +323,7 @@ IdArray Range(IdType low, IdType high, DGLContext ctx) {
   hipStream_t stream = runtime::getCurrentCUDAStream();
   int nt = cuda::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_RangeKernel<IdType>), nb, nt, 0, stream, ret_data, low, length);
   return ret;
 }
@@ -365,7 +365,7 @@ IdArray Relabel_(const std::vector<IdArray>& arrays) {
       static_cast<int64_t*>(device->AllocWorkspace(ctx, sizeof(int64_t)));
   IdArray induced_nodes = NewIdArray(total_length, ctx, sizeof(IdType) * 8);
 
-  CUDA_CALL(hipMemsetAsync(
+  HIP_CALL(hipMemsetAsync(
       num_induced_device, 0, sizeof(*num_induced_device), stream));
 
   node_map.FillWithDuplicates(
@@ -387,7 +387,7 @@ IdArray Relabel_(const std::vector<IdArray>& arrays) {
   for (IdArray arr : arrays) {
     const int64_t length = arr->shape[0];
     int nb = (length + nt - 1) / nt;
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_RelabelKernel<IdType>), nb, nt, 0, stream, arr.Ptr<IdType>(), length,
         node_map.DeviceHandle());
   }
@@ -421,12 +421,12 @@ IdArray AsNumBits(IdArray arr, uint8_t bits) {
   int nt = cuda::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
   if (bits == 32) {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CastKernel<IdType, int32_t>), nb, nt, 0, stream,
         static_cast<IdType*>(arr->data), static_cast<int32_t*>(ret->data),
         length);
   } else {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CastKernel<IdType, int64_t>), nb, nt, 0, stream,
         static_cast<IdType*>(arr->data), static_cast<int64_t*>(ret->data),
         length);

@@ -52,7 +52,7 @@ NDArray CSRGetData(
                       : nullptr;
 
   // TODO(minjie): use binary search for sorted csr
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       cuda::_LinearSearchKernel, nb, nt, 0, stream, indptr_data, indices_data,
       data_data, rows.Ptr<IdType>(), cols.Ptr<IdType>(), row_stride, col_stride,
       rstlen, return_eids ? nullptr : weights.Ptr<DType>(), filler,

@@ -265,13 +265,13 @@ COOMatrix _CSRRowWiseSamplingUniform(
   if (replace) {
     const dim3 block(512);
     const dim3 grid((num_rows + block.x - 1) / block.x);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _CSRRowWiseSampleDegreeReplaceKernel, grid, block, 0, stream, num_picks,
         num_rows, slice_rows, in_ptr, out_deg);
   } else {
     const dim3 block(512);
     const dim3 grid((num_rows + block.x - 1) / block.x);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _CSRRowWiseSampleDegreeKernel, grid, block, 0, stream, num_picks,
         num_rows, slice_rows, in_ptr, out_deg);
   }
@@ -280,16 +280,16 @@ COOMatrix _CSRRowWiseSamplingUniform(
   IdType* out_ptr = static_cast<IdType*>(
       device->AllocWorkspace(ctx, (num_rows + 1) * sizeof(IdType)));
   size_t prefix_temp_size = 0;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       nullptr, prefix_temp_size, out_deg, out_ptr, num_rows + 1, stream));
   void* prefix_temp = device->AllocWorkspace(ctx, prefix_temp_size);
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       prefix_temp, prefix_temp_size, out_deg, out_ptr, num_rows + 1, stream));
   device->FreeWorkspace(ctx, prefix_temp);
   device->FreeWorkspace(ctx, out_deg);
 
   hipEvent_t copyEvent;
-  CUDA_CALL(hipEventCreate(&copyEvent));
+  HIP_CALL(hipEventCreate(&copyEvent));
 
   NDArray new_len_tensor;
   if (TensorDispatcher::Global()->IsAvailable()) {
@@ -302,10 +302,10 @@ COOMatrix _CSRRowWiseSamplingUniform(
   }
 
   // copy using the internal current stream
-  CUDA_CALL(hipMemcpyAsync(
+  HIP_CALL(hipMemcpyAsync(
       new_len_tensor->data, out_ptr + num_rows, sizeof(IdType),
       hipMemcpyDeviceToHost, stream));
-  CUDA_CALL(hipEventRecord(copyEvent, stream));
+  HIP_CALL(hipEventRecord(copyEvent, stream));
 
   const uint64_t random_seed = RandomEngine::ThreadLocal()->RandInt(1000000000);
 
@@ -315,14 +315,14 @@ COOMatrix _CSRRowWiseSamplingUniform(
   if (replace) {  // with replacement
     const dim3 block(BLOCK_SIZE);
     const dim3 grid((num_rows + TILE_SIZE - 1) / TILE_SIZE);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CSRRowWiseSampleUniformReplaceKernel<IdType, TILE_SIZE>), grid, block,
         0, stream, random_seed, num_picks, num_rows, slice_rows, in_ptr,
         in_cols, data, out_ptr, out_rows, out_cols, out_idxs);
   } else {  // without replacement
     const dim3 block(BLOCK_SIZE);
     const dim3 grid((num_rows + TILE_SIZE - 1) / TILE_SIZE);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CSRRowWiseSampleUniformKernel<IdType, TILE_SIZE>), grid, block, 0,
         stream, random_seed, num_picks, num_rows, slice_rows, in_ptr, in_cols,
         data, out_ptr, out_rows, out_cols, out_idxs);
@@ -330,8 +330,8 @@ COOMatrix _CSRRowWiseSamplingUniform(
   device->FreeWorkspace(ctx, out_ptr);
 
   // wait for copying `new_len` to finish
-  CUDA_CALL(hipEventSynchronize(copyEvent));
-  CUDA_CALL(hipEventDestroy(copyEvent));
+  HIP_CALL(hipEventSynchronize(copyEvent));
+  HIP_CALL(hipEventDestroy(copyEvent));
 
   const IdType new_len = static_cast<const IdType*>(new_len_tensor->data)[0];
   picked_row = picked_row.CreateView({new_len}, picked_row->dtype);

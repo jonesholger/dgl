@@ -293,7 +293,7 @@ void SDDMMCoo(
     const dim3 nblks(nbx, nby);
     const dim3 nthrs(ntx, nty);
     BCAST_IDX_CTX_SWITCH(bcast, use_idx, out->ctx, lhs_off, rhs_off, {
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           (SDDMMCooTreeReduceKernel<
               Idx, DType, UseBcast, UseIdx, LhsTarget, RhsTarget>),
           nblks, nthrs, 0, stream, lhs_data, rhs_data, out_data, row, col,
@@ -308,7 +308,7 @@ void SDDMMCoo(
     const dim3 nblks(nbx, nby);
     const dim3 nthrs(ntx, nty);
     BCAST_IDX_CTX_SWITCH(bcast, use_idx, out->ctx, lhs_off, rhs_off, {
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           (SDDMMCooKernel<
               Idx, DType, Op, UseBcast, UseIdx, LhsTarget, RhsTarget>),
           nblks, nthrs, 0, stream, lhs_data, rhs_data, out_data, row, col,
@@ -354,7 +354,7 @@ void SDDMMCsr(
   const bool use_idx = !IsNullArray(csr.data);
 
   BCAST_IDX_CTX_SWITCH(bcast, use_idx, out->ctx, lhs_off, rhs_off, {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (SDDMMCsrKernel<
             Idx, DType, Op, UseBcast, UseIdx, LhsTarget, RhsTarget>),
         nblks, nthrs, 0, stream, lhs_data, rhs_data, out_data, indptr, indices,

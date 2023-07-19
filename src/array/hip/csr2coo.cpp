@@ -86,7 +86,7 @@ COOMatrix CSRToCOO<kDGLCUDA, int64_t>(CSRMatrix csr) {
 
   const int nt = 256;
   const int nb = (nnz + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _RepeatKernel, nb, nt, 0, stream, rowids.Ptr<int64_t>(),
       csr.indptr.Ptr<int64_t>(), ret_row.Ptr<int64_t>(), csr.num_rows, nnz);
 

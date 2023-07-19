@@ -38,7 +38,7 @@ bool CSRIsNonZero(CSRMatrix csr, int64_t row, int64_t col) {
   IdArray out = aten::NewIdArray(1, ctx, sizeof(IdType) * 8);
   const IdType* data = nullptr;
   // TODO(minjie): use binary search for sorted csr
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       dgl::cuda::_LinearSearchKernel, 1, 1, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), data, rows.Ptr<IdType>(), cols.Ptr<IdType>(),
       1, 1, 1, static_cast<IdType*>(nullptr), static_cast<IdType>(-1),
@@ -68,7 +68,7 @@ NDArray CSRIsNonZero(CSRMatrix csr, NDArray row, NDArray col) {
   const IdType* indices_data =
       static_cast<IdType*>(GetDevicePointer(csr.indices));
   // TODO(minjie): use binary search for sorted csr
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       dgl::cuda::_LinearSearchKernel, nb, nt, 0, stream, indptr_data,
       indices_data, data, row.Ptr<IdType>(), col.Ptr<IdType>(), row_stride,
       col_stride, rstlen, static_cast<IdType*>(nullptr),
@@ -113,7 +113,7 @@ bool CSRHasDuplicate(CSRMatrix csr) {
       static_cast<int8_t*>(device->AllocWorkspace(ctx, csr.num_rows));
   const int nt = dgl::cuda::FindNumThreads(csr.num_rows);
   const int nb = (csr.num_rows + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SegmentHasNoDuplicate, nb, nt, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), csr.num_rows, flags);
   bool ret = dgl::cuda::AllTrue(flags, csr.num_rows, ctx);
@@ -159,7 +159,7 @@ NDArray CSRGetRowNNZ(CSRMatrix csr, NDArray rows) {
   IdType* rst_data = static_cast<IdType*>(rst->data);
   const int nt = dgl::cuda::FindNumThreads(len);
   const int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _CSRGetRowNNZKernel, nb, nt, 0, stream, vid_data, indptr_data, rst_data,
       len);
   return rst;
@@ -270,13 +270,13 @@ CSRMatrix CSRSliceRows(CSRMatrix csr, NDArray rows) {
       CSRHasData(csr) ? static_cast<IdType*>(GetDevicePointer(csr.data))
                       : nullptr;
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SegmentCopyKernel, nb, nt, 0, stream, indptr_data, indices_data,
       rows.Ptr<IdType>(), nnz, len, ret_indptr.Ptr<IdType>(),
       ret_indices.Ptr<IdType>());
   // Copy data.
   IdArray ret_data = NDArray::Empty({nnz}, csr.indptr->dtype, rows->ctx);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SegmentCopyKernel, nb, nt, 0, stream, indptr_data, data_data,
       rows.Ptr<IdType>(), nnz, len, ret_indptr.Ptr<IdType>(),
       ret_data.Ptr<IdType>());
@@ -379,7 +379,7 @@ std::vector<NDArray> CSRGetDataAndIndices(
   IdArray mask = Full(0, nnz, nbits, ctx);
   const int nt = dgl::cuda::FindNumThreads(len);
   const int nb = (len + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SegmentMaskKernel, nb, nt, 0, stream, indptr_data, indices_data,
       row.Ptr<IdType>(), col.Ptr<IdType>(), row_stride, col_stride, len,
       mask.Ptr<IdType>());
@@ -393,7 +393,7 @@ std::vector<NDArray> CSRGetDataAndIndices(
   IdArray ret_row = NewIdArray(idx->shape[0], ctx, nbits);
   const int nt2 = dgl::cuda::FindNumThreads(idx->shape[0]);
   const int nb2 = (idx->shape[0] + nt - 1) / nt;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       _SortedSearchKernel, nb2, nt2, 0, stream, indptr_data, csr.num_rows,
       idx.Ptr<IdType>(), idx->shape[0], ret_row.Ptr<IdType>());
 
@@ -582,7 +582,7 @@ CSRMatrix CSRSliceMatrix(
   IdArray mask = Full(0, csr.indices->shape[0], nbits, ctx);
   // A count for how many masked values per row.
   IdArray count = NewIdArray(csr.num_rows, ctx, nbits);
-  CUDA_CALL(
+  HIP_CALL(
       hipMemset(count.Ptr<IdType>(), 0, sizeof(IdType) * (csr.num_rows)));
 
   // Generate a NodeQueryHashmap buffer. The key of the hashmap is col.
@@ -618,7 +618,7 @@ CSRMatrix CSRSliceMatrix(
       dgl::cuda::FindNumBlocks<'x'>((num_rows + TILE_SIZE - 1) / TILE_SIZE);
   const dim3 nthrs(WARP_SIZE, BLOCK_WARPS);
   const dim3 nblks(nb);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_SegmentMaskColKernel<IdType, WARP_SIZE, BLOCK_WARPS, TILE_SIZE>), nblks,
       nthrs, 0, stream, indptr_data, indices_data, num_rows,
       hashmap_buffer.Ptr<IdType>(), buffer_size, mask.Ptr<IdType>(),

@@ -50,7 +50,7 @@ void SpMMCsrHetero(
       if (m == 0) continue;
       DType* out = static_cast<DType*>(device->AllocWorkspace(
           vec_csr[0].indptr->ctx, m * n * sizeof(DType)));
-      CUDA_CALL(hipMemset(out, 0, m * n * sizeof(DType)));
+      HIP_CALL(hipMemset(out, 0, m * n * sizeof(DType)));
       trans_out[ntype] = out;
     }
   }

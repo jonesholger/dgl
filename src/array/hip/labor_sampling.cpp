@@ -332,7 +332,7 @@ void compute_importance_sampling_probabilities(
   {  // extracts the onehop neighborhood cols to a contiguous range into hop_1
     const dim3 block(BLOCK_SIZE);
     const dim3 grid((hop_size + BLOCK_SIZE - 1) / BLOCK_SIZE);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CSRRowWiseOneHopExtractorKernel<IdType, FloatType>), grid, block, 0,
         stream, random_seed, hop_size, rows, indptr, subindptr, indices,
         idx_coo, nids, weighted ? A : nullptr, rands, hop_1, A_l);
@@ -356,13 +356,13 @@ void compute_importance_sampling_probabilities(
 
     {
       std::size_t temp_storage_bytes = 0;
-      CUDA_CALL(hipcub::DeviceRadixSort::SortKeys(
+      HIP_CALL(hipcub::DeviceRadixSort::SortKeys(
           nullptr, temp_storage_bytes, hop_b, hop_size, 0, max_log_num_vertices,
           stream));
 
       auto temp = allocator.alloc_unique<char>(temp_storage_bytes);
 
-      CUDA_CALL(hipcub::DeviceRadixSort::SortKeys(
+      HIP_CALL(hipcub::DeviceRadixSort::SortKeys(
           temp.get(), temp_storage_bytes, hop_b, hop_size, 0,
           max_log_num_vertices, stream));
     }
@@ -372,13 +372,13 @@ void compute_importance_sampling_probabilities(
 
     {
       std::size_t temp_storage_bytes = 0;
-      CUDA_CALL(hipcub::DeviceRunLengthEncode::Encode(
+      HIP_CALL(hipcub::DeviceRunLengthEncode::Encode(
           nullptr, temp_storage_bytes, hop_b.Current(), hop_unique.get(),
           hop_counts.get(), hop_unique_size.get(), hop_size, stream));
 
       auto temp = allocator.alloc_unique<char>(temp_storage_bytes);
 
-      CUDA_CALL(hipcub::DeviceRunLengthEncode::Encode(
+      HIP_CALL(hipcub::DeviceRunLengthEncode::Encode(
           temp.get(), temp_storage_bytes, hop_b.Current(), hop_unique.get(),
           hop_counts.get(), hop_unique_size.get(), hop_size, stream));
 
@@ -443,7 +443,7 @@ void compute_importance_sampling_probabilities(
       constexpr int TILE_SIZE = BLOCK_CTAS;
       const dim3 block(CTA_SIZE, BLOCK_CTAS);
       const dim3 grid((num_rows + TILE_SIZE - 1) / TILE_SIZE);
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           (_CSRRowWiseLayerSampleDegreeKernel<
               IdType, FloatType, BLOCK_CTAS, TILE_SIZE>),
           grid, block, 0, stream, (IdType)num_picks, num_rows, rows, cs,
@@ -515,11 +515,11 @@ std::pair<COOMatrix, FloatArray> CSRLaborSampling(
     auto ds_d2s = thrust::make_zip_iterator(ds, d2s);
 
     size_t prefix_temp_size = 0;
-    CUDA_CALL(hipcub::DeviceSegmentedReduce::Reduce(
+    HIP_CALL(hipcub::DeviceSegmentedReduce::Reduce(
         nullptr, prefix_temp_size, A_A2, ds_d2s, num_rows, b_offsets, e_offsets,
         TupleSum{}, thrust::make_tuple((FloatType)0, (FloatType)0), stream));
     auto temp = allocator.alloc_unique<char>(prefix_temp_size);
-    CUDA_CALL(hipcub::DeviceSegmentedReduce::Reduce(
+    HIP_CALL(hipcub::DeviceSegmentedReduce::Reduce(
         temp.get(), prefix_temp_size, A_A2, ds_d2s, num_rows, b_offsets,
         e_offsets, TupleSum{}, thrust::make_tuple((FloatType)0, (FloatType)0),
         stream));
@@ -539,11 +539,11 @@ std::pair<COOMatrix, FloatArray> CSRLaborSampling(
   IdType hop_size;
   {
     size_t prefix_temp_size = 0;
-    CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+    HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
         nullptr, prefix_temp_size, in_deg.get(), subindptr, num_rows + 1,
         stream));
     auto temp = allocator.alloc_unique<char>(prefix_temp_size);
-    CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+    HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
         temp.get(), prefix_temp_size, in_deg.get(), subindptr, num_rows + 1,
         stream));
 
@@ -573,7 +573,7 @@ std::pair<COOMatrix, FloatArray> CSRLaborSampling(
     constexpr int TILE_SIZE = BLOCK_CTAS;
     const dim3 block(CTA_SIZE, BLOCK_CTAS);
     const dim3 grid((num_rows + TILE_SIZE - 1) / TILE_SIZE);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_CSRRowWiseLayerSampleDegreeKernel<
             IdType, FloatType, BLOCK_CTAS, TILE_SIZE>),
         grid, block, 0, stream, (IdType)num_picks, num_rows, rows, cs, ds, d2s,

@@ -118,22 +118,22 @@ template <typename IdType>
 bool Colorize(IdType *result_data, int64_t num_nodes, float *const prop) {
   // initial done signal
   hipStream_t stream = runtime::getCurrentCUDAStream();
-  CUDA_KERNEL_CALL(init_done_kernel, 1, 1, 0, stream);
+  HIP_KERNEL_CALL(init_done_kernel, 1, 1, 0, stream);
 
   // generate color prop for each node
   uint64_t seed = dgl::RandomEngine::ThreadLocal()->RandInt(UINT64_MAX);
   auto num_threads = cuda::FindNumThreads(num_nodes);
   auto num_blocks = cuda::FindNumBlocks<'x'>(BLOCKS(num_nodes, num_threads));
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       generate_uniform_kernel, num_blocks, num_threads, 0, stream, prop,
       num_nodes, seed);
 
   // call kernel
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       colorize_kernel, num_blocks, num_threads, 0, stream, prop, num_nodes,
       result_data);
   bool done_h = false;
-  CUDA_CALL(hipMemcpyFromSymbol(
+  HIP_CALL(hipMemcpyFromSymbol(
       &done_h, HIP_SYMBOL(done_d), sizeof(done_h), 0, hipMemcpyDeviceToHost));
   return done_h;
 }
@@ -179,11 +179,11 @@ void WeightedNeighborMatching(
   auto num_threads = cuda::FindNumThreads(num_nodes);
   auto num_blocks = cuda::FindNumBlocks<'x'>(BLOCKS(num_nodes, num_threads));
   while (!Colorize<IdType>(result_data, num_nodes, prop)) {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         weighted_propose_kernel, num_blocks, num_threads, 0, stream,
         indptr_data, indices_data, weight_data, num_nodes, proposal_data,
         result_data);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         weighted_respond_kernel, num_blocks, num_threads, 0, stream,
         indptr_data, indices_data, weight_data, num_nodes, proposal_data,
         result_data);
@@ -224,7 +224,7 @@ void NeighborMatching(const aten::CSRMatrix &csr, IdArray result) {
   uint64_t seed = dgl::RandomEngine::ThreadLocal()->RandInt(UINT64_MAX);
   auto num_threads = cuda::FindNumThreads(num_edges);
   auto num_blocks = cuda::FindNumBlocks<'x'>(BLOCKS(num_edges, num_threads));
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       generate_uniform_kernel, num_blocks, num_threads, 0, stream, weight_data,
       num_edges, seed);
 

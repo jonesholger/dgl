@@ -15,6 +15,8 @@
 #include <cuda_runtime.h>
 #endif  // DGL_USE_CUDA
 
+#include <hip/hip_runtime_api.h>
+
 namespace tensoradapter {
 
 extern "C" {
@@ -110,7 +112,6 @@ void CUDARecordHostAlloc(
  */
 void CUDAHostAllocatorEmptyCache();
 
-#endif  // DGL_USE_CUDA
 }
 
 };  // namespace tensoradapter

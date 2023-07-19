@@ -30,12 +30,12 @@
       const auto device = runtime::DeviceAPI::Get(ctx);                       \
       (LHS_OFF) = static_cast<int64_t *>(device->AllocWorkspace(              \
           ctx, sizeof(int64_t) * info.lhs_offset.size()));                    \
-      CUDA_CALL(hipMemcpy(                                                   \
+      HIP_CALL(hipMemcpy(                                                   \
           (LHS_OFF), &info.lhs_offset[0],                                     \
           sizeof(int64_t) * info.lhs_offset.size(), hipMemcpyHostToDevice)); \
       (RHS_OFF) = static_cast<int64_t *>(device->AllocWorkspace(              \
           ctx, sizeof(int64_t) * info.rhs_offset.size()));                    \
-      CUDA_CALL(hipMemcpy(                                                   \
+      HIP_CALL(hipMemcpy(                                                   \
           (RHS_OFF), &info.rhs_offset[0],                                     \
           sizeof(int64_t) * info.rhs_offset.size(), hipMemcpyHostToDevice)); \
       if ((EDGE_MAP)) {                                                       \

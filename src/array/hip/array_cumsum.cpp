@@ -33,12 +33,12 @@ IdArray CumSum(IdArray array, bool prepend_zero) {
   }
   // Allocate workspace
   size_t workspace_size = 0;
-  CUDA_CALL(hipcub::DeviceScan::InclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::InclusiveSum(
       nullptr, workspace_size, in_d, out_d, len, stream));
   void* workspace = device->AllocWorkspace(array->ctx, workspace_size);
 
   // Compute cumsum
-  CUDA_CALL(hipcub::DeviceScan::InclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::InclusiveSum(
       workspace, workspace_size, in_d, out_d, len, stream));
 
   device->FreeWorkspace(array->ctx, workspace);

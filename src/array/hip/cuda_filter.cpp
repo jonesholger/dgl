@@ -65,7 +65,7 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
     const dim3 block(256);
     const dim3 grid((size + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (_IsInKernel<IdType, include>), grid, block, 0, cudaStream,
         table.DeviceHandle(), static_cast<const IdType*>(test->data), size,
         prefix);
@@ -74,12 +74,12 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
   // generate prefix-sum
   {
     size_t workspace_bytes;
-    CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+    HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
         nullptr, workspace_bytes, static_cast<IdType*>(nullptr),
         static_cast<IdType*>(nullptr), size + 1, cudaStream));
     void* workspace = device->AllocWorkspace(ctx, workspace_bytes);
 
-    CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+    HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
         workspace, workspace_bytes, prefix, prefix, size + 1, cudaStream));
     device->FreeWorkspace(ctx, workspace);
   }
@@ -95,7 +95,7 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
     const dim3 block(256);
     const dim3 grid((size + block.x - 1) / block.x);
 
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         _InsertKernel, grid, block, 0, cudaStream, prefix, size,
         static_cast<IdType*>(result->data));
   }

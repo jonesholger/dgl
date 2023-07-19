@@ -309,7 +309,7 @@ void GatherMM(
   const int nbx = ((tot_num_rows * warp_size + ntx - 1) / ntx);
   const dim3 nblks(nbx);
   const dim3 nthrs(ntx);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (cuda::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
       A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
       idx_b.Ptr<IdType>(), nullptr, tot_num_rows, in_len, out_len);
@@ -344,7 +344,7 @@ void GatherMMScatter(
   const dim3 nblks(nbx);
   const dim3 nthrs(ntx);
   if (B->ndim == 3) {
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (cuda::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
         A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
         idx_b.Ptr<IdType>(), idx_c.Ptr<IdType>(), tot_num_rows, in_len,
@@ -353,7 +353,7 @@ void GatherMMScatter(
     // Custom kernel for W_grad[idx_c[i]] = H^T[i] * C.grad[i]
     // This kernel accesses rows of A in a transposed way w/o explicitly
     // converting A
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         (cuda::GatherMMScatterKernel2<IdType, DType>), nblks, nthrs, 0, stream,
         A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
         idx_b.Ptr<IdType>(), idx_c.Ptr<IdType>(), tot_num_rows, in_len,

@@ -485,7 +485,7 @@ void BruteForceKNNCuda(
 
   const int64_t block_size = cuda::FindNumThreads(query_points->shape[0]);
   const int64_t num_blocks = (query_points->shape[0] - 1) / block_size + 1;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       BruteforceKnnKernel, num_blocks, block_size, 0, stream, data_points_data,
       data_offsets_data, query_points_data, query_offsets_data, k, dists,
       query_out, data_out, batch_size, feature_size);
@@ -529,7 +529,7 @@ void BruteForceKNNSharedCuda(
   // get max shared memory per block in bytes
   // determine block size according to this value
   int max_sharedmem_per_block = 0;
-  CUDA_CALL(hipDeviceGetAttribute(
+  HIP_CALL(hipDeviceGetAttribute(
       &max_sharedmem_per_block, hipDeviceAttributeMaxSharedMemoryPerBlock,
       ctx.device_id));
   const int64_t single_shared_mem = static_cast<int64_t>(Pow2Align<size_t>(
@@ -549,21 +549,21 @@ void BruteForceKNNSharedCuda(
   // block size for GetNumBlockPerSegment computation
   int64_t temp_block_size = cuda::FindNumThreads(batch_size);
   int64_t temp_num_blocks = (batch_size - 1) / temp_block_size + 1;
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       GetNumBlockPerSegment, temp_num_blocks, temp_block_size, 0, stream,
       query_offsets_data, num_block_per_segment, batch_size, block_size);
   size_t prefix_temp_size = 0;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       nullptr, prefix_temp_size, num_block_per_segment, num_block_prefixsum,
       batch_size, stream));
   void* prefix_temp = device->AllocWorkspace(ctx, prefix_temp_size);
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       prefix_temp, prefix_temp_size, num_block_per_segment, num_block_prefixsum,
       batch_size, stream));
   device->FreeWorkspace(ctx, prefix_temp);
 
   // wait for results
-  CUDA_CALL(hipStreamSynchronize(stream));
+  HIP_CALL(hipStreamSynchronize(stream));
 
   int64_t num_blocks = 0, final_elem = 0,
           copyoffset = (batch_size - 1) * sizeof(IdType);
@@ -583,14 +583,14 @@ void BruteForceKNNSharedCuda(
       device->AllocWorkspace(ctx, num_blocks * sizeof(IdType)));
   IdType* local_block_id = static_cast<IdType*>(
       device->AllocWorkspace(ctx, num_blocks * sizeof(IdType)));
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       GetBlockInfo, temp_num_blocks, temp_block_size, 0, stream,
       num_block_prefixsum, block_batch_id, local_block_id, batch_size,
       num_blocks);
 
   FloatType* dists = static_cast<FloatType*>(device->AllocWorkspace(
       ctx, k * query_points->shape[0] * sizeof(FloatType)));
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       BruteforceKnnShareKernel, num_blocks, block_size,
       single_shared_mem * block_size, stream, data_points_data,
       data_offsets_data, query_points_data, query_offsets_data, block_batch_id,
@@ -887,7 +887,7 @@ void NNDescent(
   IdType* neighbors = central_nodes + k * num_nodes;
   uint64_t seed;
   int warp_size = 0;
-  CUDA_CALL(
+  HIP_CALL(
       hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, ctx.device_id));
   // We don't need large block sizes, since there's not much inter-thread
   // communication
@@ -912,7 +912,7 @@ void NNDescent(
   IdType* total_num_updates_d =
       static_cast<IdType*>(device->AllocWorkspace(ctx, sizeof(IdType)));
 
-  CUDA_CALL(hipcub::DeviceReduce::Sum(
+  HIP_CALL(hipcub::DeviceReduce::Sum(
       nullptr, sum_temp_size, num_updates, total_num_updates_d, num_nodes,
       stream));
   IdType* sum_temp_storage =
@@ -921,7 +921,7 @@ void NNDescent(
   // random initialize neighbors
   seed = RandomEngine::ThreadLocal()->RandInt<uint64_t>(
       std::numeric_limits<uint64_t>::max());
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       impl::RandomInitNeighborsKernel, num_blocks, block_size, 0, stream,
       points_data, offsets_data, central_nodes, neighbors, distances, flags, k,
       feature_size, batch_size, seed);
@@ -930,20 +930,20 @@ void NNDescent(
     // select candidates
     seed = RandomEngine::ThreadLocal()->RandInt<uint64_t>(
         std::numeric_limits<uint64_t>::max());
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         impl::FindCandidatesKernel, num_blocks, block_size, 0, stream,
         offsets_data, new_candidates, old_candidates, neighbors, flags, seed,
         batch_size, num_candidates, k);
 
     // update
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         impl::UpdateNeighborsKernel, num_blocks, block_size, 0, stream,
         points_data, offsets_data, neighbors, new_candidates, old_candidates,
         distances, flags, num_updates, batch_size, num_candidates, k,
         feature_size);
 
     total_num_updates = 0;
-    CUDA_CALL(hipcub::DeviceReduce::Sum(
+    HIP_CALL(hipcub::DeviceReduce::Sum(
         sum_temp_storage, sum_temp_size, num_updates, total_num_updates_d,
         num_nodes, stream));
     device->CopyDataFromTo(

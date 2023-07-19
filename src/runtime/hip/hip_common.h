@@ -75,6 +75,34 @@ inline bool is_zero<dim3>(dim3 size) {
   return size.x == 0 || size.y == 0 || size.z == 0;
 }
 
+#define HIP_DRIVER_CALL(x)                                             \
+  {                                                                     \
+    hipError_t result = x;                                                \
+    if (result != hipSuccess && result != hipErrorDeinitialized) { \
+      const char* msg;                                                  \
+      hipDrvGetErrorName(result, &msg);                                     \
+      LOG(FATAL) << "HIPError: " #x " failed with error: " << msg;     \
+    }                                                                   \
+  }
+
+#define HIP_CALL(func)                                      \
+  {                                                          \
+    hipError_t e = (func);                                  \
+    CHECK(e == hipSuccess || e == hipErrorDeinitialized) \
+        << "HIP: " << hipGetErrorString(e);                \
+  }
+
+#define HIP_KERNEL_CALL(kernel, nblks, nthrs, shmem, stream, ...)            \
+  {                                                                           \
+    if (!dgl::runtime::is_zero((nblks)) && !dgl::runtime::is_zero((nthrs))) { \
+      (kernel)<<<(nblks), (nthrs), (shmem), (stream)>>>(__VA_ARGS__);         \
+      hipError_t e = hipGetLastError();                                     \
+      CHECK(e == hipSuccess || e == hipErrorDeinitialized)                \
+          << "HIP kernel launch error: " << hipGetErrorString(e);           \
+    }                                                                         \
+  }
+
+
 #define HIPSPARSE_CALL(func)                                         \
   {                                                                 \
     hipsparseStatus_t e = (func);                                    \

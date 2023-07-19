@@ -3,7 +3,7 @@ ml rocm/5.5.0
 ml rocmcc/5.5.0-magic
 ml python/3.9.12
 ml cmake/3.24.2
-TORCH_BASE=/usr/workspace/st/envs/amd/pytorch-2.0.0/lib/python3.9/site-packages/torch/lib
+TORCH_BASE=/g/g0/holger/workspace/venv/amd/lib/python3.9/site-packages/torch/lib
 COMP_ARCH=gfx90a
 cmake  \
     -DCMAKE_CXX_COMPILER=amdclang++ \

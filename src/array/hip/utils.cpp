@@ -17,10 +17,10 @@ bool AllTrue(int8_t* flags, int64_t length, const DGLContext& ctx) {
   // Call CUB's reduction
   size_t workspace_size = 0;
   hipStream_t stream = runtime::getCurrentCUDAStream();
-  CUDA_CALL(hipcub::DeviceReduce::Min(
+  HIP_CALL(hipcub::DeviceReduce::Min(
       nullptr, workspace_size, flags, rst, length, stream));
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
-  CUDA_CALL(hipcub::DeviceReduce::Min(
+  HIP_CALL(hipcub::DeviceReduce::Min(
       workspace, workspace_size, flags, rst, length, stream));
   int8_t cpu_rst = GetCUDAScalar(device, ctx, rst);
   device->FreeWorkspace(ctx, workspace);

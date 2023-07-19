@@ -40,7 +40,7 @@ NDArray IndexSelectCPUFromGPU(NDArray array, IdArray index) {
   if (num_feat == 1) {
     const int nt = cuda::FindNumThreads(len);
     const int nb = (len + nt - 1) / nt;
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         IndexSelectSingleKernel, nb, nt, 0, stream, array_data, idx_data, len,
         arr_len, ret_data);
   } else {
@@ -51,11 +51,11 @@ NDArray IndexSelectCPUFromGPU(NDArray array, IdArray index) {
     }
     const dim3 grid((len + block.y - 1) / block.y);
     if (num_feat * sizeof(DType) < 2 * CACHE_LINE_SIZE) {
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           IndexSelectMultiKernel, grid, block, 0, stream, array_data, num_feat,
           idx_data, len, arr_len, ret_data);
     } else {
-      CUDA_KERNEL_CALL(
+      HIP_KERNEL_CALL(
           IndexSelectMultiKernelAligned, grid, block, 0, stream, array_data,
           num_feat, idx_data, len, arr_len, ret_data);
     }
@@ -97,7 +97,7 @@ void IndexScatterGPUToCPU(NDArray dest, IdArray index, NDArray source) {
   if (num_feat == 1) {
     const int nt = cuda::FindNumThreads(len);
     const int nb = (len + nt - 1) / nt;
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         IndexScatterSingleKernel, nb, nt, 0, stream, source_data, idx_data, len,
         arr_len, dest_data);
   } else {
@@ -107,7 +107,7 @@ void IndexScatterGPUToCPU(NDArray dest, IdArray index, NDArray source) {
       block.y *= 2;
     }
     const dim3 grid((len + block.y - 1) / block.y);
-    CUDA_KERNEL_CALL(
+    HIP_KERNEL_CALL(
         IndexScatterMultiKernel, grid, block, 0, stream, source_data, num_feat,
         idx_data, len, arr_len, dest_data);
   }

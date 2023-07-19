@@ -58,7 +58,7 @@ void BuildNodeMaps(
     std::vector<IdArray> *const unique_nodes_device, hipStream_t stream) {
   const int64_t num_ntypes = static_cast<int64_t>(input_nodes.size());
 
-  CUDA_CALL(hipMemsetAsync(
+  HIP_CALL(hipMemsetAsync(
       count_unique_device, 0, num_ntypes * sizeof(*count_unique_device),
       stream));
 

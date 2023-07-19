@@ -132,7 +132,7 @@ void GESpMMCsr(
   const dim3 nthrs(ntx, nty);
   const int sh_mem_size = 0;
 
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (GESpMMKernel<Idx, DType, BinaryOp>), nblks, nthrs, sh_mem_size, stream,
       ufeat_data, efeat_data, out_data, indptr, indices, csr.num_rows,
       csr.num_cols, feat_len);
