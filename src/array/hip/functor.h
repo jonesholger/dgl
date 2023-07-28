@@ -1,7 +1,7 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/functor.cuh
- * @brief Functors for template on CUDA
+ * @file array/hip/functor.h
+ * @brief Functors for template on HIP
  */
 #ifndef DGL_ARRAY_CUDA_FUNCTOR_CUH_
 #define DGL_ARRAY_CUDA_FUNCTOR_CUH_
@@ -9,15 +9,15 @@
 #include <cmath>
 #include <limits>
 
-#include "./atomic.cuh"
-#include "./fp16.cuh"
-#include "bf16.cuh"
+#include "./atomic.h"
+#include "./fp16.h"
+#include "bf16.h"
 
 namespace dgl {
 namespace aten {
-namespace cuda {
+namespace hip {
 
-/////////////////////////// CUDA binary operators //////////////////////////////
+/////////////////////////// HIP binary operators //////////////////////////////
 namespace binary {
 template <typename DType>
 struct Add {
@@ -158,7 +158,7 @@ struct _Sum {
     if (!atomic) {
       *out_buf += val;
     } else {
-      cuda::AtomicAdd(out_buf, val);
+      hip::AtomicAdd(out_buf, val);
     }
   }
   static __device__ __forceinline__ void Call(
@@ -166,7 +166,7 @@ struct _Sum {
     if (!atomic) {
       *out_buf += val;
     } else {
-      cuda::AtomicAdd(out_buf, val);
+      hip::AtomicAdd(out_buf, val);
     }
   }
   static __device__ __forceinline__ void CallArg(
@@ -177,6 +177,7 @@ struct _Sum {
 template <typename Idx, typename DType, bool atomic = false>
 struct Sum : _Sum<Idx, DType, atomic> {};
 
+#ifdef DGL_ENABLE_HALF
 template <typename Idx, bool atomic>
 struct Sum<Idx, __half, atomic> : _Sum<Idx, __half, atomic> {
   static constexpr __host__ __device__ __forceinline__ __half zero() {
@@ -192,6 +193,7 @@ struct Sum<Idx, __half, atomic> : _Sum<Idx, __half, atomic> {
       __half *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Sum<Idx, __half, atomic>::Call(out_buf, arg_buf, val, id);
   }
+
   // sometimes we have to use float in reduction for better precision
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_u_buf, Idx *arg_e_buf,
@@ -199,12 +201,14 @@ struct Sum<Idx, __half, atomic> : _Sum<Idx, __half, atomic> {
     _Sum<Idx, float, atomic>::Call(out_buf, arg_u_buf, arg_e_buf,
         static_cast<float>(val), uid, eid);
   }
+  
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Sum<Idx, float, atomic>::Call(out_buf, arg_buf,
         static_cast<float>(val), id);
   }
 };
+#endif // DGL_ENABLE_HALF
 
 #if BF16_ENABLED
 template <typename Idx, bool atomic>
@@ -253,7 +257,7 @@ struct _Max {
         *arg_e_buf = eid;
       }
     } else {
-      cuda::AtomicMax(out_buf, val);
+      hip::AtomicMax(out_buf, val);
     }
   }
   static __device__ __forceinline__ void Call(
@@ -264,7 +268,7 @@ struct _Max {
         *arg_buf = id;
       }
     } else {
-      cuda::AtomicMax(out_buf, val);
+      hip::AtomicMax(out_buf, val);
     }
   }
   static __device__ __forceinline__ void CallArg(
@@ -282,6 +286,7 @@ struct _Max {
 template <typename Idx, typename DType, bool atomic = false>
 struct Max : _Max<Idx, DType, atomic> {};
 
+#ifdef DGL_ENABLE_HALF
 template <typename Idx, bool atomic>
 struct Max<Idx, __half, atomic> : _Max<Idx, __half, atomic> {
   static constexpr __host__ __device__ __forceinline__ __half zero() {
@@ -297,6 +302,7 @@ struct Max<Idx, __half, atomic> : _Max<Idx, __half, atomic> {
       __half *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Max<Idx, __half, atomic>::Call(out_buf, arg_buf, val, id);
   }
+  
   // sometimes we have to use float in reduction for better precision
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_u_buf, Idx *arg_e_buf,
@@ -304,12 +310,14 @@ struct Max<Idx, __half, atomic> : _Max<Idx, __half, atomic> {
     _Max<Idx, float, atomic>::Call(out_buf, arg_u_buf, arg_e_buf,
         static_cast<float>(val), uid, eid);
   }
+  
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Max<Idx, float, atomic>::Call(out_buf, arg_buf,
         static_cast<float>(val), id);
   }
 };
+#endif // DGL_ENABLE_HALF
 
 #if BF16_ENABLED
 template <typename Idx, bool atomic>
@@ -358,9 +366,10 @@ struct _Min {
         *arg_e_buf = eid;
       }
     } else {
-      cuda::AtomicMin(out_buf, val);
+      hip::AtomicMin(out_buf, val);
     }
   }
+  
   static __device__ __forceinline__ void Call(
       DType *out_buf, Idx *arg_buf, DType val, Idx id) {
     if (!atomic) {
@@ -369,7 +378,7 @@ struct _Min {
         *arg_buf = id;
       }
     } else {
-      cuda::AtomicMin(out_buf, val);
+      hip::AtomicMin(out_buf, val);
     }
   }
   static __device__ __forceinline__ void CallArg(
@@ -387,6 +396,7 @@ struct _Min {
 template <typename Idx, typename DType, bool atomic = false>
 struct Min : _Min<Idx, DType, atomic> {};
 
+#ifdef DGL_ENABLE_HALF
 template <typename Idx, bool atomic>
 struct Min<Idx, __half, atomic> : _Min<Idx, __half, atomic> {
   static constexpr __host__ __device__ __forceinline__ __half zero() {
@@ -402,6 +412,7 @@ struct Min<Idx, __half, atomic> : _Min<Idx, __half, atomic> {
       __half *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Min<Idx, __half, atomic>::Call(out_buf, arg_buf, val, id);
   }
+  
   // sometimes we have to use float in reduction for better precision
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_u_buf, Idx *arg_e_buf,
@@ -409,12 +420,15 @@ struct Min<Idx, __half, atomic> : _Min<Idx, __half, atomic> {
     _Min<Idx, float, atomic>::Call(out_buf, arg_u_buf, arg_e_buf,
         static_cast<float>(val), uid, eid);
   }
+  
   static __device__ __forceinline__ void Call(
       float *out_buf, Idx *arg_buf, __half val, Idx id) {
     _Min<Idx, float, atomic>::Call(out_buf, arg_buf,
         static_cast<float>(val), id);
   }
+
 };
+#endif
 
 #if BF16_ENABLED
 template <typename Idx, bool atomic>
@@ -449,7 +463,7 @@ struct Min<Idx, __nv_bfloat16, atomic> : _Min<Idx, __nv_bfloat16, atomic> {
 
 }  // namespace reduce
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 

@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/spmat_op_impl_coo.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/spmat_op_impl_coo.cu' statisitics:
   CONVERTED refs count: 3
   TOTAL lines of code: 139
   WARNINGS: 0

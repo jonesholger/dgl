@@ -5,17 +5,17 @@
  * @brief Device level functions for within cuda kernels.
  */
 
-#ifndef DGL_RUNTIME_CUDA_CUDA_HASHTABLE_CUH_
-#define DGL_RUNTIME_CUDA_CUDA_HASHTABLE_CUH_
+#ifndef DGL_RUNTIME_HIP_HASHTABLE_H_
+#define DGL_RUNTIME_HIP_HASHTABLE_H_
 
 #include <dgl/runtime/c_runtime_api.h>
 
-#include "cuda_common.h"
+#include "hip_common.h"
 #include "hip/hip_runtime.h"
 
 namespace dgl {
 namespace runtime {
-namespace cuda {
+namespace hip {
 
 template <typename>
 class OrderedHashTable;
@@ -101,6 +101,7 @@ class DeviceOrderedHashTable {
    *
    * @return An iterator to the mapping.
    */
+  //inline __host__ __device__ ConstIterator Search(const IdType id) const {
   inline __device__ ConstIterator Search(const IdType id) const {
     const IdType pos = SearchForPosition(id);
 
@@ -114,6 +115,7 @@ class DeviceOrderedHashTable {
    *
    * @return True if the key exists in the hashtable.
    */
+  //inline __host__ __device__ bool Contains(const IdType id) const {
   inline __device__ bool Contains(const IdType id) const {
     IdType pos = Hash(id);
 
@@ -127,7 +129,6 @@ class DeviceOrderedHashTable {
     }
     return false;
   }
-
  protected:
   // Must be uniform bytes for memset to work
   static constexpr IdType kEmptyKey = static_cast<IdType>(-1);
@@ -153,6 +154,7 @@ class DeviceOrderedHashTable {
    *
    * @return The the position of the item in the hashtable.
    */
+  //inline __host__ __device__ IdType SearchForPosition(const IdType id) const {
   inline __device__ IdType SearchForPosition(const IdType id) const {
     IdType pos = Hash(id);
 
@@ -175,8 +177,8 @@ class DeviceOrderedHashTable {
    *
    * @return The hash.
    */
+  //inline __host__ __device__ size_t Hash(const IdType id) const { return id % size_; }
   inline __device__ size_t Hash(const IdType id) const { return id % size_; }
-
   friend class OrderedHashTable<IdType>;
 };
 
@@ -278,8 +280,8 @@ class OrderedHashTable {
   DGLContext ctx_;
 };
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace runtime
 }  // namespace dgl
 
-#endif  // DGL_RUNTIME_CUDA_CUDA_HASHTABLE_CUH_
+#endif  // DGL_RUNTIME_HIP_HASHTABLE_H_

@@ -7,8 +7,8 @@
 
 #include <dgl/runtime/device_api.h>
 
-#include "../../array/cuda/dgl_cub.cuh"
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../array/hip/dgl_cub.h"
+#include "../../runtime/hip/hip_common.h"
 #include "../../runtime/workspace.h"
 #include "../partition_op.h"
 
@@ -144,7 +144,6 @@ __device__ RangeType _SearchRange(
 
   return cur;
 }
-
 /**
  * @brief Kernel to map element IDs to partition IDs.
  *
@@ -239,7 +238,7 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRemainder(
 
   const auto& ctx = in_idx->ctx;
   auto device = DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int64_t num_in = in_idx->shape[0];
 
@@ -352,7 +351,7 @@ template std::pair<IdArray, IdArray> GeneratePermutationFromRemainder<
 template <DGLDeviceType XPU, typename IdType>
 IdArray MapToLocalFromRemainder(const int num_parts, IdArray global_idx) {
   const auto& ctx = global_idx->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   if (num_parts > 1) {
     IdArray local_idx =
@@ -387,7 +386,7 @@ IdArray MapToGlobalFromRemainder(
                        << num_parts;
 
   const auto& ctx = local_idx->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   if (num_parts > 1) {
     IdArray global_idx =
@@ -423,7 +422,7 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRange(
 
   const auto& ctx = in_idx->ctx;
   auto device = DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int64_t num_in = in_idx->shape[0];
 
@@ -536,7 +535,7 @@ template <DGLDeviceType XPU, typename IdType, typename RangeType>
 IdArray MapToLocalFromRange(
     const int num_parts, IdArray range, IdArray global_idx) {
   const auto& ctx = global_idx->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   if (num_parts > 1 && global_idx->shape[0] > 0) {
     IdArray local_idx =
@@ -576,7 +575,7 @@ IdArray MapToGlobalFromRange(
                        << num_parts;
 
   const auto& ctx = local_idx->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   if (num_parts > 1 && local_idx->shape[0] > 0) {
     IdArray global_idx =

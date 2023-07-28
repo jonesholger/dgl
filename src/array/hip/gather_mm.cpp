@@ -1,27 +1,27 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/gather_mm.cu
+ * @file array/hip/gather_mm.cu
  * @brief GatherMM C APIs and definitions.
  */
 #include <dgl/array.h>
 
 #include <algorithm>  // std::swap
 
-#include "./atomic.cuh"
-#include "./functor.cuh"
+#include "./atomic.h"
+#include "./functor.h"
 #include "./utils.h"
 
 namespace dgl {
-using namespace cuda;
+using namespace hip;
 namespace aten {
 
 namespace {
 
-/** @brief Call cuBLAS GEMM API for dense matmul operation for float and double.
+/** @brief Call hipBLAS GEMM API for dense matmul operation for float and double.
  */
 template <typename DType>
-hipblasStatus_t cublasGemm(
+hipblasStatus_t hipblasGemm(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
     int m, int n, int k, const DType* alpha, const DType* A, int lda,
     const DType* B, int ldb, const DType* beta, DType* C, int ldc) {
@@ -29,18 +29,21 @@ hipblasStatus_t cublasGemm(
   return HIPBLAS_STATUS_EXECUTION_FAILED;
 }
 
+/* no hipblassHgemm*/
+#ifdef DGL_ENABLE_HALF
 template <>
-hipblasStatus_t cublasGemm<__half>(
+hipblasStatus_t hipblasGemm<__half>(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
     int m, int n, int k, const __half* alpha, const __half* A, int lda,
     const __half* B, int ldb, const __half* beta, __half* C, int ldc) {
   return hipblasHgemm(
       handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }
+#endif
 
 #if BF16_ENABLED
 template <>
-hipblasStatus_t cublasGemm<__nv_bfloat16>(
+hipblasStatus_t hipblasGemm<__nv_bfloat16>(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
     int m, int n, int k, const __nv_bfloat16* alpha, const __nv_bfloat16* A,
     int lda, const __nv_bfloat16* B, int ldb, const __nv_bfloat16* beta,
@@ -55,7 +58,7 @@ hipblasStatus_t cublasGemm<__nv_bfloat16>(
 #endif  // BF16_ENABLED
 
 template <>
-hipblasStatus_t cublasGemm<float>(
+hipblasStatus_t hipblasGemm<float>(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
     int m, int n, int k, const float* alpha, const float* A, int lda,
     const float* B, int ldb, const float* beta, float* C, int ldc) {
@@ -64,7 +67,7 @@ hipblasStatus_t cublasGemm<float>(
 }
 
 template <>
-hipblasStatus_t cublasGemm<double>(
+hipblasStatus_t hipblasGemm<double>(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
     int m, int n, int k, const double* alpha, const double* A, int lda,
     const double* B, int ldb, const double* beta, double* C, int ldc) {
@@ -74,7 +77,7 @@ hipblasStatus_t cublasGemm<double>(
 
 }  // namespace
 
-namespace cuda {
+namespace hip {
 
 /**
  * @note Each row of A multiplies a segment of matrix of B of dimension in_len *
@@ -109,7 +112,7 @@ __global__ void GatherMMScatterKernel(
       // Load A in shared mem in a coalesced way
       for (unsigned int l = laneId; l < a_tile; l += 32)
         sh_A[local_row * sh_a_tile + l] = A[cur_rowA * in_len + (k_start + l)];
-      __syncwarp();
+      //__syncwarp();  not supported in hip : todo look for alt
 
       for (unsigned int outloop = 0; outloop < out_len; outloop += 32) {
         DType out_reg = static_cast<DType>(0.0f);  // thread private
@@ -123,7 +126,8 @@ __global__ void GatherMMScatterKernel(
                 a_val * B[B_offset + ((i + k_start) * out_len + (outloop + l))];
           }
           if (idx_c) {
-            AtomicAdd(C + cur_rowC * out_len + (outloop + l), out_reg);
+            //AtomicAdd(C + cur_rowC * out_len + (outloop + l), out_reg);
+            printf("todo use hip atomicAdd float in __half specialization with macro conversion\n");
           } else {
             C[cur_rowC * out_len + (outloop + l)] += out_reg;
           }
@@ -166,7 +170,7 @@ __global__ void GatherMMScatterKernel2(
       /* Load A in shared mem in a coalesced way */
       for (unsigned int l = laneId; l < a_tile; l += 32)
         sh_A[local_row * sh_a_tile + l] = A[row_a * in_len + (k_start + l)];
-      __syncwarp();
+      //__syncwarp();
 
       for (unsigned int outloop = 0; outloop < out_len; outloop += 32) {
         DType out_reg = static_cast<DType>(0.0f);  // thread private
@@ -178,7 +182,7 @@ __global__ void GatherMMScatterKernel2(
             const DType a_val = sh_A[local_row * sh_a_tile + i];
             const Idx C_idx =
                 C_offset + ((i + k_start) * out_len + (outloop + l));
-            AtomicAdd(C + C_idx, a_val * b_val);
+            //AtomicAdd(C + C_idx, a_val * b_val);  // todo atomicAdd(float) conversion
           }
         }
       }
@@ -186,7 +190,7 @@ __global__ void GatherMMScatterKernel2(
   }
 }
 
-}  // namespace cuda
+}  // namespace hip
 
 /**
  * @brief Implementation of Gather_mm operator. The input matrix A is
@@ -204,7 +208,7 @@ void SegmentMM(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans) {
   auto device = runtime::DeviceAPI::Get(A->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const DType* A_data = A.Ptr<DType>();
   const DType* B_data = B.Ptr<DType>();
   const IdType* seglen_A_data = seglen_A.Ptr<IdType>();
@@ -214,10 +218,10 @@ void SegmentMM(
   int64_t num_rel = seglen_A.NumElements();
   DType alpha = 1., beta = 0.;
 
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  if (!thr_entry->cublas_handle)
-    CUBLAS_CALL(hipblasCreate(&(thr_entry->cublas_handle)));
-  CUBLAS_CALL(hipblasSetStream(thr_entry->cublas_handle, stream));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  if (!thr_entry->hipblas_handle)
+    HIPBLAS_CALL(hipblasCreate(&(thr_entry->hipblas_handle)));
+  HIPBLAS_CALL(hipblasSetStream(thr_entry->hipblas_handle, stream));
 
   IdType m_offset = 0;
   for (IdType etype = 0; etype < num_rel; ++etype) {
@@ -234,8 +238,8 @@ void SegmentMM(
       ldb = n, lda = n, ldc = k;
       std::swap(n, k);
     }
-    CUBLAS_CALL(cublasGemm<DType>(
-        thr_entry->cublas_handle, transB, transA, n, m, k, &alpha,
+    HIPBLAS_CALL(hipblasGemm<DType>(
+        thr_entry->hipblas_handle, transB, transA, n, m, k, &alpha,
         B_data + B_offset, ldb, A_data + A_offset, lda, &beta,
         C_data + C_offset, ldc));
     A_offset += m * k;
@@ -249,7 +253,7 @@ template <int XPU, typename IdType, typename DType>
 void SegmentMMBackwardB(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen) {
   auto device = runtime::DeviceAPI::Get(A->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const DType* A_data = A.Ptr<DType>();
   const DType* dC_data = dC.Ptr<DType>();
   const IdType* seglen_data = seglen.Ptr<IdType>();
@@ -259,10 +263,10 @@ void SegmentMMBackwardB(
   int64_t num_rel = seglen.NumElements();
   DType alpha = 1., beta = 0.;
 
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  if (!thr_entry->cublas_handle)
-    CUBLAS_CALL(hipblasCreate(&(thr_entry->cublas_handle)));
-  CUBLAS_CALL(hipblasSetStream(thr_entry->cublas_handle, stream));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  if (!thr_entry->hipblas_handle)
+    HIPBLAS_CALL(hipblasCreate(&(thr_entry->hipblas_handle)));
+  HIPBLAS_CALL(hipblasSetStream(thr_entry->hipblas_handle, stream));
 
   IdType k_offset = 0;
   for (IdType etype = 0; etype < num_rel; ++etype) {
@@ -274,8 +278,8 @@ void SegmentMMBackwardB(
     int lddC = m, ldA = n, lddB = m;
     hipblasOperation_t trans_dC = HIPBLAS_OP_N;
     hipblasOperation_t trans_A = HIPBLAS_OP_T;
-    CUBLAS_CALL(cublasGemm<DType>(
-        thr_entry->cublas_handle, trans_dC, trans_A, m, n, k, &alpha,
+    HIPBLAS_CALL(hipblasGemm<DType>(
+        thr_entry->hipblas_handle, trans_dC, trans_A, m, n, k, &alpha,
         dC_data + dC_offset, lddC, A_data + A_offset, ldA, &beta,
         dB_data + dB_offset, lddB));
     dC_offset += m * k;
@@ -300,7 +304,7 @@ void GatherMM(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b) {
   auto device = runtime::DeviceAPI::Get(A->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int64_t out_len = B->shape[2];  // cols of B
   int64_t in_len = A->shape[1];   // cols of A
   const int64_t tot_num_rows = A->shape[0];
@@ -310,7 +314,7 @@ void GatherMM(
   const dim3 nblks(nbx);
   const dim3 nthrs(ntx);
   HIP_KERNEL_CALL(
-      (cuda::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
+      (hip::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
       A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
       idx_b.Ptr<IdType>(), nullptr, tot_num_rows, in_len, out_len);
 }
@@ -333,7 +337,7 @@ void GatherMMScatter(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c) {
   auto device = runtime::DeviceAPI::Get(A->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const IdType* idx_c_data = idx_c.Ptr<IdType>();
   int64_t out_len = (B->ndim == 2) ? B->shape[1] : B->shape[2];  // cols of B
   int64_t in_len = A->shape[1];                                  // cols of A
@@ -345,7 +349,7 @@ void GatherMMScatter(
   const dim3 nthrs(ntx);
   if (B->ndim == 3) {
     HIP_KERNEL_CALL(
-        (cuda::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
+        (hip::GatherMMScatterKernel<IdType, DType>), nblks, nthrs, 0, stream,
         A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
         idx_b.Ptr<IdType>(), idx_c.Ptr<IdType>(), tot_num_rows, in_len,
         out_len);
@@ -354,19 +358,21 @@ void GatherMMScatter(
     // This kernel accesses rows of A in a transposed way w/o explicitly
     // converting A
     HIP_KERNEL_CALL(
-        (cuda::GatherMMScatterKernel2<IdType, DType>), nblks, nthrs, 0, stream,
+        (hip::GatherMMScatterKernel2<IdType, DType>), nblks, nthrs, 0, stream,
         A.Ptr<DType>(), B.Ptr<DType>(), C.Ptr<DType>(), idx_a.Ptr<IdType>(),
         idx_b.Ptr<IdType>(), idx_c.Ptr<IdType>(), tot_num_rows, in_len,
         out_len);
   }
 }
 
+#ifdef DGL_ENABLE_HALF
 template void GatherMM<kDGLCUDA, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
 template void GatherMM<kDGLCUDA, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
+#endif
 #if BF16_ENABLED
 template void GatherMM<kDGLCUDA, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
@@ -388,12 +394,15 @@ template void GatherMM<kDGLCUDA, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
 
+#ifdef DGL_ENABLE_HALF
 template void GatherMMScatter<kDGLCUDA, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
 template void GatherMMScatter<kDGLCUDA, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
+#endif
+
 #if BF16_ENABLED
 template void GatherMMScatter<kDGLCUDA, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
@@ -415,12 +424,15 @@ template void GatherMMScatter<kDGLCUDA, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
 
+#ifdef DGL_ENABLE_HALF
 template void SegmentMM<kDGLCUDA, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
 template void SegmentMM<kDGLCUDA, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
+#endif
+
 #if BF16_ENABLED
 template void SegmentMM<kDGLCUDA, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
@@ -442,10 +454,13 @@ template void SegmentMM<kDGLCUDA, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
 
+#ifdef DGL_ENABLE_HALF
 template void SegmentMMBackwardB<kDGLCUDA, int32_t, __half>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
 template void SegmentMMBackwardB<kDGLCUDA, int64_t, __half>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
+#endif
+
 #if BF16_ENABLED
 template void SegmentMMBackwardB<kDGLCUDA, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);

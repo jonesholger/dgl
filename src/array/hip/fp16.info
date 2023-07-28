@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/fp16.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/fp16.h' statisitics:
   CONVERTED refs count: 73
   TOTAL lines of code: 131
   WARNINGS: 0

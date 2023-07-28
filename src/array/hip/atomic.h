@@ -1,27 +1,25 @@
 /**
  *  Copyright (c) 2019 by Contributors
- * @file array/cuda/atomic.cuh
+ * @file array/hip/atomic.h
  * @brief Atomic functions
  */
-#ifndef DGL_ARRAY_CUDA_ATOMIC_CUH_
-#define DGL_ARRAY_CUDA_ATOMIC_CUH_
+#ifndef DGL_ARRAY_HIP_ATOMIC_H_
+#define DGL_ARRAY_HIP_ATOMIC_H_
 
+#include <hip/hip_fp16.h>
 #include <hip/hip_runtime.h>
+#include <hip/amd_detail/amd_hip_atomic.h>
 
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
 
-#include "bf16.cuh"
-#include "fp16.cuh"
-
-#if __CUDA_ARCH__ >= 600
-#include <hip/hip_fp16.h>
-#endif
+#include "bf16.h"
+#include "fp16.h"
 
 namespace dgl {
 namespace aten {
-namespace cuda {
+namespace hip {
 
 // Type trait for selecting code type
 template <int Bytes>
@@ -54,6 +52,7 @@ struct Cast {
   }
 };
 
+#ifdef DGL_ENABLE_HALF
 template <>
 struct Cast<half> {
   typedef Code<sizeof(half)>::Type Type;
@@ -64,6 +63,7 @@ struct Cast<half> {
     return __ushort_as_half(code);
   }
 };
+#endif
 
 #if BF16_ENABLED
 template <>
@@ -116,14 +116,16 @@ struct Cast<double> {
   }
 };
 
+#if 0
 static __device__ __forceinline__ unsigned short int atomicCASshort(  // NOLINT
     unsigned short int* address,                                      // NOLINT
     unsigned short int compare,                                       // NOLINT
     unsigned short int val) {                                         // NOLINT
-  static_assert(CUDART_VERSION >= 10000, "Requires at least CUDA 10");
-#if (defined(__CUDA_ARCH__) && (__CUDA_ARCH__) >= 700)
+  //static_assert(CUDART_VERSION >= 10000, "Requires at least CUDA 10");
+//#if (defined(__CUDA_ARCH__) && (__CUDA_ARCH__) >= 700)
   return atomicCAS(address, compare, val);
-#else
+//#else
+#if 0
   (void)address;
   (void)compare;
   (void)val;
@@ -132,8 +134,10 @@ static __device__ __forceinline__ unsigned short int atomicCASshort(  // NOLINT
       "on this GPU.\n");
   __trap();
   return val;
-#endif  // (defined(__CUDA_ARCH__) && (__CUDA_ARCH__) >= 700)
+#endif
+//#endif  // (defined(__CUDA_ARCH__) && (__CUDA_ARCH__) >= 700)
 }
+#endif
 
 #define DEFINE_ATOMIC(NAME)                                   \
   template <typename T>                                       \
@@ -151,6 +155,7 @@ static __device__ __forceinline__ unsigned short int atomicCASshort(  // NOLINT
     return Cast<T>::Decode(old);                              \
   }
 
+#if 0
 #define DEFINE_ATOMIC_16BIT(NAME, dtype)                           \
   template <>                                                      \
   __device__ __forceinline__ dtype Atomic##NAME<dtype>(            \
@@ -167,10 +172,10 @@ static __device__ __forceinline__ unsigned short int atomicCASshort(  // NOLINT
     } while (assumed != old);                                      \
     return Cast<dtype>::Decode(old);                               \
   }
-
+#endif
 #define OP(a, b) max(a, b)
 DEFINE_ATOMIC(Max)
-DEFINE_ATOMIC_16BIT(Max, half)
+//DEFINE_ATOMIC_16BIT(Max, half)
 #if BF16_ENABLED
 DEFINE_ATOMIC_16BIT(Max, __nv_bfloat16)
 #endif  // BF16_ENABLED
@@ -178,7 +183,7 @@ DEFINE_ATOMIC_16BIT(Max, __nv_bfloat16)
 
 #define OP(a, b) min(a, b)
 DEFINE_ATOMIC(Min)
-DEFINE_ATOMIC_16BIT(Min, half)
+//DEFINE_ATOMIC_16BIT(Min, half)
 #if BF16_ENABLED
 DEFINE_ATOMIC_16BIT(Min, __nv_bfloat16)
 #endif  // BF16_ENABLED
@@ -236,6 +241,7 @@ AtomicCAS(int32_t* const address, const int32_t compare, const int32_t val) {
       static_cast<Type>(val));
 }
 
+
 inline __device__ int64_t AtomicMax(int64_t* const address, const int64_t val) {
   // match the type of "::atomicCAS", so ignore lint warning
   using Type = unsigned long long int;  // NOLINT
@@ -256,8 +262,9 @@ inline __device__ int32_t AtomicMax(int32_t* const address, const int32_t val) {
 
 template <>
 __device__ __forceinline__ float AtomicAdd<float>(float* addr, float val) {
-#if __CUDA_ARCH__ >= 200
+//#if __CUDA_ARCH__ >= 200
   return atomicAdd(addr, val);
+/*
 #else
   typedef float T;
   typedef typename Cast<T>::Type CT;
@@ -271,27 +278,15 @@ __device__ __forceinline__ float AtomicAdd<float>(float* addr, float val) {
   } while (assumed != old);
   return Cast<T>::Decode(old);
 #endif  // __CUDA_ARCH__
+*/
 }
 
 template <>
 __device__ __forceinline__ double AtomicAdd<double>(double* addr, double val) {
-#if __CUDA_ARCH__ >= 600
   return atomicAdd(addr, val);
-#else
-  typedef double T;
-  typedef typename Cast<T>::Type CT;
-  CT* addr_as_ui = reinterpret_cast<CT*>(addr);
-  CT old = *addr_as_ui;
-  CT assumed = old;
-  do {
-    assumed = old;
-    old = atomicCAS(
-        addr_as_ui, assumed, Cast<T>::Encode(Cast<T>::Decode(old) + val));
-  } while (assumed != old);
-  return Cast<T>::Decode(old);
-#endif
 }
 
+#ifdef DGL_ENABLE_HALF
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 10000
 template <>
 __device__ __forceinline__ half AtomicAdd<half>(half* addr, half val) {
@@ -309,6 +304,7 @@ __device__ __forceinline__ half AtomicAdd<half>(half* addr, half val) {
 #endif  // __CUDA_ARCH__ >= 700
 }
 #endif  // defined(CUDART_VERSION) && CUDART_VERSION >= 10000
+#endif // DG__ENABLE_HALF
 
 #if BF16_ENABLED
 template <>
@@ -329,8 +325,8 @@ AtomicAdd<__nv_bfloat16>(__nv_bfloat16* addr, __nv_bfloat16 val) {
 }
 #endif  // BF16_ENABLED
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 
-#endif  // DGL_ARRAY_CUDA_ATOMIC_CUH_
+#endif  // DGL_ARRAY_HIP_ATOMIC_H_

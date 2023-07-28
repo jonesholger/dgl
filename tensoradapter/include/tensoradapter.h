@@ -10,8 +10,7 @@
 #ifndef TENSORADAPTER_H_
 #define TENSORADAPTER_H_
 
-//#ifdef DGL_USE_CUDA
-#if 0
+#ifdef DGL_USE_CUDA
 #include <cuda_runtime.h>
 #endif  // DGL_USE_CUDA
 

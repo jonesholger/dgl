@@ -1,30 +1,30 @@
-  warning: ./src/array/cuda/atomic.cuh:70: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:70: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:71: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:71: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:72: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:72: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:74: unsupported device function "__bfloat16_as_ushort":     return __bfloat16_as_ushort(val);
-  warning: ./src/array/cuda/atomic.cuh:79: unsupported device function "__trap":     __trap();
-  warning: ./src/array/cuda/atomic.cuh:83: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:83: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:85: unsupported device function "__ushort_as_bfloat16":     return __ushort_as_bfloat16(code);
-  warning: ./src/array/cuda/atomic.cuh:90: unsupported device function "__trap":     __trap();
-  warning: ./src/array/cuda/atomic.cuh:91: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:91: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:133: unsupported device function "__trap":   __trap();
-  warning: ./src/array/cuda/atomic.cuh:175: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:175: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:183: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:183: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:307: unsupported device function "__trap":   __trap();
-  warning: ./src/array/cuda/atomic.cuh:315: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:315: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:316: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:316: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/atomic.cuh:326: unsupported device function "__trap":   __trap();
+  warning: ./src/array/hip/atomic.h:70: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:70: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:71: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:71: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:72: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:72: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:74: unsupported device function "__bfloat16_as_ushort":     return __bfloat16_as_ushort(val);
+  warning: ./src/array/hip/atomic.h:79: unsupported device function "__trap":     __trap();
+  warning: ./src/array/hip/atomic.h:83: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:83: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:85: unsupported device function "__ushort_as_bfloat16":     return __ushort_as_bfloat16(code);
+  warning: ./src/array/hip/atomic.h:90: unsupported device function "__trap":     __trap();
+  warning: ./src/array/hip/atomic.h:91: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:91: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:133: unsupported device function "__trap":   __trap();
+  warning: ./src/array/hip/atomic.h:175: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:175: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:183: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:183: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:307: unsupported device function "__trap":   __trap();
+  warning: ./src/array/hip/atomic.h:315: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:315: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:316: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:316: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/atomic.h:326: unsupported device function "__trap":   __trap();
 
-[HIPIFY] info: file './src/array/cuda/atomic.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/atomic.h' statisitics:
   CONVERTED refs count: 2
   TOTAL lines of code: 336
   WARNINGS: 25

@@ -20,7 +20,7 @@ IdArray CumSum(IdArray array, bool prepend_zero) {
                          : aten::Full(0, 1, array->dtype.bits, array->ctx);
 
   auto device = runtime::DeviceAPI::Get(array->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const IdType* in_d = array.Ptr<IdType>();
   IdArray ret;
   IdType* out_d = nullptr;

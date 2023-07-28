@@ -81,10 +81,10 @@ class DeviceAPIManager {
   DeviceAPI* GetAPI(const std::string name, bool allow_missing) {
     //print_stacktrace();
     std::string factory = "device_api." + name;
-    std::cerr << "GetAPI: " << factory << std::endl;
+    //std::cerr << "GetAPI: " << factory << std::endl;
     auto* f = Registry::Get(factory);
     if (f == nullptr) {
-      std::cerr << "Registry::Get returns nullptr\n";
+      //std::cerr << "Registry::Get returns nullptr\n";
       CHECK(allow_missing)
           << "Device API " << name
           << " is not enabled. Please install the cuda version of dgl.";

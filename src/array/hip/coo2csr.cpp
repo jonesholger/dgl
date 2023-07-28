@@ -1,12 +1,12 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/coo2csr.cc
+ * @file array/hip/coo2csr.cc
  * @brief COO2CSR
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -24,13 +24,13 @@ CSRMatrix COOToCSR(COOMatrix coo) {
 
 template <>
 CSRMatrix COOToCSR<kDGLCUDA, int32_t>(COOMatrix coo) {
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
 
   bool row_sorted = coo.row_sorted;
   bool col_sorted = coo.col_sorted;
@@ -51,8 +51,8 @@ CSRMatrix COOToCSR<kDGLCUDA, int32_t>(COOMatrix coo) {
   NDArray indptr =
       aten::NewIdArray(coo.num_rows + 1, coo.row->ctx, coo.row->dtype.bits);
   int32_t* indptr_ptr = static_cast<int32_t*>(indptr->data);
-  CUSPARSE_CALL(hipsparseXcoo2csr(
-      thr_entry->cusparse_handle, coo.row.Ptr<int32_t>(), nnz, coo.num_rows,
+  HIPSPARSE_CALL(hipsparseXcoo2csr(
+      thr_entry->hipsparse_handle, coo.row.Ptr<int32_t>(), nnz, coo.num_rows,
       indptr_ptr, HIPSPARSE_INDEX_BASE_ZERO));
 
   return CSRMatrix(
@@ -101,7 +101,7 @@ template <>
 CSRMatrix COOToCSR<kDGLCUDA, int64_t>(COOMatrix coo) {
   const auto& ctx = coo.row->ctx;
   const auto nbits = coo.row->dtype.bits;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   bool row_sorted = coo.row_sorted;
   bool col_sorted = coo.col_sorted;
   if (!row_sorted) {
@@ -118,7 +118,7 @@ CSRMatrix COOToCSR<kDGLCUDA, int64_t>(COOMatrix coo) {
     coo.data = aten::Range(0, nnz, coo.row->dtype.bits, coo.row->ctx);
 
   IdArray rowids = Range(0, coo.num_rows, nbits, ctx);
-  const int nt = cuda::FindNumThreads(coo.num_rows);
+  const int nt = hip::FindNumThreads(coo.num_rows);
   const int nb = (coo.num_rows + nt - 1) / nt;
   IdArray indptr = Full(0, coo.num_rows + 1, nbits, ctx);
   HIP_KERNEL_CALL(

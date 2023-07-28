@@ -1,6 +1,6 @@
-  warning: ./src/array/cuda/sddmm.cuh:181: unsupported device function "__shfl_down_sync":         val += __shfl_down_sync(full_mask, val, offset);
+  warning: ./src/array/hip/sddmm.cuh:181: unsupported device function "__shfl_down_sync":         val += __shfl_down_sync(full_mask, val, offset);
 
-[HIPIFY] info: file './src/array/cuda/sddmm.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/sddmm.cuh' statisitics:
   CONVERTED refs count: 3
   TOTAL lines of code: 368
   WARNINGS: 1

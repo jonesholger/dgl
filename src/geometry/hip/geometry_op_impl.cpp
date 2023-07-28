@@ -7,7 +7,7 @@
 #include <dgl/array.h>
 
 #include "../../c_api_common.h"
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "../geometry_op.h"
 
 #define THREADS 1024
@@ -96,7 +96,7 @@ template <DGLDeviceType XPU, typename FloatType, typename IdType>
 void FarthestPointSampler(
     NDArray array, int64_t batch_size, int64_t sample_points, NDArray dist,
     IdArray start_idx, IdArray result) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const FloatType* array_data = static_cast<FloatType*>(array->data);
 

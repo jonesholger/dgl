@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2022 by Contributors
- * @file array/cuda/rowwise_sampling_prob.cu
+ * @file array/hip/rowwise_sampling_prob.cu
  * @brief weighted rowwise sampling. The degree computing kernels and
  * host-side functions are partially borrowed from the uniform rowwise
  * sampling code rowwise_sampling.cu.
@@ -13,18 +13,18 @@
 
 #include <numeric>
 
-#include "../../array/cuda/atomic.cuh"
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../array/hip/atomic.h"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 // require CUB 1.17 to use DeviceSegmentedSort
-static_assert(
-    CUB_VERSION >= 101700, "Require CUB >= 1.17 to use DeviceSegmentedSort");
+//static_assert(
+//    CUB_VERSION >= 101700, "Require CUB >= 1.17 to use DeviceSegmentedSort");
 
 namespace dgl {
-using namespace cuda;
-using namespace aten::cuda;
+using namespace hip;
+using namespace aten::hip;
 namespace aten {
 namespace impl {
 
@@ -119,7 +119,7 @@ __global__ void _CSRRowWiseSampleDegreeReplaceKernel(
  * @param out The selected value (output).
  */
 template <typename IdType, typename FloatType>
-__device__ void _DoubleSlice(
+  __device__ void _DoubleSlice(
     const FloatType* const array, const IdType* const idx_data,
     const IdType idx, const IdType offset, FloatType* const out) {
   if (idx_data) {
@@ -396,7 +396,7 @@ __global__ void _GenerateFlagsKernel(
 
 template <DGLDeviceType XPU, typename IdType, typename DType, typename MaskGen>
 COOMatrix COOGeneralRemoveIf(const COOMatrix& coo, MaskGen maskgen) {
-  using namespace dgl::cuda;
+  using namespace dgl::hip;
 
   const auto idtype = coo.row->dtype;
   const auto ctx = coo.row->ctx;
@@ -412,11 +412,11 @@ COOMatrix COOGeneralRemoveIf(const COOMatrix& coo, MaskGen maskgen) {
   IdType* new_row_data = new_row.Ptr<IdType>();
   IdType* new_col_data = new_col.Ptr<IdType>();
   IdType* new_eid_data = new_eid.Ptr<IdType>();
-  auto stream = runtime::getCurrentCUDAStream();
+  auto stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(ctx);
 
   int8_t* flags = static_cast<int8_t*>(device->AllocWorkspace(ctx, nnz));
-  int nt = dgl::cuda::FindNumThreads(nnz);
+  int nt = dgl::hip::FindNumThreads(nnz);
   int64_t nb = (nnz + nt - 1) / nt;
 
   maskgen(nb, nt, stream, nnz, data, flags);
@@ -427,7 +427,7 @@ COOMatrix COOGeneralRemoveIf(const COOMatrix& coo, MaskGen maskgen) {
   MaskSelect(device, ctx, col, flags, new_col_data, nnz, rst, stream);
   MaskSelect(device, ctx, data, flags, new_eid_data, nnz, rst, stream);
 
-  int64_t new_len = GetCUDAScalar(device, ctx, rst);
+  int64_t new_len = GetHIPScalar(device, ctx, rst);
 
   device->FreeWorkspace(ctx, flags);
   device->FreeWorkspace(ctx, rst);
@@ -482,7 +482,7 @@ COOMatrix _CSRRowWiseSampling(
     const FloatArray& prob, bool replace) {
   const auto& ctx = rows->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int64_t num_rows = rows->shape[0];
   const IdType* const slice_rows = static_cast<const IdType*>(rows->data);

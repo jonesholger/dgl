@@ -1,26 +1,26 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/segment_reduce.cuh
+ * @file array/hip/segment_reduce.cuh
  * @brief Segment reduce kernel function header.
  */
-#ifndef DGL_ARRAY_CUDA_SEGMENT_REDUCE_CUH_
-#define DGL_ARRAY_CUDA_SEGMENT_REDUCE_CUH_
+#ifndef DGL_ARRAY_HIP_SEGMENT_REDUCE_H_
+#define DGL_ARRAY_HIP_SEGMENT_REDUCE_H_
 
 #include <string>
 #include <vector>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./atomic.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./atomic.h"
 #include "./utils.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 using namespace runtime;
 
 namespace aten {
-namespace cuda {
+namespace hip {
 
 /**
  * @brief CUDA kernel of segment reduce.
@@ -58,7 +58,7 @@ __global__ void ScatterAddKernel(
     const int write_row = idx[row];
     int col = blockIdx.y * blockDim.x + threadIdx.x;
     while (col < dim) {
-      cuda::AtomicAdd(out + write_row * dim + col, feat[row * dim + col]);
+      hip::AtomicAdd(out + write_row * dim + col, feat[row * dim + col]);
       col += gridDim.y * blockDim.x;
     }
   }
@@ -85,7 +85,7 @@ __global__ void UpdateGradMinMaxHeteroKernel(
     for (unsigned int col = laneId; col < dim; col += warp_size) {
       if (type == idx_type[row * dim + col]) {
         const int write_row = idx[row * dim + col];
-        cuda::AtomicAdd(out + write_row * dim + col, feat[row * dim + col]);
+        hip::AtomicAdd(out + write_row * dim + col, feat[row * dim + col]);
       }
     }
     row += blockDim.x * gridDim.x;
@@ -126,7 +126,7 @@ void SegmentReduce(NDArray feat, NDArray offsets, NDArray out, NDArray arg) {
   DType* out_data = out.Ptr<DType>();
   IdType* arg_data = arg.Ptr<IdType>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int64_t n = out->shape[0];
   int64_t dim = 1;
   for (int i = 1; i < out->ndim; ++i) dim *= out->shape[i];
@@ -156,7 +156,7 @@ void ScatterAdd(NDArray feat, NDArray idx, NDArray out) {
   const IdType* idx_data = idx.Ptr<IdType>();
   DType* out_data = out.Ptr<DType>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int64_t n = feat->shape[0];
   int64_t dim = 1;
   for (int i = 1; i < out->ndim; ++i) dim *= out->shape[i];
@@ -187,7 +187,7 @@ void UpdateGradMinMax_hetero(
     const std::vector<NDArray>& list_feat, const std::vector<NDArray>& list_idx,
     const std::vector<NDArray>& list_idx_types,
     std::vector<NDArray>* list_out) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   if (op == "copy_lhs" || op == "copy_rhs") {
     std::vector<std::vector<dgl_id_t>> src_dst_ntypes(
         graph->NumVertexTypes(), std::vector<dgl_id_t>());
@@ -240,7 +240,7 @@ void BackwardSegmentCmp(NDArray feat, NDArray arg, NDArray out) {
   const IdType* arg_data = arg.Ptr<IdType>();
   DType* out_data = out.Ptr<DType>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int64_t n = feat->shape[0];
   int64_t dim = 1;
   for (int i = 1; i < out->ndim; ++i) dim *= out->shape[i];
@@ -256,8 +256,8 @@ void BackwardSegmentCmp(NDArray feat, NDArray arg, NDArray out) {
       feat_data, arg_data, out_data, n, dim);
 }
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 
-#endif  // DGL_ARRAY_CUDA_SEGMENT_REDUCE_CUH_
+#endif  // DGL_ARRAY_HIP_SEGMENT_REDUCE_H_

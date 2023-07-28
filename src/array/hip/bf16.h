@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * @file array/cuda/bf16.cuh
+ * @file array/hip/bf16.h
  * @brief bfloat16 related functions.
  */
 #ifndef DGL_ARRAY_CUDA_BF16_CUH_

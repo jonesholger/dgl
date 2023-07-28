@@ -157,33 +157,40 @@ inline const char* hiprandGetErrorString(hiprandStatus_t error) {
 }
 
 /**
- * @brief Cast data type to hipblasDatatype_t.
+ * @brief Cast data type to hipblasDatatype_t. : -> hipDataType
  */
 template <typename T>
 struct HIP_dtype {
-  static constexpr hipblasDatatype_t value = HIPBLAS_R_32F;
+  //static constexpr hipblasDatatype_t value = HIPBLAS_R_32F;
+  static constexpr hipDataType value = HIP_R_32F;
 };
 
+#ifdef DGL_ENABLE_HALF
 template <>
 struct HIP_dtype<__half> {
-  static constexpr hipblasDatatype_t value = HIPBLAS_R_16F;
+  //static constexpr hipblasDatatype_t value = HIPBLAS_R_16F;
+  static constexpr hipDataType value = HIP_R_16F;
 };
+#endif
 
 #if BF16_ENABLED
 template <>
 struct HIP_dtype<__nv_bfloat16> {
-  static constexpr hipblasDatatype_t value = HIPBLAS_R_16B;
+  //static constexpr hipblasDatatype_t value = HIPBLAS_R_16B;
+  static constexpr hipDataType value = HIP_R_16B;
 };
 #endif  // BF16_ENABLED
 
 template <>
 struct HIP_dtype<float> {
-  static constexpr hipblasDatatype_t value = HIPBLAS_R_32F;
+  //static constexpr hipblasDatatype_t value = HIPBLAS_R_32F;
+  static constexpr hipDataType value = HIP_R_32F;
 };
 
 template <>
 struct HIP_dtype<double> {
-  static constexpr hipblasDatatype_t value = HIPBLAS_R_64F;
+  //static constexpr hipblasDatatype_t value = HIPBLAS_R_64F;
+  static constexpr hipDataType value = HIP_R_64F;
 };
 
 /*
@@ -194,10 +201,12 @@ struct accum_dtype {
   typedef float type;
 };
 
+#ifdef DGL_ENABLE_HALF
 template <>
 struct accum_dtype<__half> {
   typedef float type;
 };
+#endif
 
 #if BF16_ENABLED
 template <>
@@ -216,7 +225,7 @@ struct accum_dtype<double> {
   typedef double type;
 };
 
-#if HIPRT_VERSION >= 11000
+//#if HIPRT_VERSION >= 11000
 /**
  * @brief Cast index data type to hipsparseIndexType_t.
  */
@@ -234,7 +243,6 @@ template <>
 struct hipsparse_idtype<int64_t> {
   static constexpr hipsparseIndexType_t value = HIPSPARSE_INDEX_64I;
 };
-#endif
 
 /** @brief Thread local workspace */
 class HIPThreadEntry {

@@ -7,16 +7,16 @@
 
 #include <cassert>
 
-#include "../../array/cuda/atomic.cuh"
-#include "../../array/cuda/dgl_cub.cuh"
-#include "cuda_common.h"
-#include "cuda_hashtable.cuh"
+#include "../../array/hip/atomic.h"
+#include "../../array/hip/dgl_cub.h"
+#include "hip_common.h"
+#include "hip_hashtable.h"
 
-using namespace dgl::aten::cuda;
+using namespace dgl::aten::hip;
 
 namespace dgl {
 namespace runtime {
-namespace cuda {
+namespace hip {
 
 namespace {
 
@@ -43,7 +43,8 @@ class MutableDeviceOrderedHashTable : public DeviceOrderedHashTable<IdType> {
   explicit MutableDeviceOrderedHashTable(
       OrderedHashTable<IdType>* const hostTable)
       : DeviceOrderedHashTable<IdType>(hostTable->DeviceHandle()) {}
-
+    using DeviceOrderedHashTable<IdType>::Hash;
+    using DeviceOrderedHashTable<IdType>::SearchForPosition;
   /**
    * @brief Find the mutable mapping of a given key within the hash table.
    *
@@ -107,7 +108,6 @@ class MutableDeviceOrderedHashTable : public DeviceOrderedHashTable<IdType> {
 
     return GetMutable(pos);
   }
-
  private:
   /**
    * @brief Get a mutable iterator to the given bucket in the hashtable.
@@ -152,7 +152,6 @@ size_t TableSize(const size_t num, const int scale) {
 template <typename IdType>
 struct BlockPrefixCallbackOp {
   IdType running_total_;
-
   __device__ BlockPrefixCallbackOp(const IdType running_total)
       : running_total_(running_total) {}
 
@@ -439,6 +438,6 @@ void OrderedHashTable<IdType>::FillWithUnique(
 template class OrderedHashTable<int32_t>;
 template class OrderedHashTable<int64_t>;
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace runtime
 }  // namespace dgl

@@ -16,7 +16,7 @@ using runtime::NDArray;
 using runtime::parallel_for;
 namespace aten {
 namespace impl {
-
+#ifndef __HIP_DEVICE_COMPILE__
 ///////////////////////////// AsNumBits /////////////////////////////
 
 template <DGLDeviceType XPU, typename IdType>
@@ -303,7 +303,7 @@ IdArray Relabel_(const std::vector<IdArray>& arrays) {
 
 template IdArray Relabel_<kDGLCPU, int32_t>(const std::vector<IdArray>& arrays);
 template IdArray Relabel_<kDGLCPU, int64_t>(const std::vector<IdArray>& arrays);
-
+#endif
 }  // namespace impl
 }  // namespace aten
 }  // namespace dgl

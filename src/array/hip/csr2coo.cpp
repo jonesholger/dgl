@@ -1,12 +1,12 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/csr2coo.cc
+ * @file array/hip/csr2coo.cc
  * @brief CSR2COO
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -24,13 +24,13 @@ COOMatrix CSRToCOO(CSRMatrix csr) {
 
 template <>
 COOMatrix CSRToCOO<kDGLCUDA, int32_t>(CSRMatrix csr) {
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
 
   NDArray indptr = csr.indptr, indices = csr.indices, data = csr.data;
   const int32_t* indptr_ptr = static_cast<int32_t*>(indptr->data);
@@ -38,8 +38,8 @@ COOMatrix CSRToCOO<kDGLCUDA, int32_t>(CSRMatrix csr) {
       aten::NewIdArray(indices->shape[0], indptr->ctx, indptr->dtype.bits);
   int32_t* row_ptr = static_cast<int32_t*>(row->data);
 
-  CUSPARSE_CALL(hipsparseXcsr2coo(
-      thr_entry->cusparse_handle, indptr_ptr, indices->shape[0], csr.num_rows,
+  HIPSPARSE_CALL(hipsparseXcsr2coo(
+      thr_entry->hipsparse_handle, indptr_ptr, indices->shape[0], csr.num_rows,
       row_ptr, HIPSPARSE_INDEX_BASE_ZERO));
 
   return COOMatrix(
@@ -68,7 +68,7 @@ __global__ void _RepeatKernel(
   IdType tx = static_cast<IdType>(blockIdx.x) * blockDim.x + threadIdx.x;
   const int stride_x = gridDim.x * blockDim.x;
   while (tx < length) {
-    IdType i = dgl::cuda::_UpperBound(pos, n_row, tx) - 1;
+    IdType i = dgl::hip::_UpperBound(pos, n_row, tx) - 1;
     out[tx] = val[i];
     tx += stride_x;
   }
@@ -77,7 +77,7 @@ __global__ void _RepeatKernel(
 template <>
 COOMatrix CSRToCOO<kDGLCUDA, int64_t>(CSRMatrix csr) {
   const auto& ctx = csr.indptr->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int64_t nnz = csr.indices->shape[0];
   const auto nbits = csr.indptr->dtype.bits;
@@ -109,14 +109,14 @@ COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int32_t>(CSRMatrix csr) {
   COOMatrix coo = CSRToCOO<kDGLCUDA, int32_t>(csr);
   if (aten::IsNullArray(coo.data)) return coo;
 
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   auto device = runtime::DeviceAPI::Get(coo.row->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
 
   NDArray row = coo.row, col = coo.col, data = coo.data;
   int32_t* row_ptr = static_cast<int32_t*>(row->data);
@@ -124,12 +124,12 @@ COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int32_t>(CSRMatrix csr) {
   int32_t* data_ptr = static_cast<int32_t*>(data->data);
 
   size_t workspace_size = 0;
-  CUSPARSE_CALL(hipsparseXcoosort_bufferSizeExt(
-      thr_entry->cusparse_handle, coo.num_rows, coo.num_cols, row->shape[0],
+  HIPSPARSE_CALL(hipsparseXcoosort_bufferSizeExt(
+      thr_entry->hipsparse_handle, coo.num_rows, coo.num_cols, row->shape[0],
       data_ptr, row_ptr, &workspace_size));
   void* workspace = device->AllocWorkspace(row->ctx, workspace_size);
-  CUSPARSE_CALL(hipsparseXcoosortByRow(
-      thr_entry->cusparse_handle, coo.num_rows, coo.num_cols, row->shape[0],
+  HIPSPARSE_CALL(hipsparseXcoosortByRow(
+      thr_entry->hipsparse_handle, coo.num_rows, coo.num_cols, row->shape[0],
       data_ptr, row_ptr, col_ptr, workspace));
   device->FreeWorkspace(row->ctx, workspace);
 

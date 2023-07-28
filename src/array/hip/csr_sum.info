@@ -1,20 +1,20 @@
-  warning: ./src/array/cuda/csr_sum.cu:43: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/csr_sum.cu:162: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/csr_sum.cu:162: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/csr_sum.cu:164: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/csr_sum.cu:164: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/csr_sum.cu:43: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/csr_sum.cu:162: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/csr_sum.cu:162: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/csr_sum.cu:164: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/csr_sum.cu:164: unsupported identifier "__nv_bfloat16"
 
-[HIPIFY] info: file './src/array/cuda/csr_sum.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/csr_sum.cu' statisitics:
   CONVERTED refs count: 14
   TOTAL lines of code: 177
   WARNINGS: 5
 [HIPIFY] info: CONVERTED refs by names:
-  CUSPARSE_POINTER_MODE_HOST => HIPSPARSE_POINTER_MODE_HOST: 1
+  hipsparse_POINTER_MODE_HOST => HIPSPARSE_POINTER_MODE_HOST: 1
   __half => __half: 2
   cudaStream_t => hipStream_t: 1
-  cusparseCreate => hipsparseCreate: 1
-  cusparseCreateMatDescr => hipsparseCreateMatDescr: 3
-  cusparseDestroyMatDescr => hipsparseDestroyMatDescr: 3
-  cusparseMatDescr_t => hipsparseMatDescr_t: 1
-  cusparseSetPointerMode => hipsparseSetPointerMode: 1
-  cusparseSetStream => hipsparseSetStream: 1
+  hipsparseCreate => hipsparseCreate: 1
+  hipsparseCreateMatDescr => hipsparseCreateMatDescr: 3
+  hipsparseDestroyMatDescr => hipsparseDestroyMatDescr: 3
+  hipsparseMatDescr_t => hipsparseMatDescr_t: 1
+  hipsparseSetPointerMode => hipsparseSetPointerMode: 1
+  hipsparseSetStream => hipsparseSetStream: 1

@@ -63,13 +63,15 @@ dgl_option(BUILD_SPARSE "Build DGL sparse library" OFF)
 dgl_option(BUILD_GRAPHBOLT "Build Graphbolt library" OFF)
 dgl_option(TORCH_PYTHON_INTERPS "Python interpreter used to build tensoradapter and DGL sparse library" python3)
 
-
+# use the follwoing only for config.in
+set(dgl_defines "") 
+#set(dgl_defines "DGL_ENABLE_HALF=OFF")
 #------------------------------------------------------------------------------
 # Include build system logic and options
 #------------------------------------------------------------------------------
 include(cmake/SetupDGLBLT.cmake)
 
-
+include(cmake/SetupDGLThirdParty.cmake)
 
 # Set debug compile option for gdb, only happens when -DCMAKE_BUILD_TYPE=DEBUG
 if (NOT MSVC)
@@ -94,7 +96,12 @@ endif(NOT MSVC)
 
 blt_list_append(TO DGL_LINKER_LIBS ELEMENTS blt_hip blt_hip_runtime IF ENABLE_HIP)
 blt_list_append(TO DGL_LINKER_LIBS ELEMENTS roc::hipblas IF HIPBLAS_FOUND )
-blt_list_append(TO DLG_LINKER_LIBS ELEMENTS roc::hipsolver IF HIPSOLVER_FOUND )
+#blt_list_append(TO DGL_LINKER_LIBS ELEMENTS roc::hipsolver IF HIPSOLVER_FOUND )
+blt_list_append(TO DGL_LINKER_LIBS ELEMENTS roc::hipsparse IF HIPSPARSE_FOUND )
+
+message(STATUS "HIPBLAS_FOUND ${HIPBLAS_FOUND}")
+message(STATUS "HIPSOLVER_FOUND ${HIPSOLVER_FOUND}")
+message(STATUS "HIPSPARSE_FOUND ${HIPSPARSE_FOUND}")
 
 message(STATUS "HIP_DIAG: ${DGL_LINKER_LIBS}")
 
@@ -127,7 +134,7 @@ if(MSVC)
 else(MSVC)
   include(CheckCXXCompilerFlag)
   set(CMAKE_C_FLAGS "-O2 -Wall -fPIC ${CMAKE_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "-O2 -Wall -fPIC -std=c++14 ${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS "-w -O2 -Wall -fPIC -std=c++14 ${CMAKE_CXX_FLAGS}")
   if(NOT APPLE)
     set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--warn-common ${CMAKE_SHARED_LINKER_FLAGS}")
   endif(NOT APPLE)
@@ -217,7 +224,7 @@ if(ENABLE_HIP)
   message(STATUS "Addding HIP Device SRC")
   file(GLOB_RECURSE DGL_DEVICE_SRC
     src/array/hip/*.cpp
-    src/array/cuda/uvm/*.cpp
+    src/array/hip/uvm/*.cpp
     src/partition/hip/*.cpp
     src/runtime/hip/*.cpp
     src/geometry/hip/*.cpp
@@ -230,6 +237,7 @@ endif(ENABLE_HIP)
 blt_add_library(
   NAME dgl
   SOURCES ${DGL_SRC}
+  DEFINES ${dgl_defines}
   SHARED TRUE
 )
 

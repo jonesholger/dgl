@@ -5,8 +5,8 @@
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -28,7 +28,7 @@ std::pair<IdArray, IdArray> Sort(IdArray array, int num_bits) {
   IdType* keys_out = sorted_array.Ptr<IdType>();
   int64_t* values_out = sorted_idx.Ptr<int64_t>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   if (num_bits == 0) {
     num_bits = sizeof(IdType) * 8;
   }

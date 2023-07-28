@@ -1,11 +1,11 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/sddmm.cu
+ * @file array/hip/sddmm.cu
  * @brief SDDMM C APIs and definitions.
  */
 #include <dgl/array.h>
 
-#include "./sddmm.cuh"
+#include "./sddmm.h"
 
 namespace dgl {
 namespace aten {
@@ -28,13 +28,14 @@ void SDDMMCsrHetero(
         NDArray lhs = vec_lhs[lhs_eid[etype]];
         NDArray rhs = vec_rhs[rhs_eid[etype]];
         NDArray out = vec_out[etype];
-        cuda::SDDMMCsr<IdType, DType, Op, LhsTarget, RhsTarget>(
+        hip::SDDMMCsr<IdType, DType, Op, LhsTarget, RhsTarget>(
             bcast, csr, lhs, rhs, out);
       }
     });
   });
 }
 
+#ifdef DGL_ENABLE_HALF
 template void SDDMMCsrHetero<kDGLCUDA, int32_t, __half>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<CSRMatrix>& vec_csr, const std::vector<NDArray>& lhs,
@@ -47,6 +48,8 @@ template void SDDMMCsrHetero<kDGLCUDA, int64_t, __half>(
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
+#endif
+
 #if BF16_ENABLED
 template void SDDMMCsrHetero<kDGLCUDA, int32_t, __nv_bfloat16>(
     const std::string& op, const BcastOff& bcast,

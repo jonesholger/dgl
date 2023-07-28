@@ -1,13 +1,13 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/coo_sort.cc
+ * @file array/hip/coo_sort.cc
  * @brief Sort COO index
  */
 #include <dgl/array.h>
 
 #include "../../c_api_common.h"
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -84,7 +84,7 @@ int _NumberOfBits(const T& range) {
 
 template <DGLDeviceType XPU, typename IdType>
 void COOSort_(COOMatrix* coo, bool sort_column) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const int row_bits = _NumberOfBits(coo->num_rows);
 
   const int64_t nnz = coo->row->shape[0];
@@ -157,21 +157,21 @@ template <DGLDeviceType XPU, typename IdType>
 std::pair<bool, bool> COOIsSorted(COOMatrix coo) {
   const int64_t nnz = coo.row->shape[0];
   const auto& ctx = coo.row->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(ctx);
   // We allocate a workspace of 2*nnz bytes. It wastes a little bit memory but
   // should be fine.
   int8_t* row_flags = static_cast<int8_t*>(device->AllocWorkspace(ctx, nnz));
   int8_t* col_flags = static_cast<int8_t*>(device->AllocWorkspace(ctx, nnz));
-  const int nt = cuda::FindNumThreads(nnz);
+  const int nt = hip::FindNumThreads(nnz);
   const int nb = (nnz + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _COOIsSortedKernel, nb, nt, 0, stream, coo.row.Ptr<IdType>(),
       coo.col.Ptr<IdType>(), nnz, row_flags, col_flags);
 
-  const bool row_sorted = cuda::AllTrue(row_flags, nnz, ctx);
+  const bool row_sorted = hip::AllTrue(row_flags, nnz, ctx);
   const bool col_sorted =
-      row_sorted ? cuda::AllTrue(col_flags, nnz, ctx) : false;
+      row_sorted ? hip::AllTrue(col_flags, nnz, ctx) : false;
 
   device->FreeWorkspace(ctx, row_flags);
   device->FreeWorkspace(ctx, col_flags);

@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/sddmm.cuh
+ * @file array/hip/sddmm.cuh
  * @brief SDDMM CUDA kernel function header.
  */
 #ifndef DGL_ARRAY_CUDA_SDDMM_CUH_
@@ -9,45 +9,45 @@
 
 #include <dgl/bcast.h>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "../selector.h"
-#include "./functor.cuh"
+#include "./functor.h"
 #include "./utils.h"
-#include "atomic.cuh"
-#include "bf16.cuh"
-#include "fp16.cuh"
-#include "functor.cuh"
-#include "macro.cuh"
+#include "atomic.h"
+#include "bf16.h"
+#include "fp16.h"
+#include "functor.h"
+#include "macro.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
-namespace cuda {
+namespace hip {
 
 #define SWITCH_OP(op, Op, ...)                                        \
   do {                                                                \
     if ((op) == "add") {                                              \
-      typedef cuda::binary::Add<DType> Op;                            \
+      typedef hip::binary::Add<DType> Op;                            \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "sub") {                                       \
-      typedef cuda::binary::Sub<DType> Op;                            \
+      typedef hip::binary::Sub<DType> Op;                            \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "mul") {                                       \
-      typedef cuda::binary::Mul<DType> Op;                            \
+      typedef hip::binary::Mul<DType> Op;                            \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "div") {                                       \
-      typedef cuda::binary::Div<DType> Op;                            \
+      typedef hip::binary::Div<DType> Op;                            \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "copy_lhs") {                                  \
-      typedef cuda::binary::CopyLhs<DType> Op;                        \
+      typedef hip::binary::CopyLhs<DType> Op;                        \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "copy_rhs") {                                  \
-      typedef cuda::binary::CopyRhs<DType> Op;                        \
+      typedef hip::binary::CopyRhs<DType> Op;                        \
       { __VA_ARGS__ }                                                 \
     } else if ((op) == "dot") {                                       \
-      typedef cuda::binary::Dot<DType> Op;                            \
+      typedef hip::binary::Dot<DType> Op;                            \
       { __VA_ARGS__ }                                                 \
     } else {                                                          \
       LOG(FATAL) << "Unsupported SpMM/SDDMM binary operator: " << op; \
@@ -179,7 +179,8 @@ __global__ void SDDMMCooTreeReduceKernel(
       }
 #pragma unroll
       for (int offset = 16; offset > 0; offset /= 2)
-        val += __shfl_down_sync(full_mask, val, offset);
+        //val += __shfl_down_sync(full_mask, val, offset);
+        val += __shfl_down(full_mask, val, offset); // verify HBEJ
       if (tx == 0) outoff[i] = val;
     }
   }
@@ -276,7 +277,7 @@ void SDDMMCoo(
   const DType* lhs_data = lhs.Ptr<DType>();
   const DType* rhs_data = rhs.Ptr<DType>();
   DType* out_data = out.Ptr<DType>();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   int64_t *lhs_off = nullptr, *rhs_off = nullptr;
   int64_t len = bcast.out_len, lhs_len = bcast.lhs_len, rhs_len = bcast.rhs_len;
@@ -338,7 +339,7 @@ void SDDMMCsr(
   const DType* lhs_data = lhs.Ptr<DType>();
   const DType* rhs_data = rhs.Ptr<DType>();
   DType* out_data = out.Ptr<DType>();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int64_t N = csr.num_rows, M = csr.num_cols, E = csr.indices->shape[0];
 
   int64_t *lhs_off = nullptr, *rhs_off = nullptr;
@@ -362,7 +363,7 @@ void SDDMMCsr(
   });
 }
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 

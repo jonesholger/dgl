@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2021 by Contributors
- * @file array/cuda/rowwise_sampling.cu
+ * @file array/hip/rowwise_sampling.cu
  * @brief uniform rowwise sampling
  */
 
@@ -12,13 +12,13 @@
 
 #include <numeric>
 
-#include "../../array/cuda/atomic.cuh"
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../array/hip/atomic.h"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
-using namespace dgl::cuda;
-using namespace dgl::aten::cuda;
+using namespace dgl::hip;
+using namespace dgl::aten::hip;
 using TensorDispatcher = dgl::runtime::TensorDispatcher;
 
 namespace dgl {
@@ -238,7 +238,7 @@ COOMatrix _CSRRowWiseSamplingUniform(
     CSRMatrix mat, IdArray rows, const int64_t num_picks, const bool replace) {
   const auto& ctx = rows->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int64_t num_rows = rows->shape[0];
   const IdType* const slice_rows = static_cast<const IdType*>(rows->data);

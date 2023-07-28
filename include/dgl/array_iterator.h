@@ -6,11 +6,8 @@
 #ifndef DGL_ARRAY_ITERATOR_H_
 #define DGL_ARRAY_ITERATOR_H_
 
-#ifdef __CUDA_ARCH__
+#define __forceinline__ inline __attribute__((always_inline))
 #define CUB_INLINE __host__ __device__ __forceinline__
-#else
-#define CUB_INLINE inline
-#endif  // __CUDA_ARCH__
 
 #include <algorithm>
 #include <iterator>

@@ -13,18 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * @file array/cuda/fp16.cuh
+ * @file array/hip/fp16.h
  * @brief float16 related functions.
  * @note this file is modified from TVM project:
  *       https://github.com/apache/tvm/blob/e561007f0c330e3d14c2bc8a3ef40fb741db9004/src/target/source/literal/cuda_half_t.h.
  */
-#ifndef DGL_ARRAY_CUDA_FP16_CUH_
-#define DGL_ARRAY_CUDA_FP16_CUH_
+#ifndef DGL_ARRAY_HIP_FP16_H_
+#define DGL_ARRAY_HIP_FP16_H_
 
 #include <hip/hip_fp16.h>
 
 #include <algorithm>
 
+#ifdef DGL_ENABLE_HALF
 static __device__ __forceinline__ half max(half a, half b) {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
   return __hgt(__half(a), __half(b)) ? a : b;
@@ -127,5 +128,5 @@ __device__ __forceinline__ bool operator<=(const __half& lh, const __half& rh) {
 }
 #endif  // __CUDA_ARCH__ < 530
 #endif  // __HIPCC__
-
-#endif  // DGL_ARRAY_CUDA_FP16_CUH_
+#endif // DGL_ENABLE_HALF
+#endif  // DGL_ARRAY_HIP_FP16_H_

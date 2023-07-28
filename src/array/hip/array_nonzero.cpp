@@ -6,8 +6,8 @@
 
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -18,9 +18,7 @@ namespace impl {
 template <typename IdType>
 struct IsNonZeroIndex {
   explicit IsNonZeroIndex(const IdType* array) : array_(array) {}
-
-  __device__ bool operator()(const int64_t index) { return array_[index] != 0; }
-
+  __host__ __device__ bool operator()(const int64_t index) { return array_[index] != 0; }
   const IdType* array_;
 };
 
@@ -32,7 +30,7 @@ IdArray NonZero(IdArray array) {
   const int64_t len = array->shape[0];
   IdArray ret = NewIdArray(len, ctx, 64);
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const IdType* const in_data = static_cast<const IdType*>(array->data);
   int64_t* const out_data = static_cast<int64_t*>(ret->data);
@@ -54,7 +52,7 @@ IdArray NonZero(IdArray array) {
   device->FreeWorkspace(ctx, temp);
 
   // copy number of selected elements from GPU to CPU
-  int64_t num_nonzeros = cuda::GetCUDAScalar(device, ctx, d_num_nonzeros);
+  int64_t num_nonzeros = hip::GetHIPScalar(device, ctx, d_num_nonzeros);
   device->FreeWorkspace(ctx, d_num_nonzeros);
   device->StreamSync(ctx, stream);
 

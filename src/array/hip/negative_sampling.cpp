@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2021 by Contributors
- * @file array/cuda/negative_sampling.cu
+ * @file array/hip/negative_sampling.cu
  * @brief rowwise sampling
  */
 
@@ -10,8 +10,8 @@
 #include <dgl/array_iterator.h>
 #include <dgl/random.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 using namespace dgl::runtime;
@@ -37,7 +37,7 @@ __global__ void _GlobalUniformNegativeSamplingKernel(
 
   while (tx < num_samples) {
     for (int i = 0; i < num_trials; ++i) {
-      uint4 result = curand4(&rng);
+      uint4 result = hiprand4(&rng);
       // Turns out that result.x is always 0 with the above RNG.
       uint64_t y_hi = result.y >> 16;
       uint64_t y_lo = result.y & 0xFFFF;
@@ -141,8 +141,8 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
   IdType* out_row_data = out_row.Ptr<IdType>();
   IdType* out_col_data = out_col.Ptr<IdType>();
   auto device = runtime::DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  const int nt = cuda::FindNumThreads(num_actual_samples);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  const int nt = hip::FindNumThreads(num_actual_samples);
   const int nb = (num_actual_samples + nt - 1) / nt;
   std::pair<IdArray, IdArray> result;
   int64_t num_out;
@@ -166,7 +166,7 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
   HIP_CALL(hipcub::DeviceSelect::If(
       tmp, tmp_size, begin, out_begin, num_out_cuda, num_actual_samples, op,
       stream));
-  num_out = cuda::GetCUDAScalar(device, ctx, num_out_cuda);
+  num_out = hip::GetHIPScalar(device, ctx, num_out_cuda);
 
   if (!replace) {
     IdArray unique_row = IdArray::Empty({num_out}, dtype, ctx);
@@ -190,7 +190,7 @@ std::pair<IdArray, IdArray> CSRGlobalUniformNegativeSampling(
     HIP_CALL(hipcub::DeviceSelect::Unique(
         tmp_unique, tmp_size_unique, out_begin, unique_begin, num_out_cuda,
         num_out, stream));
-    num_out = cuda::GetCUDAScalar(device, ctx, num_out_cuda);
+    num_out = hip::GetHIPScalar(device, ctx, num_out_cuda);
 
     num_out = std::min(num_samples, num_out);
     result = {

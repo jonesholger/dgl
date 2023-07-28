@@ -29,14 +29,14 @@
 #include <memory>
 #include <utility>
 
-#include "../../../runtime/cuda/cuda_common.h"
+#include "../../../runtime/hip/hip_common.h"
 #include "../../heterograph.h"
 #include "../to_block.h"
-#include "cuda_map_edges.cuh"
+#include "hip_map_edges.h"
 
 using namespace dgl::aten;
-using namespace dgl::runtime::cuda;
-using namespace dgl::transform::cuda;
+using namespace dgl::runtime::hip;
+using namespace dgl::transform::hip;
 using TensorDispatcher = dgl::runtime::TensorDispatcher;
 
 namespace dgl {
@@ -155,7 +155,7 @@ struct CUDAIdsMapper {
     std::vector<int64_t>& num_nodes_per_type = *num_nodes_per_type_ptr;
     const bool generate_lhs_nodes = lhs_nodes.empty();
     auto device = runtime::DeviceAPI::Get(ctx);
-    hipStream_t stream = runtime::getCurrentCUDAStream();
+    hipStream_t stream = runtime::getCurrentHIPStream();
 
     // Allocate space for map creation process.
     DeviceNodeMapMaker<IdType> maker(maxNodesPerType);

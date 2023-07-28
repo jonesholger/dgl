@@ -1,14 +1,14 @@
 /**
  *  Copyright (c) 2019-2022 by Contributors
- * @file array/cuda/uvm/array_index_select_uvm.cu
+ * @file array/hip/uvm/array_index_select_uvm.cu
  * @brief Array index select GPU implementation
  */
 #include <dgl/array.h>
 
-#include "../../../runtime/cuda/cuda_common.h"
-#include "../array_index_select.cuh"
+#include "../../../runtime/hip/hip_common.h"
+#include "../array_index_select.h"
 #include "../utils.h"
-#include "./array_index_select_uvm.cuh"
+#include "./array_index_select_uvm.h"
 
 namespace dgl {
 using runtime::NDArray;
@@ -17,7 +17,7 @@ namespace impl {
 
 template <typename DType, typename IdType>
 NDArray IndexSelectCPUFromGPU(NDArray array, IdArray index) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const IdType* idx_data = static_cast<IdType*>(index->data);
   const int64_t arr_len = array->shape[0];
   const int64_t len = index->shape[0];
@@ -25,7 +25,7 @@ NDArray IndexSelectCPUFromGPU(NDArray array, IdArray index) {
   std::vector<int64_t> shape{len};
 
   CHECK(array.IsPinned());
-  const DType* array_data = static_cast<DType*>(cuda::GetDevicePointer(array));
+  const DType* array_data = static_cast<DType*>(hip::GetDevicePointer(array));
   CHECK_EQ(index->ctx.device_type, kDGLCUDA);
 
   for (int d = 1; d < array->ndim; ++d) {
@@ -38,7 +38,7 @@ NDArray IndexSelectCPUFromGPU(NDArray array, IdArray index) {
   DType* ret_data = static_cast<DType*>(ret->data);
 
   if (num_feat == 1) {
-    const int nt = cuda::FindNumThreads(len);
+    const int nt = hip::FindNumThreads(len);
     const int nb = (len + nt - 1) / nt;
     HIP_KERNEL_CALL(
         IndexSelectSingleKernel, nb, nt, 0, stream, array_data, idx_data, len,
@@ -75,7 +75,7 @@ template NDArray IndexSelectCPUFromGPU<int64_t, int64_t>(NDArray, IdArray);
 
 template <typename DType, typename IdType>
 void IndexScatterGPUToCPU(NDArray dest, IdArray index, NDArray source) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const DType* source_data = static_cast<DType*>(source->data);
   const IdType* idx_data = static_cast<IdType*>(index->data);
   const int64_t arr_len = dest->shape[0];
@@ -84,7 +84,7 @@ void IndexScatterGPUToCPU(NDArray dest, IdArray index, NDArray source) {
   std::vector<int64_t> shape{len};
 
   CHECK(dest.IsPinned());
-  DType* dest_data = static_cast<DType*>(cuda::GetDevicePointer(dest));
+  DType* dest_data = static_cast<DType*>(hip::GetDevicePointer(dest));
   CHECK_EQ(index->ctx.device_type, kDGLCUDA);
   CHECK_EQ(source->ctx.device_type, kDGLCUDA);
 
@@ -95,7 +95,7 @@ void IndexScatterGPUToCPU(NDArray dest, IdArray index, NDArray source) {
   if (len == 0) return;
 
   if (num_feat == 1) {
-    const int nt = cuda::FindNumThreads(len);
+    const int nt = hip::FindNumThreads(len);
     const int nb = (len + nt - 1) / nt;
     HIP_KERNEL_CALL(
         IndexScatterSingleKernel, nb, nt, 0, stream, source_data, idx_data, len,

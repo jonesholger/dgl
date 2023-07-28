@@ -1,24 +1,24 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/spmm.cu
+ * @file array/hip/spmm.cu
  * @brief SPMM C APIs and definitions.
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./functor.cuh"
-#include "./ge_spmm.cuh"
-#include "./spmm.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./functor.h"
+#include "./ge_spmm.h"
+#include "./spmm.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
 
 /**
  * @brief CUDA implementation of g-SpMM on Csr format.
- * @note use cusparse if the reduce operator is `sum` and there is
+ * @note use hipsparse if the reduce operator is `sum` and there is
  *       no broadcast, use dgl's kernel in other cases.
  */
 template <int XPU, typename IdType, typename DType>
@@ -31,40 +31,40 @@ void SpMMCsr(
 
   if (reduce == "sum") {
     bool more_nnz = (csr.indices->shape[0] > csr.num_rows * csr.num_cols);
-    if (op == "copy_lhs" && cusparse_available<DType, IdType>(more_nnz)) {
-      // cusparse
+    if (op == "copy_lhs" && hipsparse_available<DType, IdType>(more_nnz)) {
+      // hipsparse
       int64_t x_length = 1;
       for (int i = 1; i < ufeat->ndim; ++i) x_length *= ufeat->shape[i];
-      CusparseCsrmm2<DType, IdType>(
+      hipsparseCsrmm2<DType, IdType>(
           ufeat->ctx, csr, static_cast<DType*>(ufeat->data), nullptr,
           static_cast<DType*>(out->data), x_length);
     } else if (
         op == "mul" && is_scalar_efeat &&
-        cusparse_available<DType, IdType>(more_nnz)) {
-      // cusparse
+        hipsparse_available<DType, IdType>(more_nnz)) {
+      // hipsparse
       int64_t x_length = 1;
       for (int i = 1; i < ufeat->ndim; ++i) x_length *= ufeat->shape[i];
       if (!IsNullArray(csr.data)) {
         efeat = IndexSelect(efeat, csr.data);
       }
-      CusparseCsrmm2<DType, IdType>(
+      hipsparseCsrmm2<DType, IdType>(
           ufeat->ctx, csr, static_cast<DType*>(ufeat->data),
           static_cast<DType*>(efeat->data), static_cast<DType*>(out->data),
           x_length);
     } else {  // general kernel
       SWITCH_OP(op, Op, {
-        cuda::SpMMCsr<IdType, DType, Op, cuda::reduce::Sum<IdType, DType> >(
+        hip::SpMMCsr<IdType, DType, Op, hip::reduce::Sum<IdType, DType> >(
             bcast, csr, ufeat, efeat, out, NullArray(), NullArray());
       });
     }
   } else if (reduce == "max") {
     SWITCH_OP(op, Op, {
-      cuda::SpMMCsr<IdType, DType, Op, cuda::reduce::Max<IdType, DType> >(
+      hip::SpMMCsr<IdType, DType, Op, hip::reduce::Max<IdType, DType> >(
           bcast, csr, ufeat, efeat, out, out_aux[0], out_aux[1]);
     });
   } else if (reduce == "min") {
     SWITCH_OP(op, Op, {
-      cuda::SpMMCsr<IdType, DType, Op, cuda::reduce::Min<IdType, DType> >(
+      hip::SpMMCsr<IdType, DType, Op, hip::reduce::Min<IdType, DType> >(
           bcast, csr, ufeat, efeat, out, out_aux[0], out_aux[1]);
     });
   } else {
@@ -82,17 +82,17 @@ void SpMMCoo(
     std::vector<NDArray> out_aux) {
   if (reduce == "sum") {
     SWITCH_OP(op, Op, {
-      cuda::SpMMCoo<IdType, DType, Op, cuda::reduce::Sum<IdType, DType, true> >(
+      hip::SpMMCoo<IdType, DType, Op, hip::reduce::Sum<IdType, DType, true> >(
           bcast, coo, ufeat, efeat, out, NullArray(), NullArray());
     });
   } else if (reduce == "max") {
     SWITCH_OP(op, Op, {
-      cuda::SpMMCoo<IdType, DType, Op, cuda::reduce::Max<IdType, DType, true> >(
+      hip::SpMMCoo<IdType, DType, Op, hip::reduce::Max<IdType, DType, true> >(
           bcast, coo, ufeat, efeat, out, out_aux[0], out_aux[1]);
     });
   } else if (reduce == "min") {
     SWITCH_OP(op, Op, {
-      cuda::SpMMCoo<IdType, DType, Op, cuda::reduce::Min<IdType, DType, true> >(
+      hip::SpMMCoo<IdType, DType, Op, hip::reduce::Min<IdType, DType, true> >(
           bcast, coo, ufeat, efeat, out, out_aux[0], out_aux[1]);
     });
   } else {
@@ -100,6 +100,7 @@ void SpMMCoo(
   }
 }
 
+#ifdef DGL_ENABLE_HALF
 template void SpMMCsr<kDGLCUDA, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
@@ -108,6 +109,8 @@ template void SpMMCsr<kDGLCUDA, int64_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
+#endif
+
 #if BF16_ENABLED
 template void SpMMCsr<kDGLCUDA, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
@@ -135,6 +138,7 @@ template void SpMMCsr<kDGLCUDA, int64_t, double>(
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 
+#ifdef DGL_ENABLE_HALF
 template void SpMMCoo<kDGLCUDA, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
@@ -143,6 +147,8 @@ template void SpMMCoo<kDGLCUDA, int64_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
+#endif
+
 #if BF16_ENABLED
 template void SpMMCoo<kDGLCUDA, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,

@@ -1,22 +1,22 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/dispatcher.cuh
- * @brief Templates to dispatch into different cuSPARSE routines based on the
+ * @file array/hip/dispatcher.cuh
+ * @brief Templates to dispatch into different hipsparse routines based on the
  * type argument.
  */
-#ifndef DGL_ARRAY_CUDA_CUSPARSE_DISPATCHER_CUH_
-#define DGL_ARRAY_CUDA_CUSPARSE_DISPATCHER_CUH_
+#ifndef DGL_ARRAY_HIPSPARSE_DISPATCHER_H_
+#define DGL_ARRAY_HIPSPARSE_DISPATCHER_H_
 
 #include <hipsparse.h>
 #include <dgl/runtime/c_runtime_api.h>
 
-#include "bf16.cuh"
-#include "fp16.cuh"
+#include "bf16.h"
+#include "fp16.h"
 
 namespace dgl {
 namespace aten {
 
-/** @brief cusparseXcsrgemm dispatcher */
+/** @brief hipsparseXcsrgemm dispatcher */
 template <typename DType>
 struct CSRGEMM {
   template <typename... Args>
@@ -41,7 +41,7 @@ template <>
 struct CSRGEMM<__half> {
   template <typename... Args>
   static inline hipsparseStatus_t bufferSizeExt(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgemm2_bufferSizeExt, so a
+    // TODO(ndickson): There is no hipsparseHcsrgemm2_bufferSizeExt, so a
     // different implementation would be required.
     LOG(FATAL) << "CSRGEMM::bufferSizeExt does not support dtype half (FP16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -54,7 +54,7 @@ struct CSRGEMM<__half> {
 
   template <typename... Args>
   static inline hipsparseStatus_t compute(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgemm2, so a different
+    // TODO(ndickson): There is no hipsparseHcsrgemm2, so a different
     // implementation would be required.
     LOG(FATAL) << "CSRGEMM::compute does not support dtype half (FP16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -66,7 +66,7 @@ template <>
 struct CSRGEMM<__nv_bfloat16> {
   template <typename... Args>
   static inline hipsparseStatus_t bufferSizeExt(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgemm2_bufferSizeExt, so a
+    // TODO(ndickson): There is no hipsparseHcsrgemm2_bufferSizeExt, so a
     // different implementation would be required.
     LOG(FATAL)
         << "CSRGEMM::bufferSizeExt does not support dtype bfloat16 (BF16).";
@@ -80,7 +80,7 @@ struct CSRGEMM<__nv_bfloat16> {
 
   template <typename... Args>
   static inline hipsparseStatus_t compute(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgemm2, so a different
+    // TODO(ndickson): There is no hipsparseHcsrgemm2, so a different
     // implementation would be required.
     LOG(FATAL) << "CSRGEMM::compute does not support dtype bfloat16 (BF16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -124,7 +124,7 @@ struct CSRGEMM<double> {
   }
 };
 
-/** @brief cusparseXcsrgeam dispatcher */
+/** @brief hipsparseXcsrgeam dispatcher */
 template <typename DType>
 struct CSRGEAM {
   template <typename... Args>
@@ -149,7 +149,7 @@ template <>
 struct CSRGEAM<__half> {
   template <typename... Args>
   static inline hipsparseStatus_t bufferSizeExt(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgeam2_bufferSizeExt, so a
+    // TODO(ndickson): There is no hipsparseHcsrgeam2_bufferSizeExt, so a
     // different implementation would be required.
     LOG(FATAL) << "CSRGEAM::bufferSizeExt does not support dtype half (FP16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -162,7 +162,7 @@ struct CSRGEAM<__half> {
 
   template <typename... Args>
   static inline hipsparseStatus_t compute(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgeam2, so a different
+    // TODO(ndickson): There is no hipsparseHcsrgeam2, so a different
     // implementation would be required.
     LOG(FATAL) << "CSRGEAM::compute does not support dtype half (FP16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -174,7 +174,7 @@ template <>
 struct CSRGEAM<__nv_bfloat16> {
   template <typename... Args>
   static inline hipsparseStatus_t bufferSizeExt(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgeam2_bufferSizeExt, so a
+    // TODO(ndickson): There is no hipsparseHcsrgeam2_bufferSizeExt, so a
     // different implementation would be required.
     LOG(FATAL)
         << "CSRGEAM::bufferSizeExt does not support dtype bfloat16 (BF16).";
@@ -188,7 +188,7 @@ struct CSRGEAM<__nv_bfloat16> {
 
   template <typename... Args>
   static inline hipsparseStatus_t compute(Args... args) {
-    // TODO(ndickson): There is no cusparseHcsrgeam2, so a different
+    // TODO(ndickson): There is no hipsparseHcsrgeam2, so a different
     // implementation would be required.
     LOG(FATAL) << "CSRGEAM::compute does not support dtype bfloat16 (BF16).";
     return static_cast<hipsparseStatus_t>(0);
@@ -235,4 +235,4 @@ struct CSRGEAM<double> {
 };  // namespace aten
 };  // namespace dgl
 
-#endif  // DGL_ARRAY_CUDA_CUSPARSE_DISPATCHER_CUH_
+#endif  // DGL_ARRAY_HIPSPARSE_DISPATCHER_H_

@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/segment_reduce.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/segment_reduce.cuh' statisitics:
   CONVERTED refs count: 4
   TOTAL lines of code: 262
   WARNINGS: 0

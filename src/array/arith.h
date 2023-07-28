@@ -9,6 +9,10 @@
 #ifdef __CUDACC__
 #define DGLDEVICE __device__
 #define DGLINLINE __forceinline__
+#elif  __HIP_DEVICE_COMPILE__
+#define DGLDEVICE __device__
+#define __forceinline__ inline __attribute__((always_inline))
+#define DGLINLINE __forceinline__
 #else
 #define DGLDEVICE
 #define DGLINLINE inline

@@ -1,9 +1,9 @@
-  warning: ./src/array/cuda/sddmm_hetero_csr.cu:51: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/sddmm_hetero_csr.cu:51: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/sddmm_hetero_csr.cu:57: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/sddmm_hetero_csr.cu:57: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/sddmm_hetero_csr.cu:51: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/sddmm_hetero_csr.cu:51: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/sddmm_hetero_csr.cu:57: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/sddmm_hetero_csr.cu:57: unsupported identifier "__nv_bfloat16"
 
-[HIPIFY] info: file './src/array/cuda/sddmm_hetero_csr.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/sddmm_hetero_csr.cu' statisitics:
   CONVERTED refs count: 2
   TOTAL lines of code: 90
   WARNINGS: 4

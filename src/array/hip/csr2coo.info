@@ -1,13 +1,13 @@
 
-[HIPIFY] info: file './src/array/cuda/csr2coo.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/csr2coo.cu' statisitics:
   CONVERTED refs count: 11
   TOTAL lines of code: 165
   WARNINGS: 0
 [HIPIFY] info: CONVERTED refs by names:
-  CUSPARSE_INDEX_BASE_ZERO => HIPSPARSE_INDEX_BASE_ZERO: 1
+  hipsparse_INDEX_BASE_ZERO => HIPSPARSE_INDEX_BASE_ZERO: 1
   cudaStream_t => hipStream_t: 3
-  cusparseCreate => hipsparseCreate: 2
-  cusparseSetStream => hipsparseSetStream: 2
-  cusparseXcoosortByRow => hipsparseXcoosortByRow: 1
-  cusparseXcoosort_bufferSizeExt => hipsparseXcoosort_bufferSizeExt: 1
-  cusparseXcsr2coo => hipsparseXcsr2coo: 1
+  hipsparseCreate => hipsparseCreate: 2
+  hipsparseSetStream => hipsparseSetStream: 2
+  hipsparseXcoosortByRow => hipsparseXcoosortByRow: 1
+  hipsparseXcoosort_bufferSizeExt => hipsparseXcoosort_bufferSizeExt: 1
+  hipsparseXcsr2coo => hipsparseXcsr2coo: 1

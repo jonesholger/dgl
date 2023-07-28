@@ -26,14 +26,14 @@
 #include <memory>
 #include <utility>
 
-#include "../../../runtime/cuda/cuda_common.h"
+#include "../../../runtime/hip/hip_common.h"
 #include "../../heterograph.h"
 #include "../compact.h"
-#include "cuda_map_edges.cuh"
+#include "hip_map_edges.h"
 
 using namespace dgl::aten;
-using namespace dgl::runtime::cuda;
-using namespace dgl::transform::cuda;
+using namespace dgl::runtime::hip;
+using namespace dgl::transform::hip;
 
 namespace dgl {
 namespace transform {
@@ -81,7 +81,7 @@ std::pair<std::vector<HeteroGraphPtr>, std::vector<IdArray>> CompactGraphsGPU(
     const std::vector<IdArray> &always_preserve) {
   const auto &ctx = graphs[0]->Context();
   auto device = runtime::DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   CHECK_EQ(ctx.device_type, kDGLCUDA);
 

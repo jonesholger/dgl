@@ -1,23 +1,23 @@
 #include "hip/hip_runtime.h"
 /**
  * Copyright (c) 2020 by Contributors
- * @file array/cuda/ge_spmm.cuh
+ * @file array/hip/ge_spmm.cuh
  * @brief GE-SpMM CUDA kernel function header.
  */
 #ifndef DGL_ARRAY_CUDA_GE_SPMM_CUH_
 #define DGL_ARRAY_CUDA_GE_SPMM_CUH_
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
-#include "atomic.cuh"
-#include "macro.cuh"
+#include "atomic.h"
+#include "macro.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
-namespace cuda {
+namespace hip {
 
 /**
  * @brief CUDA kernel of GE-SpMM on Csr.
@@ -122,7 +122,7 @@ void GESpMMCsr(
   const DType* efeat_data = efeat.Ptr<DType>();
   DType* out_data = out.Ptr<DType>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const int ntx = 32;
   const int nty = 32;
@@ -138,7 +138,7 @@ void GESpMMCsr(
       csr.num_cols, feat_len);
 }
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 

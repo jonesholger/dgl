@@ -1,6 +1,6 @@
 /**
  *  Copyright (c) 2021 by Contributors
- * @file array/cuda/csr_get_data.cu
+ * @file array/hip/csr_get_data.cu
  * @brief Retrieve entries of a CSR matrix
  */
 #include <dgl/array.h>
@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -36,36 +36,38 @@ NDArray CSRGetData(
   IdArray rst = NDArray::Empty({rstlen}, weights->dtype, rows->ctx);
   if (rstlen == 0) return rst;
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  const int nt = cuda::FindNumThreads(rstlen);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  const int nt = hip::FindNumThreads(rstlen);
   const int nb = (rstlen + nt - 1) / nt;
   if (return_eids)
     BUG_IF_FAIL(DGLDataTypeTraits<DType>::dtype == rows->dtype)
         << "DType does not match row's dtype.";
 
   const IdType* indptr_data =
-      static_cast<IdType*>(cuda::GetDevicePointer(csr.indptr));
+      static_cast<IdType*>(hip::GetDevicePointer(csr.indptr));
   const IdType* indices_data =
-      static_cast<IdType*>(cuda::GetDevicePointer(csr.indices));
+      static_cast<IdType*>(hip::GetDevicePointer(csr.indices));
   const IdType* data_data =
-      CSRHasData(csr) ? static_cast<IdType*>(cuda::GetDevicePointer(csr.data))
+      CSRHasData(csr) ? static_cast<IdType*>(hip::GetDevicePointer(csr.data))
                       : nullptr;
 
   // TODO(minjie): use binary search for sorted csr
   HIP_KERNEL_CALL(
-      cuda::_LinearSearchKernel, nb, nt, 0, stream, indptr_data, indices_data,
+      hip::_LinearSearchKernel, nb, nt, 0, stream, indptr_data, indices_data,
       data_data, rows.Ptr<IdType>(), cols.Ptr<IdType>(), row_stride, col_stride,
       rstlen, return_eids ? nullptr : weights.Ptr<DType>(), filler,
       rst.Ptr<DType>());
   return rst;
 }
 
+#ifdef DGL_ENABLE_HALF
 template NDArray CSRGetData<kDGLCUDA, int32_t, __half>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __half filler);
 template NDArray CSRGetData<kDGLCUDA, int64_t, __half>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __half filler);
+#endif
 #if BF16_ENABLED
 template NDArray CSRGetData<kDGLCUDA, int32_t, __nv_bfloat16>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,

@@ -16,7 +16,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
- * \file array/cuda/labor_sampling.cu
+ * \file array/hip/labor_sampling.cu
  * \brief labor sampling
  */
 
@@ -24,6 +24,8 @@
 #include <dgl/aten/coo.h>
 #include <dgl/random.h>
 #include <dgl/runtime/device_api.h>
+
+#if 1
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
 #include <thrust/execution_policy.h>
@@ -34,6 +36,7 @@
 #include <thrust/shuffle.h>
 #include <thrust/transform.h>
 #include <thrust/zip_function.h>
+#endif
 
 #include <algorithm>
 #include <limits>
@@ -41,13 +44,13 @@
 #include <type_traits>
 #include <utility>
 
-#include "../../array/cuda/atomic.cuh"
-#include "../../array/cuda/utils.h"
-#include "../../graph/transform/cuda/cuda_map_edges.cuh"
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
-#include "./functor.cuh"
-#include "./spmm.cuh"
+#include "../../array/hip/atomic.h"
+#include "../../array/hip/utils.h"
+#include "../../graph/transform/hip/hip_map_edges.h"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
+#include "./functor.h"
+#include "./spmm.h"
 
 namespace dgl {
 namespace aten {
@@ -128,7 +131,8 @@ struct StencilOpFused {
   const IdType* indptr;
   const IdType* indices;
   const IdType* nids;
-  __device__ auto operator()(IdType idx) {
+
+  __host__ __device__ auto operator()(IdType idx) {
     const auto in_row = idx_coo[idx];
     const auto ps = probs[idx];
     IdType rofs = idx - subindptr[in_row];
@@ -308,7 +312,7 @@ void compute_importance_sampling_probabilities(
     FloatArray cs_arr,  // holds the computed cs values, has size num_rows
     const bool weighted, const FloatType* A, const FloatType* ds,
     const FloatType* d2s, const IdType num_picks, DGLContext ctx,
-    const runtime::CUDAWorkspaceAllocator& allocator,
+    const runtime::HIPWorkspaceAllocator& allocator,
     const exec_policy_t& exec_policy, const int importance_sampling,
     IdType* hop_1,  // holds the contiguous one-hop neighborhood, has size |E|
     FloatType* rands,  // holds the rolled random numbers r_t for each edge, has
@@ -417,14 +421,14 @@ void compute_importance_sampling_probabilities(
   for (int iters = 0; iters < importance_sampling || importance_sampling < 0;
        iters++) {
     if (weighted && iters == 0) {
-      cuda::SpMMCoo<
-          IdType, FloatType, cuda::binary::Mul<FloatType>,
-          cuda::reduce::Max<IdType, FloatType, true>>(
+      hip::SpMMCoo<
+          IdType, FloatType, hip::binary::Mul<FloatType>,
+          hip::reduce::Max<IdType, FloatType, true>>(
           bcast_off, rmat, cs_arr, A_l_arr, probs_arr_2, arg_u, arg_e);
     } else {
-      cuda::SpMMCoo<
-          IdType, FloatType, cuda::binary::CopyLhs<FloatType>,
-          cuda::reduce::Max<IdType, FloatType, true>>(
+      hip::SpMMCoo<
+          IdType, FloatType, hip::binary::CopyLhs<FloatType>,
+          hip::reduce::Max<IdType, FloatType, true>>(
           bcast_off, rmat, cs_arr, NullArray(), iters ? probs_arr : probs_arr_2,
           arg_u, arg_e);
     }
@@ -473,10 +477,10 @@ std::pair<COOMatrix, FloatArray> CSRLaborSampling(
 
   const auto& ctx = rows_arr->ctx;
 
-  runtime::CUDAWorkspaceAllocator allocator(ctx);
+  runtime::HIPWorkspaceAllocator allocator(ctx);
 
-  const auto stream = runtime::getCurrentCUDAStream();
-  const auto exec_policy = thrust::cuda::par_nosync(allocator).on(stream);
+  const auto stream = runtime::getCurrentHIPStream();
+  const auto exec_policy = thrust::hip::par_nosync(allocator).on(stream);
 
   auto device = runtime::DeviceAPI::Get(ctx);
 

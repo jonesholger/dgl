@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/graph/transform/cuda/cuda_map_edges.cuh' statisitics:
+[HIPIFY] info: file './src/graph/transform/cuda/hip_map_edges.h' statisitics:
   CONVERTED refs count: 4
   TOTAL lines of code: 240
   WARNINGS: 0

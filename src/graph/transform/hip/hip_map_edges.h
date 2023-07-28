@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * @file graph/transform/cuda/cuda_map_edges.cuh
+ * @file graph/transform/cuda/hip_map_edges.h
  * @brief Device level functions for mapping edges.
  */
 
@@ -32,17 +32,16 @@
 #include <utility>
 #include <vector>
 
-#include "../../../runtime/cuda/cuda_common.h"
-#include "../../../runtime/cuda/cuda_hashtable.cuh"
+#include "../../../runtime/hip/hip_common.h"
+#include "../../../runtime/hip/hip_hashtable.h"
 
 using namespace dgl::aten;
-using namespace dgl::runtime::cuda;
+using namespace dgl::runtime::hip;
 
 namespace dgl {
 namespace transform {
 
-namespace cuda {
-
+namespace hip {
 template <typename IdType, int BLOCK_SIZE, IdType TILE_SIZE>
 __device__ void map_vertex_ids(
     const IdType* const global, IdType* const new_global,
@@ -60,7 +59,6 @@ __device__ void map_vertex_ids(
     new_global[idx] = mapping.local;
   }
 }
-
 /**
  * @brief Generate mapped edge endpoint ids.
  *

@@ -1,13 +1,13 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/csr_sort.cc
+ * @file array/hip/csr_sort.cc
  * @brief Sort CSR index
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -39,18 +39,18 @@ __global__ void _SegmentIsSorted(
 template <DGLDeviceType XPU, typename IdType>
 bool CSRIsSorted(CSRMatrix csr) {
   const auto& ctx = csr.indptr->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(ctx);
   // We allocate a workspace of num_rows bytes. It wastes a little bit memory
   // but should be fine.
   int8_t* flags =
       static_cast<int8_t*>(device->AllocWorkspace(ctx, csr.num_rows));
-  const int nt = cuda::FindNumThreads(csr.num_rows);
+  const int nt = hip::FindNumThreads(csr.num_rows);
   const int nb = (csr.num_rows + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _SegmentIsSorted, nb, nt, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), csr.num_rows, flags);
-  bool ret = cuda::AllTrue(flags, csr.num_rows, ctx);
+  bool ret = hip::AllTrue(flags, csr.num_rows, ctx);
   device->FreeWorkspace(ctx, flags);
   return ret;
 }
@@ -65,14 +65,14 @@ void CSRSort_(CSRMatrix* csr) {
 
 template <>
 void CSRSort_<kDGLCUDA, int32_t>(CSRMatrix* csr) {
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   auto device = runtime::DeviceAPI::Get(csr->indptr->ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
 
   NDArray indptr = csr->indptr;
   NDArray indices = csr->indices;
@@ -83,30 +83,30 @@ void CSRSort_<kDGLCUDA, int32_t>(CSRMatrix* csr) {
   NDArray data = csr->data;
 
   size_t workspace_size = 0;
-  CUSPARSE_CALL(hipsparseXcsrsort_bufferSizeExt(
-      thr_entry->cusparse_handle, csr->num_rows, csr->num_cols, nnz,
+  HIPSPARSE_CALL(hipsparseXcsrsort_bufferSizeExt(
+      thr_entry->hipsparse_handle, csr->num_rows, csr->num_cols, nnz,
       indptr.Ptr<int32_t>(), indices.Ptr<int32_t>(), &workspace_size));
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
 
   hipsparseMatDescr_t descr;
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&descr));
-  CUSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-  CUSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
-  CUSPARSE_CALL(hipsparseXcsrsort(
-      thr_entry->cusparse_handle, csr->num_rows, csr->num_cols, nnz, descr,
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&descr));
+  HIPSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
+  HIPSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
+  HIPSPARSE_CALL(hipsparseXcsrsort(
+      thr_entry->hipsparse_handle, csr->num_rows, csr->num_cols, nnz, descr,
       indptr.Ptr<int32_t>(), indices.Ptr<int32_t>(), data.Ptr<int32_t>(),
       workspace));
 
   csr->sorted = true;
 
   // free resources
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(descr));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(descr));
   device->FreeWorkspace(ctx, workspace);
 }
 
 template <>
 void CSRSort_<kDGLCUDA, int64_t>(CSRMatrix* csr) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(csr->indptr->ctx);
 
   const auto& ctx = csr->indptr->ctx;

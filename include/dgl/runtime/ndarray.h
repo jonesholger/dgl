@@ -57,12 +57,14 @@ GEN_DGLDATATYPETRAITS_FOR(int64_t, kDGLInt, 64);
 // arrays, so I'm just converting uints to signed DTypes.
 GEN_DGLDATATYPETRAITS_FOR(uint32_t, kDGLInt, 32);
 GEN_DGLDATATYPETRAITS_FOR(uint64_t, kDGLInt, 64);
+#if 0
 #ifdef DGL_USE_CUDA
 GEN_DGLDATATYPETRAITS_FOR(__half, kDGLFloat, 16);
 #if BF16_ENABLED
 GEN_DGLDATATYPETRAITS_FOR(__nv_bfloat16, kDGLBfloat, 16);
 #endif  // BF16_ENABLED
 #endif  // DGL_USE_CUDA
+#endif
 GEN_DGLDATATYPETRAITS_FOR(float, kDGLFloat, 32);
 GEN_DGLDATATYPETRAITS_FOR(double, kDGLFloat, 64);
 #undef GEN_DGLDATATYPETRAITS_FOR

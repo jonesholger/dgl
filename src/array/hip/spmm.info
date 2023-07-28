@@ -1,36 +1,36 @@
-  warning: ./src/array/cuda/spmm.cuh:38: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:38: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:71: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:71: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:73: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:73: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:74: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:74: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:75: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:75: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:149: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:149: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:150: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:150: unsupported identifier "__nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:163: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:174: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:177: removed identifier "cusparseScsrmm2" since CUDA 11.0
-  warning: ./src/array/cuda/spmm.cuh:177: removed identifier "cusparseScsrmm" since CUDA 11.0
-  warning: ./src/array/cuda/spmm.cuh:177: deprecated identifier "cusparseScsrmm2" since CUDA 10.2
-  warning: ./src/array/cuda/spmm.cuh:177: deprecated identifier "cusparseScsrmm" since CUDA 10.2
-  warning: ./src/array/cuda/spmm.cuh:186: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:189: removed identifier "cusparseDcsrmm" since CUDA 11.0
-  warning: ./src/array/cuda/spmm.cuh:189: removed identifier "cusparseDcsrmm2" since CUDA 11.0
-  warning: ./src/array/cuda/spmm.cuh:189: deprecated identifier "cusparseDcsrmm2" since CUDA 10.2
-  warning: ./src/array/cuda/spmm.cuh:189: deprecated identifier "cusparseDcsrmm" since CUDA 10.2
-  warning: ./src/array/cuda/spmm.cuh:230: unsupported identifier "cusparseSpMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:264: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:321: unsupported identifier "cusparseSpMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:351: unsupported identifier "cusparseMatDescr"
-  warning: ./src/array/cuda/spmm.cuh:628: unsupported identifier "nv_bfloat16"
-  warning: ./src/array/cuda/spmm.cuh:628: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:38: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:38: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:71: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:71: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:73: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:73: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:74: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:74: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:75: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:75: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:149: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:149: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:150: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:150: unsupported identifier "__nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:163: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/spmm.cuh:174: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/spmm.cuh:177: removed identifier "hipsparseScsrmm2" since CUDA 11.0
+  warning: ./src/array/hip/spmm.cuh:177: removed identifier "hipsparseScsrmm" since CUDA 11.0
+  warning: ./src/array/hip/spmm.cuh:177: deprecated identifier "hipsparseScsrmm2" since CUDA 10.2
+  warning: ./src/array/hip/spmm.cuh:177: deprecated identifier "hipsparseScsrmm" since CUDA 10.2
+  warning: ./src/array/hip/spmm.cuh:186: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/spmm.cuh:189: removed identifier "hipsparseDcsrmm" since CUDA 11.0
+  warning: ./src/array/hip/spmm.cuh:189: removed identifier "hipsparseDcsrmm2" since CUDA 11.0
+  warning: ./src/array/hip/spmm.cuh:189: deprecated identifier "hipsparseDcsrmm2" since CUDA 10.2
+  warning: ./src/array/hip/spmm.cuh:189: deprecated identifier "hipsparseDcsrmm" since CUDA 10.2
+  warning: ./src/array/hip/spmm.cuh:230: unsupported identifier "hipsparseSpMatDescr"
+  warning: ./src/array/hip/spmm.cuh:264: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/spmm.cuh:321: unsupported identifier "hipsparseSpMatDescr"
+  warning: ./src/array/hip/spmm.cuh:351: unsupported identifier "hipsparseMatDescr"
+  warning: ./src/array/hip/spmm.cuh:628: unsupported identifier "nv_bfloat16"
+  warning: ./src/array/hip/spmm.cuh:628: unsupported identifier "__nv_bfloat16"
 
-[HIPIFY] info: file './src/array/cuda/spmm.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/spmm.cuh' statisitics:
   CONVERTED refs count: 124
   TOTAL lines of code: 795
   WARNINGS: 31
@@ -38,13 +38,13 @@
   CUBLAS_OP_N => HIPBLAS_OP_N: 1
   CUBLAS_OP_T => HIPBLAS_OP_T: 1
   CUBLAS_STATUS_EXECUTION_FAILED => HIPBLAS_STATUS_EXECUTION_FAILED: 3
-  CUSPARSE_INDEX_BASE_ZERO => HIPSPARSE_INDEX_BASE_ZERO: 4
-  CUSPARSE_MATRIX_TYPE_GENERAL => HIPSPARSE_MATRIX_TYPE_GENERAL: 2
-  CUSPARSE_OPERATION_NON_TRANSPOSE => HIPSPARSE_OPERATION_NON_TRANSPOSE: 6
-  CUSPARSE_OPERATION_TRANSPOSE => HIPSPARSE_OPERATION_TRANSPOSE: 2
-  CUSPARSE_ORDER_ROW => HIPSPARSE_ORDER_ROW: 4
-  CUSPARSE_SPMM_CSR_ALG2 => HIPSPARSE_SPMM_CSR_ALG2: 4
-  CUSPARSE_STATUS_EXECUTION_FAILED => HIPSPARSE_STATUS_EXECUTION_FAILED: 1
+  hipsparse_INDEX_BASE_ZERO => HIPSPARSE_INDEX_BASE_ZERO: 4
+  hipsparse_MATRIX_TYPE_GENERAL => HIPSPARSE_MATRIX_TYPE_GENERAL: 2
+  hipsparse_OPERATION_NON_TRANSPOSE => HIPSPARSE_OPERATION_NON_TRANSPOSE: 6
+  hipsparse_OPERATION_TRANSPOSE => HIPSPARSE_OPERATION_TRANSPOSE: 2
+  hipsparse_ORDER_ROW => HIPSPARSE_ORDER_ROW: 4
+  hipsparse_SPMM_CSR_ALG2 => HIPSPARSE_SPMM_CSR_ALG2: 4
+  hipsparse_STATUS_EXECUTION_FAILED => HIPSPARSE_STATUS_EXECUTION_FAILED: 1
   __half => __half: 12
   cublasCreate => hipblasCreate: 1
   cublasDgeam => hipblasDgeam: 1
@@ -54,23 +54,23 @@
   cublasSgeam => hipblasSgeam: 1
   cublasStatus_t => hipblasStatus_t: 5
   cudaStream_t => hipStream_t: 8
-  cusparseCreate => hipsparseCreate: 2
-  cusparseCreateCsr => hipsparseCreateCsr: 2
-  cusparseCreateDnMat => hipsparseCreateDnMat: 4
-  cusparseCreateMatDescr => hipsparseCreateMatDescr: 2
-  cusparseDcsrmm2 => hipsparseDcsrmm2: 1
-  cusparseDestroyDnMat => hipsparseDestroyDnMat: 4
-  cusparseDestroyMatDescr => hipsparseDestroyMatDescr: 2
-  cusparseDestroySpMat => hipsparseDestroySpMat: 2
-  cusparseDnMatDescr_t => hipsparseDnMatDescr_t: 2
-  cusparseHandle_t => hipsparseHandle_t: 3
-  cusparseMatDescr_t => hipsparseMatDescr_t: 5
-  cusparseOperation_t => hipsparseOperation_t: 6
-  cusparseScsrmm2 => hipsparseScsrmm2: 1
-  cusparseSetMatIndexBase => hipsparseSetMatIndexBase: 2
-  cusparseSetMatType => hipsparseSetMatType: 2
-  cusparseSetStream => hipsparseSetStream: 2
-  cusparseSpMM => hipsparseSpMM: 2
-  cusparseSpMM_bufferSize => hipsparseSpMM_bufferSize: 2
-  cusparseSpMatDescr_t => hipsparseSpMatDescr_t: 2
-  cusparseStatus_t => hipsparseStatus_t: 3
+  hipsparseCreate => hipsparseCreate: 2
+  hipsparseCreateCsr => hipsparseCreateCsr: 2
+  hipsparseCreateDnMat => hipsparseCreateDnMat: 4
+  hipsparseCreateMatDescr => hipsparseCreateMatDescr: 2
+  hipsparseDcsrmm2 => hipsparseDcsrmm2: 1
+  hipsparseDestroyDnMat => hipsparseDestroyDnMat: 4
+  hipsparseDestroyMatDescr => hipsparseDestroyMatDescr: 2
+  hipsparseDestroySpMat => hipsparseDestroySpMat: 2
+  hipsparseDnMatDescr_t => hipsparseDnMatDescr_t: 2
+  hipsparseHandle_t => hipsparseHandle_t: 3
+  hipsparseMatDescr_t => hipsparseMatDescr_t: 5
+  hipsparseOperation_t => hipsparseOperation_t: 6
+  hipsparseScsrmm2 => hipsparseScsrmm2: 1
+  hipsparseSetMatIndexBase => hipsparseSetMatIndexBase: 2
+  hipsparseSetMatType => hipsparseSetMatType: 2
+  hipsparseSetStream => hipsparseSetStream: 2
+  hipsparseSpMM => hipsparseSpMM: 2
+  hipsparseSpMM_bufferSize => hipsparseSpMM_bufferSize: 2
+  hipsparseSpMatDescr_t => hipsparseSpMatDescr_t: 2
+  hipsparseStatus_t => hipsparseStatus_t: 3

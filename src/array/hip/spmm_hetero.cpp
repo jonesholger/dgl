@@ -1,24 +1,24 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/spmm.cu
+ * @file array/hip/spmm.cu
  * @brief SPMM C APIs and definitions.
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./functor.cuh"
-#include "./ge_spmm.cuh"
-#include "./spmm.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./functor.h"
+#include "./ge_spmm.h"
+#include "./spmm.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
 
 /**
  * @brief CUDA implementation of g-SpMM on Csr format.
- * @note use cusparse if the reduce operator is `sum` and there is
+ * @note use hipsparse if the reduce operator is `sum` and there is
  *       no broadcast, use dgl's kernel in other cases.
  */
 template <int XPU, typename IdType, typename DType>
@@ -36,14 +36,17 @@ void SpMMCsrHetero(
   auto device = runtime::DeviceAPI::Get(vec_csr[0].indptr->ctx);
   std::vector<DType*> trans_out((*vec_out).size(), NULL);
 
-  bool use_legacy_cusparsemm =
+  bool use_legacy_hipsparsemm = false;
+
+#if 0
+  bool use_legacy_hipsparsemm =
       (CUDART_VERSION < 11000) && (reduce == "sum") &&
-      // legacy cuSPARSE does not care about NNZ, hence the argument "false".
-      ((op == "copy_lhs" && cusparse_available<DType, IdType>(false)) ||
+      // legacy hipsparse does not care about NNZ, hence the argument "false".
+      ((op == "copy_lhs" && hipsparse_available<DType, IdType>(false)) ||
        (op == "mul" && is_scalar_efeat &&
-        cusparse_available<DType, IdType>(false)));
+        hipsparse_available<DType, IdType>(false)));
   // Create temporary output buffer to store non-transposed output
-  if (use_legacy_cusparsemm) {
+  if (use_legacy_hipsparsemm) {
     for (dgl_type_t ntype = 0; ntype < (*vec_out).size(); ++ntype) {
       const int m = (*vec_out)[ntype]->shape[0];
       const int n = (*vec_out)[ntype]->shape[1];
@@ -54,6 +57,7 @@ void SpMMCsrHetero(
       trans_out[ntype] = out;
     }
   }
+#endif
   // Check shape of ufeat for all relation type and compute feature size
   int64_t x_length = 1;
   for (dgl_type_t etype = 0; etype < (ufeat_ntids.size() - 1); ++etype) {
@@ -87,11 +91,11 @@ void SpMMCsrHetero(
       if (reduce == "max")
         _Fill(
             out_off, vec_csr[etype].num_rows * dim,
-            cuda::reduce::Max<IdType, DType>::zero());
+            hip::reduce::Max<IdType, DType>::zero());
       else  // min
         _Fill(
             out_off, vec_csr[etype].num_rows * dim,
-            cuda::reduce::Min<IdType, DType>::zero());
+            hip::reduce::Min<IdType, DType>::zero());
       const dgl_type_t dst_id = out_ntids[etype];
       if (!updated[dst_id]) {
         updated[dst_id] = true;
@@ -111,7 +115,7 @@ void SpMMCsrHetero(
     }
   }
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   for (dgl_type_t etype = 0; etype < ufeat_ntids.size(); ++etype) {
     const dgl_type_t src_id = ufeat_ntids[etype];
     const dgl_type_t dst_id = out_ntids[etype];
@@ -120,22 +124,25 @@ void SpMMCsrHetero(
       bool more_nnz = (csr.indices->shape[0] > csr.num_rows * csr.num_cols);
       /* Call  SpMM for each relation type */
       if (op == "copy_lhs" &&
-          cusparse_available<DType, IdType>(more_nnz)) {  // cusparse
+          hipsparse_available<DType, IdType>(more_nnz)) {  // hipsparse
         /* If CUDA is less than 11.0, put the output in trans_out for later
          * transposition */
+        DType* out = static_cast<DType*>((*vec_out)[dst_id]->data);
+#if 0
         DType* out = (CUDART_VERSION < 11000)
                          ? trans_out[dst_id]
                          : static_cast<DType*>((*vec_out)[dst_id]->data);
-        CusparseCsrmm2Hetero<DType, IdType>(
+#endif
+        hipsparseCsrmm2Hetero<DType, IdType>(
             csr.indptr->ctx, csr, static_cast<DType*>(vec_ufeat[src_id]->data),
             nullptr, out, x_length, stream);
       } else if (
           op == "mul" && is_scalar_efeat &&
-          cusparse_available<DType, IdType>(more_nnz)) {  // cusparse
+          hipsparse_available<DType, IdType>(more_nnz)) {  // hipsparse
         NDArray efeat = vec_efeat[etype];
         if (!IsNullArray(csr.data))
           efeat = IndexSelect(efeat, csr.data);
-        CusparseCsrmm2Hetero<DType, IdType>(
+        hipsparseCsrmm2Hetero<DType, IdType>(
             csr.indptr->ctx, csr, static_cast<DType*>(vec_ufeat[src_id]->data),
             static_cast<DType*>(efeat->data),
             // TODO(Israt): Change (*vec_out) to trans_out to support CUDA
@@ -147,7 +154,7 @@ void SpMMCsrHetero(
         NDArray efeat =
             (vec_efeat.size() == 0) ? NullArray() : vec_efeat[etype];
         SWITCH_OP(op, Op, {
-          cuda::SpMMCsr<IdType, DType, Op, cuda::reduce::Sum<IdType, DType>>(
+          hip::SpMMCsr<IdType, DType, Op, hip::reduce::Sum<IdType, DType>>(
               bcast, csr, ufeat, efeat, (*vec_out)[dst_id], NullArray(),
               NullArray());
         });
@@ -158,8 +165,8 @@ void SpMMCsrHetero(
             (vec_ufeat.size() == 0) ? NullArray() : vec_ufeat[src_id];
         NDArray efeat =
             (vec_efeat.size() == 0) ? NullArray() : vec_efeat[etype];
-        cuda::SpMMCmpCsrHetero<
-            IdType, DType, Op, cuda::reduce::Max<IdType, DType>>(
+        hip::SpMMCmpCsrHetero<
+            IdType, DType, Op, hip::reduce::Max<IdType, DType>>(
             bcast, csr, ufeat, efeat, (*vec_out)[dst_id], (*out_aux)[0][dst_id],
             (*out_aux)[1][dst_id], (*out_aux)[2][dst_id], (*out_aux)[3][dst_id],
             src_id, etype);
@@ -170,8 +177,8 @@ void SpMMCsrHetero(
             (vec_ufeat.size() == 0) ? NullArray() : vec_ufeat[src_id];
         NDArray efeat =
             (vec_efeat.size() == 0) ? NullArray() : vec_efeat[etype];
-        cuda::SpMMCmpCsrHetero<
-            IdType, DType, Op, cuda::reduce::Min<IdType, DType>>(
+        hip::SpMMCmpCsrHetero<
+            IdType, DType, Op, hip::reduce::Min<IdType, DType>>(
             bcast, csr, ufeat, efeat, (*vec_out)[dst_id], (*out_aux)[0][dst_id],
             (*out_aux)[1][dst_id], (*out_aux)[2][dst_id], (*out_aux)[3][dst_id],
             src_id, etype);
@@ -181,7 +188,7 @@ void SpMMCsrHetero(
     }
   }
 
-  if (use_legacy_cusparsemm) {
+  if (use_legacy_hipsparsemm) {
     // transpose output
     for (dgl_type_t ntype = 0; ntype < (*vec_out).size(); ++ntype) {
       const int m = (*vec_out)[ntype]->shape[0];
@@ -194,6 +201,7 @@ void SpMMCsrHetero(
   }
 }
 
+#ifdef DGL_ENABLE_HALF
 template void SpMMCsrHetero<kDGLCUDA, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
@@ -208,6 +216,8 @@ template void SpMMCsrHetero<kDGLCUDA, int64_t, __half>(
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
+#endif
+
 #if BF16_ENABLED
 template void SpMMCsrHetero<kDGLCUDA, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,

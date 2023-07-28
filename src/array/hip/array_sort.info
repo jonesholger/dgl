@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/array_sort.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/array_sort.cu' statisitics:
   CONVERTED refs count: 1
   TOTAL lines of code: 60
   WARNINGS: 0

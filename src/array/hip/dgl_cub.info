@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/dgl_cub.cuh' statisitics:
+[HIPIFY] info: file './src/array/hip/dgl_cub.h' statisitics:
   CONVERTED refs count: 1
   TOTAL lines of code: 17
   WARNINGS: 0

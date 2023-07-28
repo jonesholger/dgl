@@ -1,25 +1,25 @@
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/spmm.cu
+ * @file array/hip/spmm.cu
  * @brief SpGEAM C APIs and definitions.
  */
 #include <dgl/array.h>
 #include <dgl/runtime/device_api.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./cusparse_dispatcher.cuh"
-#include "./functor.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./hipsparse_dispatcher.h"
+#include "./functor.h"
 
 namespace dgl {
 
 using namespace dgl::runtime;
 
 namespace aten {
-namespace cusparse {
+namespace hipsparse {
 
-/** Cusparse implementation of SpSum on Csr format. */
+/** hipsparse implementation of SpSum on Csr format. */
 template <typename DType, typename IdType>
-std::pair<CSRMatrix, NDArray> CusparseCsrgeam2(
+std::pair<CSRMatrix, NDArray> hipsparseCsrgeam2(
     const CSRMatrix& A, const NDArray A_weights_array, const CSRMatrix& B,
     const NDArray B_weights_array) {
   const int m = A.num_rows;
@@ -31,22 +31,22 @@ std::pair<CSRMatrix, NDArray> CusparseCsrgeam2(
   const DType beta = 1.0;
   auto ctx = A.indptr->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const DType* A_weights = A_weights_array.Ptr<DType>();
   const DType* B_weights = B_weights_array.Ptr<DType>();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle)
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle)
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
 
   hipsparseMatDescr_t matA, matB, matC;
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&matA));
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&matB));
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&matC));
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&matA));
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&matB));
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&matC));
 
   hipsparseSetPointerMode(
-      thr_entry->cusparse_handle, HIPSPARSE_POINTER_MODE_HOST);
+      thr_entry->hipsparse_handle, HIPSPARSE_POINTER_MODE_HOST);
   size_t workspace_size = 0;
   /* prepare output C */
   IdArray dC_csrOffsets = IdArray::Empty({m + 1}, A.indptr->dtype, ctx);
@@ -56,15 +56,15 @@ std::pair<CSRMatrix, NDArray> CusparseCsrgeam2(
   IdType* dC_columns_data = dC_columns.Ptr<IdType>();
   DType* dC_weights_data = dC_weights.Ptr<DType>();
   /* prepare buffer */
-  CUSPARSE_CALL(CSRGEAM<DType>::bufferSizeExt(
-      thr_entry->cusparse_handle, m, n, &alpha, matA, nnzA, A_weights,
+  HIPSPARSE_CALL(CSRGEAM<DType>::bufferSizeExt(
+      thr_entry->hipsparse_handle, m, n, &alpha, matA, nnzA, A_weights,
       A.indptr.Ptr<IdType>(), A.indices.Ptr<IdType>(), &beta, matB, nnzB,
       B_weights, B.indptr.Ptr<IdType>(), B.indices.Ptr<IdType>(), matC,
       dC_weights_data, dC_csrOffsets_data, dC_columns_data, &workspace_size));
 
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
-  CUSPARSE_CALL(CSRGEAM<DType>::nnz(
-      thr_entry->cusparse_handle, m, n, matA, nnzA, A.indptr.Ptr<IdType>(),
+  HIPSPARSE_CALL(CSRGEAM<DType>::nnz(
+      thr_entry->hipsparse_handle, m, n, matA, nnzA, A.indptr.Ptr<IdType>(),
       A.indices.Ptr<IdType>(), matB, nnzB, B.indptr.Ptr<IdType>(),
       B.indices.Ptr<IdType>(), matC, dC_csrOffsets_data, &nnzC, workspace));
 
@@ -73,24 +73,24 @@ std::pair<CSRMatrix, NDArray> CusparseCsrgeam2(
   dC_columns_data = dC_columns.Ptr<IdType>();
   dC_weights_data = dC_weights.Ptr<DType>();
 
-  CUSPARSE_CALL(CSRGEAM<DType>::compute(
-      thr_entry->cusparse_handle, m, n, &alpha, matA, nnzA, A_weights,
+  HIPSPARSE_CALL(CSRGEAM<DType>::compute(
+      thr_entry->hipsparse_handle, m, n, &alpha, matA, nnzA, A_weights,
       A.indptr.Ptr<IdType>(), A.indices.Ptr<IdType>(), &beta, matB, nnzB,
       B_weights, B.indptr.Ptr<IdType>(), B.indices.Ptr<IdType>(), matC,
       dC_weights_data, dC_csrOffsets_data, dC_columns_data, workspace));
 
   device->FreeWorkspace(ctx, workspace);
   // destroy matrix/vector descriptors
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(matA));
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(matB));
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(matC));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(matA));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(matB));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(matC));
   return {
       CSRMatrix(
           A.num_rows, A.num_cols, dC_csrOffsets, dC_columns,
           NullArray(dC_csrOffsets->dtype, dC_csrOffsets->ctx), true),
       dC_weights};
 }
-}  // namespace cusparse
+}  // namespace hipsparse
 
 template <int XPU, typename IdType, typename DType>
 std::pair<CSRMatrix, NDArray> CSRSum(
@@ -113,7 +113,7 @@ std::pair<CSRMatrix, NDArray> CSRSum(
     for (int i = 0; i < n; ++i) newAs.push_back(As[i]);
   }
 
-  // cuSPARSE csrgeam2 requires the CSR to be sorted.
+  // hipsparse csrgeam2 requires the CSR to be sorted.
   // TODO(BarclayII): ideally the sorted CSR should be cached but I'm not sure
   // how to do it.
   for (int i = 0; i < n; ++i) {
@@ -138,7 +138,7 @@ std::pair<CSRMatrix, NDArray> CSRSum(
       A_weights_reordered[0]);  // Weights already reordered so we don't need
                                 // As[0].data
   for (int64_t i = 1; i < n; ++i)
-    result = cusparse::CusparseCsrgeam2<DType, int32_t>(
+    result = hipsparse::hipsparseCsrgeam2<DType, int32_t>(
         result.first, result.second, newAs[i], A_weights_reordered[i]);
 
   // Cast 32 bit indices back to 64 bit if necessary
@@ -154,10 +154,12 @@ std::pair<CSRMatrix, NDArray> CSRSum(
   }
 }
 
+#ifdef DGL_ENABLE_HALF
 template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, __half>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
 template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int64_t, __half>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
+#endif
 #if BF16_ENABLED
 template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, __nv_bfloat16>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);

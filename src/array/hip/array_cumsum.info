@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/array_cumsum.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/array_cumsum.cu' statisitics:
   CONVERTED refs count: 1
   TOTAL lines of code: 56
   WARNINGS: 0

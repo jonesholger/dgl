@@ -1,18 +1,18 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2021 by Contributors
- * @file array/cuda/cuda_filter.cc
+ * @file array/hip/cuda_filter.cc
  * @brief Object for selecting items in a set, or selecting items not in a set.
  */
 
 #include <dgl/runtime/device_api.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "../../runtime/cuda/cuda_hashtable.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "../../runtime/hip/hip_hashtable.h"
 #include "../filter.h"
-#include "./dgl_cub.cuh"
+#include "./dgl_cub.h"
 
-using namespace dgl::runtime::cuda;
+using namespace dgl::runtime::hip;
 
 namespace dgl {
 namespace array {
@@ -45,7 +45,7 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
   const auto& ctx = test->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
   const int64_t size = test->shape[0];
-  hipStream_t cudaStream = runtime::getCurrentCUDAStream();
+  hipStream_t hipStream = runtime::getCurrentHIPStream();
 
   if (size == 0) {
     return test;
@@ -66,7 +66,7 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
     const dim3 grid((size + block.x - 1) / block.x);
 
     HIP_KERNEL_CALL(
-        (_IsInKernel<IdType, include>), grid, block, 0, cudaStream,
+        (_IsInKernel<IdType, include>), grid, block, 0, hipStream,
         table.DeviceHandle(), static_cast<const IdType*>(test->data), size,
         prefix);
   }
@@ -76,11 +76,11 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
     size_t workspace_bytes;
     HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
         nullptr, workspace_bytes, static_cast<IdType*>(nullptr),
-        static_cast<IdType*>(nullptr), size + 1, cudaStream));
+        static_cast<IdType*>(nullptr), size + 1, hipStream));
     void* workspace = device->AllocWorkspace(ctx, workspace_bytes);
 
     HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
-        workspace, workspace_bytes, prefix, prefix, size + 1, cudaStream));
+        workspace, workspace_bytes, prefix, prefix, size + 1, hipStream));
     device->FreeWorkspace(ctx, workspace);
   }
 
@@ -96,7 +96,7 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
     const dim3 grid((size + block.x - 1) / block.x);
 
     HIP_KERNEL_CALL(
-        _InsertKernel, grid, block, 0, cudaStream, prefix, size,
+        _InsertKernel, grid, block, 0, hipStream, prefix, size,
         static_cast<IdType*>(result->data));
   }
   device->FreeWorkspace(ctx, prefix);
@@ -105,13 +105,13 @@ IdArray _PerformFilter(const OrderedHashTable<IdType>& table, IdArray test) {
 }
 
 template <typename IdType>
-class CudaFilterSet : public Filter {
+class HIPFilterSet : public Filter {
  public:
-  explicit CudaFilterSet(IdArray array)
-      : table_(array->shape[0], array->ctx, runtime::getCurrentCUDAStream()) {
-    hipStream_t cudaStream = runtime::getCurrentCUDAStream();
+  explicit HIPFilterSet(IdArray array)
+      : table_(array->shape[0], array->ctx, runtime::getCurrentHIPStream()) {
+    hipStream_t hipStream = runtime::getCurrentHIPStream();
     table_.FillWithUnique(
-        static_cast<const IdType*>(array->data), array->shape[0], cudaStream);
+        static_cast<const IdType*>(array->data), array->shape[0], hipStream);
   }
 
   IdArray find_included_indices(IdArray test) override {
@@ -130,7 +130,7 @@ class CudaFilterSet : public Filter {
 
 template <DGLDeviceType XPU, typename IdType>
 FilterRef CreateSetFilter(IdArray set) {
-  return FilterRef(std::make_shared<CudaFilterSet<IdType>>(set));
+  return FilterRef(std::make_shared<HIPFilterSet<IdType>>(set));
 }
 
 template FilterRef CreateSetFilter<kDGLCUDA, int32_t>(IdArray set);

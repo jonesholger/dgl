@@ -16,9 +16,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "../../../array/cuda/dgl_cub.cuh"
-#include "../../../array/cuda/utils.h"
-#include "../../../runtime/cuda/cuda_common.h"
+#include "../../../array/hip/dgl_cub.h"
+#include "../../../array/hip/utils.h"
+#include "../../../runtime/hip/hip_common.h"
 #include "../knn.h"
 
 namespace dgl {
@@ -92,7 +92,6 @@ EuclideanDist(const FloatType* vec1, const FloatType* vec2, const int64_t dim) {
 
   return dist;
 }
-
 /**
  * @brief Compute Euclidean distance between two vectors in a cuda kernel,
  *  return positive infinite value if the intermediate distance is greater
@@ -253,7 +252,6 @@ __device__ bool FlaggedHeapInsert(
   }
   return true;
 }
-
 /**
  * @brief Brute force kNN kernel. Compute distance for each pair of input points
  * and get the result directly (without a distance matrix).
@@ -464,11 +462,11 @@ __global__ void GetBlockInfo(
  * @param result output array
  */
 template <typename FloatType, typename IdType>
-void BruteForceKNNCuda(
+void BruteForceKNNHip(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = data_points->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
   const int64_t batch_size = data_offsets->shape[0] - 1;
@@ -483,7 +481,7 @@ void BruteForceKNNCuda(
   FloatType* dists = static_cast<FloatType*>(device->AllocWorkspace(
       ctx, k * query_points->shape[0] * sizeof(FloatType)));
 
-  const int64_t block_size = cuda::FindNumThreads(query_points->shape[0]);
+  const int64_t block_size = hip::FindNumThreads(query_points->shape[0]);
   const int64_t num_blocks = (query_points->shape[0] - 1) / block_size + 1;
   HIP_KERNEL_CALL(
       BruteforceKnnKernel, num_blocks, block_size, 0, stream, data_points_data,
@@ -509,11 +507,11 @@ void BruteForceKNNCuda(
  * @param result output array
  */
 template <typename FloatType, typename IdType>
-void BruteForceKNNSharedCuda(
+void BruteForceKNNSharedHip(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = data_points->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
   const int64_t batch_size = data_offsets->shape[0] - 1;
@@ -537,7 +535,7 @@ void BruteForceKNNSharedCuda(
       smem_align));
 
   const int64_t block_size =
-      cuda::FindNumThreads(max_sharedmem_per_block / single_shared_mem);
+      hip::FindNumThreads(max_sharedmem_per_block / single_shared_mem);
 
   // Determine the number of blocks. We first get the number of blocks for each
   // segment. Then we get the block id offset via prefix sum.
@@ -547,7 +545,7 @@ void BruteForceKNNSharedCuda(
       device->AllocWorkspace(ctx, batch_size * sizeof(IdType)));
 
   // block size for GetNumBlockPerSegment computation
-  int64_t temp_block_size = cuda::FindNumThreads(batch_size);
+  int64_t temp_block_size = hip::FindNumThreads(batch_size);
   int64_t temp_num_blocks = (batch_size - 1) / temp_block_size + 1;
   HIP_KERNEL_CALL(
       GetNumBlockPerSegment, temp_num_blocks, temp_block_size, 0, stream,
@@ -577,7 +575,7 @@ void BruteForceKNNSharedCuda(
   device->FreeWorkspace(ctx, num_block_per_segment);
 
   // get batch id and local id in segment
-  temp_block_size = cuda::FindNumThreads(num_blocks);
+  temp_block_size = hip::FindNumThreads(num_blocks);
   temp_num_blocks = (num_blocks - 1) / temp_block_size + 1;
   IdType* block_batch_id = static_cast<IdType*>(
       device->AllocWorkspace(ctx, num_blocks * sizeof(IdType)));
@@ -860,13 +858,13 @@ void KNN(
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result, const std::string& algorithm) {
   if (algorithm == std::string("bruteforce")) {
-    impl::BruteForceKNNCuda<FloatType, IdType>(
+    impl::BruteForceKNNHip<FloatType, IdType>(
         data_points, data_offsets, query_points, query_offsets, k, result);
   } else if (algorithm == std::string("bruteforce-sharemem")) {
-    impl::BruteForceKNNSharedCuda<FloatType, IdType>(
+    impl::BruteForceKNNSharedHip<FloatType, IdType>(
         data_points, data_offsets, query_points, query_offsets, k, result);
   } else {
-    LOG(FATAL) << "Algorithm " << algorithm << " is not supported on CUDA.";
+    LOG(FATAL) << "Algorithm " << algorithm << " is not supported on HIP.";
   }
 }
 
@@ -874,7 +872,7 @@ template <DGLDeviceType XPU, typename FloatType, typename IdType>
 void NNDescent(
     const NDArray& points, const IdArray& offsets, IdArray result, const int k,
     const int num_iters, const int num_candidates, const double delta) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = points->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
   const int64_t num_nodes = points->shape[0];

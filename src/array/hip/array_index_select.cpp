@@ -5,8 +5,8 @@
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./array_index_select.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./array_index_select.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -30,12 +30,12 @@ NDArray IndexSelect(NDArray array, IdArray index) {
   if (len == 0 || arr_len * num_feat == 0) return ret;
   DType* ret_data = static_cast<DType*>(ret->data);
 
-  const DType* array_data = static_cast<DType*>(cuda::GetDevicePointer(array));
+  const DType* array_data = static_cast<DType*>(hip::GetDevicePointer(array));
   const IdType* idx_data = static_cast<IdType*>(index->data);
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   if (num_feat == 1) {
-    const int nt = cuda::FindNumThreads(len);
+    const int nt = hip::FindNumThreads(len);
     const int nb = (len + nt - 1) / nt;
     HIP_KERNEL_CALL(
         IndexSelectSingleKernel, nb, nt, 0, stream, array_data, idx_data, len,
@@ -58,8 +58,10 @@ template NDArray IndexSelect<kDGLCUDA, int32_t, int32_t>(NDArray, IdArray);
 template NDArray IndexSelect<kDGLCUDA, int32_t, int64_t>(NDArray, IdArray);
 template NDArray IndexSelect<kDGLCUDA, int64_t, int32_t>(NDArray, IdArray);
 template NDArray IndexSelect<kDGLCUDA, int64_t, int64_t>(NDArray, IdArray);
+#ifdef DGL_ENABLE_HALF
 template NDArray IndexSelect<kDGLCUDA, __half, int32_t>(NDArray, IdArray);
 template NDArray IndexSelect<kDGLCUDA, __half, int64_t>(NDArray, IdArray);
+#endif
 #if BF16_ENABLED
 template NDArray IndexSelect<kDGLCUDA, __nv_bfloat16, int32_t>(
     NDArray, IdArray);
@@ -85,7 +87,9 @@ template int32_t IndexSelect<kDGLCUDA, int32_t>(NDArray array, int64_t index);
 template int64_t IndexSelect<kDGLCUDA, int64_t>(NDArray array, int64_t index);
 template uint32_t IndexSelect<kDGLCUDA, uint32_t>(NDArray array, int64_t index);
 template uint64_t IndexSelect<kDGLCUDA, uint64_t>(NDArray array, int64_t index);
+#ifdef DGL_ENABLE_HALF
 template __half IndexSelect<kDGLCUDA, __half>(NDArray array, int64_t index);
+#endif
 #if BF16_ENABLED
 template __nv_bfloat16 IndexSelect<kDGLCUDA, __nv_bfloat16>(
     NDArray array, int64_t index);

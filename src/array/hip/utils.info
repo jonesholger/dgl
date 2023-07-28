@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/utils.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/utils.cu' statisitics:
   CONVERTED refs count: 1
   TOTAL lines of code: 32
   WARNINGS: 0

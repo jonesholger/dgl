@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/utils.h
+ * @file array/hip/utils.h
  * @brief Utilities for CUDA kernels.
  */
 #ifndef DGL_ARRAY_CUDA_UTILS_H_
@@ -12,11 +12,11 @@
 #include <dgl/runtime/ndarray.h>
 #include <dmlc/logging.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "dgl_cub.h"
 
 namespace dgl {
-namespace cuda {
+namespace hip {
 
 #define CUDA_MAX_NUM_BLOCKS_X 0x7FFFFFFF
 #define CUDA_MAX_NUM_BLOCKS_Y 0xFFFF
@@ -74,7 +74,6 @@ __device__ __forceinline__ T _ldg(T* addr) {
   return *addr;
 #endif
 }
-
 /**
  * @brief Return true if the given bool flag array is all true.
  * The input bool array is in int8_t type so it is aligned with byte address.
@@ -104,11 +103,11 @@ __global__ void _FillKernel(DType* ptr, size_t length, DType val) {
 /** @brief Fill the vector started from ptr of size length with val */
 template <typename DType>
 void _Fill(DType* ptr, size_t length, DType val) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int nt = FindNumThreads(length);
   int nb =
       (length + nt - 1) / nt;  // on x-axis, no need to worry about upperbound.
-  HIP_KERNEL_CALL(cuda::_FillKernel, nb, nt, 0, stream, ptr, length, val);
+  HIP_KERNEL_CALL(hip::_FillKernel, nb, nt, 0, stream, ptr, length, val);
 }
 
 /**
@@ -190,7 +189,7 @@ __global__ void _LinearSearchKernel(
 #endif  // BF16_ENABLED
 
 template <typename DType>
-inline DType GetCUDAScalar(
+inline DType GetHIPScalar(
     runtime::DeviceAPI* device_api, DGLContext ctx, const DType* cuda_ptr) {
   DType result;
   device_api->CopyDataFromTo(
@@ -223,7 +222,6 @@ __device__ IdType _UpperBound(const IdType* A, int64_t n, IdType x) {
   }
   return l;
 }
-
 /**
  * @brief Given a sorted array and a value this function returns the index
  * of the element who is equal to val. If not exist returns n+1
@@ -250,7 +248,6 @@ __device__ IdType _BinarySearch(const IdType* A, int64_t n, IdType x) {
   }
   return n;  // not found
 }
-
 template <typename DType, typename BoolType>
 void MaskSelect(
     runtime::DeviceAPI* device, const DGLContext& ctx, const DType* input,
@@ -273,7 +270,7 @@ inline void* GetDevicePointer(runtime::NDArray array) {
   return ptr;
 }
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace dgl
 
 #endif  // DGL_ARRAY_CUDA_UTILS_H_

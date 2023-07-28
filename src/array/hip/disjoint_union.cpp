@@ -24,7 +24,7 @@
 #include <tuple>
 #include <vector>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
 
 namespace dgl {
@@ -39,7 +39,7 @@ __global__ void _DisjointUnionKernel(
   IdType tx = static_cast<IdType>(blockIdx.x) * blockDim.x + threadIdx.x;
   const int stride_x = gridDim.x * blockDim.x;
   while (tx < n_elms) {
-    IdType i = dgl::cuda::_UpperBound(offset, n_arrs, tx) - 1;
+    IdType i = dgl::hip::_UpperBound(offset, n_arrs, tx) - 1;
     if (arrs[i] == NULL) {
       out[tx] = tx;
     } else {
@@ -100,7 +100,7 @@ void _Merge(
 
 template <DGLDeviceType XPU, typename IdType>
 COOMatrix DisjointUnionCoo(const std::vector<COOMatrix>& coos) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(coos[0].row->ctx);
   uint64_t src_offset = 0, dst_offset = 0;
   bool has_data = false;

@@ -9,10 +9,10 @@
 #include <tuple>
 #include <utility>
 
-#include "../../../array/cuda/atomic.cuh"
-#include "../../../array/cuda/dgl_cub.cuh"
-#include "../../../runtime/cuda/cuda_common.h"
-#include "frequency_hashmap.cuh"
+#include "../../../array/hip/atomic.h"
+#include "../../../array/hip/dgl_cub.h"
+#include "../../../runtime/hip/hip_common.h"
+#include "frequency_hashmap.h"
 
 namespace dgl {
 
@@ -92,10 +92,10 @@ template <typename T>
 struct BlockPrefixCallbackOp {
   T _running_total;
 
-  __device__ BlockPrefixCallbackOp(const T running_total)
+  __host__ __device__ BlockPrefixCallbackOp(const T running_total)
       : _running_total(running_total) {}
 
-  __device__ T operator()(const T block_aggregate) {
+  __host__ __device__ T operator()(const T block_aggregate) {
     const T old_prefix = _running_total;
     _running_total += block_aggregate;
     return old_prefix;
@@ -198,6 +198,7 @@ __global__ void _pick_data(
 }  // namespace
 
 // return the old cnt of this edge
+#ifdef  __HIP_DEVICE_COMPILE__
 template <typename IdxType>
 inline __device__ IdxType DeviceEdgeHashmap<IdxType>::InsertEdge(
     const IdxType &src, const IdxType &dst_idx) {
@@ -243,7 +244,7 @@ inline __device__ IdxType DeviceEdgeHashmap<IdxType>::GetEdgeCount(
   }
   return _edge_hashmap[start_off + pos].cnt;
 }
-
+#endif
 template <typename IdxType>
 FrequencyHashmap<IdxType>::FrequencyHashmap(
     int64_t num_dst, int64_t num_items_each_dst, DGLContext ctx,
@@ -260,8 +261,8 @@ FrequencyHashmap<IdxType>::FrequencyHashmap(
   constexpr int TILE_SIZE = BLOCK_SIZE * 8;
   dim3 block(BLOCK_SIZE);
   dim3 grid((num_dst * num_items_each_dst + TILE_SIZE - 1) / TILE_SIZE);
-  CUDA_CALL(hipMemset(dst_unique_edges, 0, (num_dst) * sizeof(IdxType)));
-  CUDA_KERNEL_CALL(
+  HIP_CALL(hipMemset(dst_unique_edges, 0, (num_dst) * sizeof(IdxType)));
+  HIP_KERNEL_CALL(
       (_init_edge_table<IdxType, BLOCK_SIZE, TILE_SIZE>), grid, block, 0,
       _stream, edge_hashmap, (num_dst * num_items_each_dst));
   _device_edge_hashmap = new DeviceEdgeHashmap<IdxType>(
@@ -301,7 +302,7 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   // _edge_hashmap
   bool *is_first_position = static_cast<bool *>(
       device->AllocWorkspace(_ctx, sizeof(bool) * (num_edges)));
-  CUDA_CALL(hipMemset(is_first_position, 0, sizeof(bool) * (num_edges)));
+  HIP_CALL(hipMemset(is_first_position, 0, sizeof(bool) * (num_edges)));
   // double space to use ExclusiveSum
   auto edge_blocks_prefix_data = static_cast<IdxType *>(device->AllocWorkspace(
       _ctx, 2 * sizeof(IdxType) * (num_edge_blocks + 1)));
@@ -319,7 +320,7 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
 
   // 1. Scan the all edges and count the unique edges and unique edges for each
   // dst node
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_count_frequency<IdxType, BLOCK_SIZE, TILE_SIZE>), edges_grid, block, 0,
       _stream, src_data, num_edges, num_edges_per_node, edge_blocks_prefix,
       is_first_position, *_device_edge_hashmap);
@@ -328,11 +329,11 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   // 2.1 ExclusiveSum the edge_blocks_prefix
   void *d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, edge_blocks_prefix,
       edge_blocks_prefix_alternate, num_edge_blocks + 1, _stream));
   d_temp_storage = device->AllocWorkspace(_ctx, temp_storage_bytes);
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, edge_blocks_prefix,
       edge_blocks_prefix_alternate, num_edge_blocks + 1, _stream));
   device->FreeWorkspace(_ctx, d_temp_storage);
@@ -355,7 +356,7 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   Idx64Type *unique_frequency_alternate =
       unique_frequency_data + num_unique_edges;
   // 2.3 Compact the unique edges and their frequency
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_compact_frequency<IdxType, Idx64Type, BLOCK_SIZE, TILE_SIZE>),
       edges_grid, block, 0, _stream, src_data, dst_data, num_edges,
       num_edges_per_node, edge_blocks_prefix, is_first_position,
@@ -366,11 +367,11 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   // 3.1 ExclusiveSum the num_unique_each_node
   d_temp_storage = nullptr;
   temp_storage_bytes = 0;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, num_unique_each_node,
       num_unique_each_node_alternate, num_dst_nodes + 1, _stream));
   d_temp_storage = device->AllocWorkspace(_ctx, temp_storage_bytes);
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, num_unique_each_node,
       num_unique_each_node_alternate, num_dst_nodes + 1, _stream));
   device->FreeWorkspace(_ctx, d_temp_storage);
@@ -386,12 +387,12 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   // the DeviceRadixSort is faster than DeviceSegmentedRadixSort,
   // especially when num_dst_nodes is large (about ~10000)
   if (dtype.bits == 32) {
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairsDescending(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairsDescending(
         d_temp_storage, temp_storage_bytes, d_unique_frequency,
         d_unique_src_edges, num_unique_edges, 0, sizeof(Idx64Type) * 8,
         _stream));
   } else {
-    CUDA_CALL(hipcub::DeviceSegmentedRadixSort::SortPairsDescending(
+    HIP_CALL(hipcub::DeviceSegmentedRadixSort::SortPairsDescending(
         d_temp_storage, temp_storage_bytes, d_unique_frequency,
         d_unique_src_edges, num_unique_edges, num_dst_nodes,
         num_unique_each_node_alternate, num_unique_each_node_alternate + 1, 0,
@@ -399,12 +400,12 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   }
   d_temp_storage = device->AllocWorkspace(_ctx, temp_storage_bytes);
   if (dtype.bits == 32) {
-    CUDA_CALL(hipcub::DeviceRadixSort::SortPairsDescending(
+    HIP_CALL(hipcub::DeviceRadixSort::SortPairsDescending(
         d_temp_storage, temp_storage_bytes, d_unique_frequency,
         d_unique_src_edges, num_unique_edges, 0, sizeof(Idx64Type) * 8,
         _stream));
   } else {
-    CUDA_CALL(hipcub::DeviceSegmentedRadixSort::SortPairsDescending(
+    HIP_CALL(hipcub::DeviceSegmentedRadixSort::SortPairsDescending(
         d_temp_storage, temp_storage_bytes, d_unique_frequency,
         d_unique_src_edges, num_unique_edges, num_dst_nodes,
         num_unique_each_node_alternate, num_unique_each_node_alternate + 1, 0,
@@ -416,18 +417,18 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
   // 4.1 Reset the min(num_pick, num_unique_each_node) to num_unique_each_node
   constexpr int NODE_TILE_SIZE = BLOCK_SIZE * 2;
   const dim3 nodes_grid((num_dst_nodes + NODE_TILE_SIZE - 1) / NODE_TILE_SIZE);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_get_pick_num<IdxType, BLOCK_SIZE, NODE_TILE_SIZE>), nodes_grid, block,
       0, _stream, num_unique_each_node, num_pick, num_dst_nodes);
   // 4.2 ExclusiveSum the new num_unique_each_node as unique_output_offsets
   // use unique_output_offsets;
   d_temp_storage = nullptr;
   temp_storage_bytes = 0;
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, num_unique_each_node,
       unique_output_offsets, num_dst_nodes + 1, _stream));
   d_temp_storage = device->AllocWorkspace(_ctx, temp_storage_bytes);
-  CUDA_CALL(hipcub::DeviceScan::ExclusiveSum(
+  HIP_CALL(hipcub::DeviceScan::ExclusiveSum(
       d_temp_storage, temp_storage_bytes, num_unique_each_node,
       unique_output_offsets, num_dst_nodes + 1, _stream));
   device->FreeWorkspace(_ctx, d_temp_storage);
@@ -445,7 +446,7 @@ std::tuple<IdArray, IdArray, IdArray> FrequencyHashmap<IdxType>::Topk(
       IdArray::Empty({static_cast<int64_t>(num_output)}, dtype, _ctx);
   IdArray res_cnt =
       IdArray::Empty({static_cast<int64_t>(num_output)}, dtype, _ctx);
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_pick_data<IdxType, Idx64Type, BLOCK_SIZE, NODE_TILE_SIZE>), nodes_grid,
       block, 0, _stream, d_unique_frequency.Current(),
       d_unique_src_edges.Current(), num_unique_each_node_alternate, dst_data,

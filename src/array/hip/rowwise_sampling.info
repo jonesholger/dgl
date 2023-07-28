@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/rowwise_sampling.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/rowwise_sampling.cu' statisitics:
   CONVERTED refs count: 17
   TOTAL lines of code: 366
   WARNINGS: 0

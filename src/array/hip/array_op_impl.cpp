@@ -1,22 +1,22 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020-2021 by Contributors
- * @file array/cuda/array_op_impl.cu
+ * @file array/hip/array_op_impl.cu
  * @brief Array operator GPU implementation
  */
 #include <dgl/array.h>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "../../runtime/cuda/cuda_hashtable.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "../../runtime/hip/hip_hashtable.h"
 #include "../arith.h"
 #include "./utils.h"
 
 namespace dgl {
 using runtime::NDArray;
-using namespace runtime::cuda;
+using namespace runtime::hip;
 namespace aten {
 namespace impl {
-
+#ifdef __HIP_DEVICE_COMPILE__
 ///////////////////////////// BinaryElewise /////////////////////////////
 
 template <typename IdType, typename Op>
@@ -37,8 +37,8 @@ IdArray BinaryElewise(IdArray lhs, IdArray rhs) {
   const IdType* lhs_data = static_cast<IdType*>(lhs->data);
   const IdType* rhs_data = static_cast<IdType*>(rhs->data);
   IdType* ret_data = static_cast<IdType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(len);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, rhs_data,
@@ -108,8 +108,8 @@ IdArray BinaryElewise(IdArray lhs, IdType rhs) {
   IdArray ret = NewIdArray(lhs->shape[0], lhs->ctx, lhs->dtype.bits);
   const IdType* lhs_data = static_cast<IdType*>(lhs->data);
   IdType* ret_data = static_cast<IdType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(len);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, rhs,
@@ -179,8 +179,8 @@ IdArray BinaryElewise(IdType lhs, IdArray rhs) {
   IdArray ret = NewIdArray(rhs->shape[0], rhs->ctx, rhs->dtype.bits);
   const IdType* rhs_data = static_cast<IdType*>(rhs->data);
   IdType* ret_data = static_cast<IdType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(len);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_BinaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs, rhs_data,
@@ -250,8 +250,8 @@ IdArray UnaryElewise(IdArray lhs) {
   IdArray ret = NewIdArray(lhs->shape[0], lhs->ctx, lhs->dtype.bits);
   const IdType* lhs_data = static_cast<IdType*>(lhs->data);
   IdType* ret_data = static_cast<IdType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(len);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(len);
   int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_UnaryElewiseKernel<IdType, Op>), nb, nt, 0, stream, lhs_data, ret_data,
@@ -278,8 +278,8 @@ template <DGLDeviceType XPU, typename DType>
 NDArray Full(DType val, int64_t length, DGLContext ctx) {
   NDArray ret = NDArray::Empty({length}, DGLDataTypeTraits<DType>::dtype, ctx);
   DType* ret_data = static_cast<DType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(length);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_FullKernel<DType>), nb, nt, 0, stream, ret_data, length, val);
@@ -290,8 +290,10 @@ template IdArray Full<kDGLCUDA, int32_t>(
     int32_t val, int64_t length, DGLContext ctx);
 template IdArray Full<kDGLCUDA, int64_t>(
     int64_t val, int64_t length, DGLContext ctx);
+#ifdef DGL_ENABLE_HALF
 template IdArray Full<kDGLCUDA, __half>(
     __half val, int64_t length, DGLContext ctx);
+#endif
 #if BF16_ENABLED
 template IdArray Full<kDGLCUDA, __nv_bfloat16>(
     __nv_bfloat16 val, int64_t length, DGLContext ctx);
@@ -320,8 +322,8 @@ IdArray Range(IdType low, IdType high, DGLContext ctx) {
   IdArray ret = NewIdArray(length, ctx, sizeof(IdType) * 8);
   if (length == 0) return ret;
   IdType* ret_data = static_cast<IdType*>(ret->data);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(length);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
   HIP_KERNEL_CALL(
       (_RangeKernel<IdType>), nb, nt, 0, stream, ret_data, low, length);
@@ -356,7 +358,7 @@ IdArray Relabel_(const std::vector<IdArray>& arrays) {
 
   const auto& ctx = arrays[0]->ctx;
   auto device = runtime::DeviceAPI::Get(ctx);
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   // build node maps and get the induced nodes
   OrderedHashTable<IdType> node_map(total_length, ctx, stream);
@@ -417,8 +419,8 @@ IdArray AsNumBits(IdArray arr, uint8_t bits) {
   const std::vector<int64_t> shape(arr->shape, arr->shape + arr->ndim);
   IdArray ret = IdArray::Empty(shape, DGLDataType{kDGLInt, bits, 1}, arr->ctx);
   const int64_t length = ret.NumElements();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  int nt = cuda::FindNumThreads(length);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  int nt = hip::FindNumThreads(length);
   int nb = (length + nt - 1) / nt;
   if (bits == 32) {
     HIP_KERNEL_CALL(
@@ -436,7 +438,7 @@ IdArray AsNumBits(IdArray arr, uint8_t bits) {
 
 template IdArray AsNumBits<kDGLCUDA, int32_t>(IdArray arr, uint8_t bits);
 template IdArray AsNumBits<kDGLCUDA, int64_t>(IdArray arr, uint8_t bits);
-
+#endif
 }  // namespace impl
 }  // namespace aten
 }  // namespace dgl

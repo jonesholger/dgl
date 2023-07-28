@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/spmat_op_impl_csr.cu
+ * @file array/hip/spmat_op_impl_csr.cu
  * @brief CSR operator CPU implementation
  */
 #include <dgl/array.h>
@@ -12,15 +12,15 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./atomic.cuh"
-#include "./dgl_cub.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./atomic.h"
+#include "./dgl_cub.h"
 #include "./utils.h"
 
 namespace dgl {
 
 using runtime::NDArray;
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
 namespace impl {
@@ -29,7 +29,7 @@ namespace impl {
 
 template <DGLDeviceType XPU, typename IdType>
 bool CSRIsNonZero(CSRMatrix csr, int64_t row, int64_t col) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = csr.indptr->ctx;
   IdArray rows = aten::VecToIdArray<int64_t>({row}, sizeof(IdType) * 8, ctx);
   IdArray cols = aten::VecToIdArray<int64_t>({col}, sizeof(IdType) * 8, ctx);
@@ -39,7 +39,7 @@ bool CSRIsNonZero(CSRMatrix csr, int64_t row, int64_t col) {
   const IdType* data = nullptr;
   // TODO(minjie): use binary search for sorted csr
   HIP_KERNEL_CALL(
-      dgl::cuda::_LinearSearchKernel, 1, 1, 0, stream, csr.indptr.Ptr<IdType>(),
+      dgl::hip::_LinearSearchKernel, 1, 1, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), data, rows.Ptr<IdType>(), cols.Ptr<IdType>(),
       1, 1, 1, static_cast<IdType*>(nullptr), static_cast<IdType>(-1),
       out.Ptr<IdType>());
@@ -59,8 +59,8 @@ NDArray CSRIsNonZero(CSRMatrix csr, NDArray row, NDArray col) {
   if (rstlen == 0) return rst;
   const int64_t row_stride = (rowlen == 1 && collen != 1) ? 0 : 1;
   const int64_t col_stride = (collen == 1 && rowlen != 1) ? 0 : 1;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  const int nt = dgl::cuda::FindNumThreads(rstlen);
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  const int nt = dgl::hip::FindNumThreads(rstlen);
   const int nb = (rstlen + nt - 1) / nt;
   const IdType* data = nullptr;
   const IdType* indptr_data =
@@ -69,7 +69,7 @@ NDArray CSRIsNonZero(CSRMatrix csr, NDArray row, NDArray col) {
       static_cast<IdType*>(GetDevicePointer(csr.indices));
   // TODO(minjie): use binary search for sorted csr
   HIP_KERNEL_CALL(
-      dgl::cuda::_LinearSearchKernel, nb, nt, 0, stream, indptr_data,
+      dgl::hip::_LinearSearchKernel, nb, nt, 0, stream, indptr_data,
       indices_data, data, row.Ptr<IdType>(), col.Ptr<IdType>(), row_stride,
       col_stride, rstlen, static_cast<IdType*>(nullptr),
       static_cast<IdType>(-1), rst.Ptr<IdType>());
@@ -105,18 +105,18 @@ template <DGLDeviceType XPU, typename IdType>
 bool CSRHasDuplicate(CSRMatrix csr) {
   if (!csr.sorted) csr = CSRSort(csr);
   const auto& ctx = csr.indptr->ctx;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(ctx);
   // We allocate a workspace of num_rows bytes. It wastes a little bit memory
   // but should be fine.
   int8_t* flags =
       static_cast<int8_t*>(device->AllocWorkspace(ctx, csr.num_rows));
-  const int nt = dgl::cuda::FindNumThreads(csr.num_rows);
+  const int nt = dgl::hip::FindNumThreads(csr.num_rows);
   const int nb = (csr.num_rows + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _SegmentHasNoDuplicate, nb, nt, 0, stream, csr.indptr.Ptr<IdType>(),
       csr.indices.Ptr<IdType>(), csr.num_rows, flags);
-  bool ret = dgl::cuda::AllTrue(flags, csr.num_rows, ctx);
+  bool ret = dgl::hip::AllTrue(flags, csr.num_rows, ctx);
   device->FreeWorkspace(ctx, flags);
   return !ret;
 }
@@ -150,14 +150,14 @@ __global__ void _CSRGetRowNNZKernel(
 
 template <DGLDeviceType XPU, typename IdType>
 NDArray CSRGetRowNNZ(CSRMatrix csr, NDArray rows) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto len = rows->shape[0];
   const IdType* vid_data = rows.Ptr<IdType>();
   const IdType* indptr_data =
       static_cast<IdType*>(GetDevicePointer(csr.indptr));
   NDArray rst = NDArray::Empty({len}, rows->dtype, rows->ctx);
   IdType* rst_data = static_cast<IdType*>(rst->data);
-  const int nt = dgl::cuda::FindNumThreads(len);
+  const int nt = dgl::hip::FindNumThreads(len);
   const int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _CSRGetRowNNZKernel, nb, nt, 0, stream, vid_data, indptr_data, rst_data,
@@ -241,7 +241,7 @@ __global__ void _SegmentCopyKernel(
   IdType tx = static_cast<IdType>(blockIdx.x) * blockDim.x + threadIdx.x;
   const int stride_x = gridDim.x * blockDim.x;
   while (tx < length) {
-    IdType rpos = dgl::cuda::_UpperBound(out_indptr, n_row, tx) - 1;
+    IdType rpos = dgl::hip::_UpperBound(out_indptr, n_row, tx) - 1;
     IdType rofs = tx - out_indptr[rpos];
     const IdType u = row[rpos];
     out_data[tx] = data ? data[indptr[u] + rofs] : indptr[u] + rofs;
@@ -251,7 +251,7 @@ __global__ void _SegmentCopyKernel(
 
 template <DGLDeviceType XPU, typename IdType>
 CSRMatrix CSRSliceRows(CSRMatrix csr, NDArray rows) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const int64_t len = rows->shape[0];
   IdArray ret_indptr = aten::CumSum(aten::CSRGetRowNNZ(csr, rows), true);
   const int64_t nnz = aten::IndexSelect<IdType>(ret_indptr, len);
@@ -368,7 +368,7 @@ std::vector<NDArray> CSRGetDataAndIndices(
   const int64_t nnz = csr.indices->shape[0];
   const int64_t row_stride = (rowlen == 1 && collen != 1) ? 0 : 1;
   const int64_t col_stride = (collen == 1 && rowlen != 1) ? 0 : 1;
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   const IdType* indptr_data =
       static_cast<IdType*>(GetDevicePointer(csr.indptr));
@@ -377,7 +377,7 @@ std::vector<NDArray> CSRGetDataAndIndices(
 
   // Generate a 0-1 mask for matched (row, col) positions.
   IdArray mask = Full(0, nnz, nbits, ctx);
-  const int nt = dgl::cuda::FindNumThreads(len);
+  const int nt = dgl::hip::FindNumThreads(len);
   const int nb = (len + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _SegmentMaskKernel, nb, nt, 0, stream, indptr_data, indices_data,
@@ -391,7 +391,7 @@ std::vector<NDArray> CSRGetDataAndIndices(
 
   // Search for row index
   IdArray ret_row = NewIdArray(idx->shape[0], ctx, nbits);
-  const int nt2 = dgl::cuda::FindNumThreads(idx->shape[0]);
+  const int nt2 = dgl::hip::FindNumThreads(idx->shape[0]);
   const int nb2 = (idx->shape[0] + nt - 1) / nt;
   HIP_KERNEL_CALL(
       _SortedSearchKernel, nb2, nt2, 0, stream, indptr_data, csr.num_rows,
@@ -461,11 +461,11 @@ struct NodeQueryHashmap {
   __device__ inline void Insert(IdType key) {
     uint32_t delta = 1;
     uint32_t pos = Hash(key);
-    IdType prev = dgl::aten::cuda::AtomicCAS(&kptr_[pos], kEmptyKey_, key);
+    IdType prev = dgl::aten::hip::AtomicCAS(&kptr_[pos], kEmptyKey_, key);
     while (prev != key && prev != kEmptyKey_) {
       pos = Hash(pos + delta);
       delta += 1;
-      prev = dgl::aten::cuda::AtomicCAS(&kptr_[pos], kEmptyKey_, key);
+      prev = dgl::aten::hip::AtomicCAS(&kptr_[pos], kEmptyKey_, key);
     }
   }
 
@@ -558,7 +558,7 @@ __global__ void _SegmentMaskColKernel(
 template <DGLDeviceType XPU, typename IdType>
 CSRMatrix CSRSliceMatrix(
     CSRMatrix csr, runtime::NDArray rows, runtime::NDArray cols) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = rows->ctx;
   const auto& dtype = rows->dtype;
   const auto nbits = dtype.bits;
@@ -593,8 +593,8 @@ CSRMatrix CSRSliceMatrix(
   IdArray hashmap_buffer = Full(-1, buffer_size, nbits, ctx);
 
   using it = thrust::counting_iterator<int64_t>;
-  runtime::CUDAWorkspaceAllocator allocator(ctx);
-  const auto exec_policy = thrust::cuda::par_nosync(allocator).on(stream);
+  runtime::HIPWorkspaceAllocator allocator(ctx);
+  const auto exec_policy = thrust::hip::par_nosync(allocator).on(stream);
   thrust::for_each(
       exec_policy, it(0), it(new_ncols),
       [key = cols.Ptr<IdType>(), buffer = hashmap_buffer.Ptr<IdType>(),
@@ -615,7 +615,7 @@ CSRMatrix CSRSliceMatrix(
   constexpr int TILE_SIZE = 16;
   constexpr int BLOCK_WARPS = CUDA_MAX_NUM_THREADS / WARP_SIZE;
   IdType nb =
-      dgl::cuda::FindNumBlocks<'x'>((num_rows + TILE_SIZE - 1) / TILE_SIZE);
+      dgl::hip::FindNumBlocks<'x'>((num_rows + TILE_SIZE - 1) / TILE_SIZE);
   const dim3 nthrs(WARP_SIZE, BLOCK_WARPS);
   const dim3 nblks(nb);
   HIP_KERNEL_CALL(

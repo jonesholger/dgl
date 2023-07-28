@@ -32,12 +32,13 @@ class DeviceEdgeHashmap {
         _dst_unique_edges(dst_unique_edges),
         _edge_hashmap(edge_hashmap) {}
   // return the old cnt of this edge
+  #ifdef  __HIP_DEVICE_COMPILE__
   inline __device__ IdxType
   InsertEdge(const IdxType &src, const IdxType &dst_idx);
   inline __device__ IdxType GetDstCount(const IdxType &dst_idx);
   inline __device__ IdxType
   GetEdgeCount(const IdxType &src, const IdxType &dst_idx);
-
+#endif
  private:
   int64_t _num_dst;
   int64_t _num_items_each_dst;

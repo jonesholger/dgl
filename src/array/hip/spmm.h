@@ -1,47 +1,50 @@
-#include "hip/hip_runtime.h"
+#include <hip/hip_runtime.h>
+#include <hipsparse/hipsparse.h>
 /**
  *  Copyright (c) 2020 by Contributors
- * @file array/cuda/spmm.cuh
+ * @file array/hip/spmm.cuh
  * @brief SPMM CUDA kernel function header.
  */
-#ifndef DGL_ARRAY_CUDA_SPMM_CUH_
-#define DGL_ARRAY_CUDA_SPMM_CUH_
+#ifndef DGL_ARRAY_HIP_SPMM_H_
+#define DGL_ARRAY_HIP_SPMM_H_
 
 #include <dgl/bcast.h>
 
 #include <limits>
 
-#include "../../runtime/cuda/cuda_common.h"
+#include "../../runtime/hip/hip_common.h"
 #include "./utils.h"
-#include "atomic.cuh"
-#include "bf16.cuh"
-#include "fp16.cuh"
-#include "macro.cuh"
+#include "atomic.h"
+#include "bf16.h"
+#include "fp16.h"
+#include "macro.h"
 
 namespace dgl {
 
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
 
 /**
- * @brief Determine whether cusparse SpMM function is applicable.
+ * @brief Determine whether hipsparse SpMM function is applicable.
  */
 template <typename DType, typename IdType>
-inline bool cusparse_available(bool more_nnz_than_matrix_size) {
-#if CUDART_VERSION < 11000
+inline bool hipsparse_available(bool more_nnz_than_matrix_size) {
+//#if CUDART_VERSION < 11000
   if (std::is_same<IdType, int>::value &&
       (std::is_same<DType, float>::value || std::is_same<DType, double>::value))
     return true;
   return false;
+/*
 #else
   if (std::is_same<DType, __half>::value ||
       std::is_same<DType, __nv_bfloat16>::value)
-    return false;  // cusparse's SpMM on fp16 is slow, temporally disabled.
+    return false;  // hipsparse's SpMM on fp16 is slow, temporally disabled.
   // If the CSR matrix has more NNZ than matrix size, we should not use
-  // cuSPARSE 11.1.
+  // hipsparse 11.1.
   return !more_nnz_than_matrix_size;
 #endif
+*/
 }
 
 namespace {
@@ -56,6 +59,7 @@ hipblasStatus_t Xgeam(
   return HIPBLAS_STATUS_EXECUTION_FAILED;
 }
 
+#ifdef DGL_ENABLE_HALF
 template <>
 hipblasStatus_t Xgeam<__half>(
     hipblasHandle_t handle, hipblasOperation_t transa, hipblasOperation_t transb,
@@ -80,6 +84,7 @@ hipblasStatus_t Xgeam<__nv_bfloat16>(
   return HIPBLAS_STATUS_EXECUTION_FAILED;
 }
 #endif  // BF16_ENABLED
+#endif // DGL_ENABLE_HALF
 
 template <>
 hipblasStatus_t Xgeam<float>(
@@ -119,13 +124,13 @@ __global__ void _TransposeKernel(
 template <typename DType>
 void _Transpose(const DType* in, DType* out, int row, int col) {
   DType alpha = 1., beta = 0.;
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  if (!thr_entry->cublas_handle)
-    CUBLAS_CALL(hipblasCreate(&(thr_entry->cublas_handle)));
-  CUBLAS_CALL(hipblasSetStream(thr_entry->cublas_handle, stream));
-  CUBLAS_CALL(Xgeam<DType>(
-      thr_entry->cublas_handle, HIPBLAS_OP_T, HIPBLAS_OP_N, row, col, &alpha, in,
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  if (!thr_entry->hipblas_handle)
+    HIPBLAS_CALL(hipblasCreate(&(thr_entry->hipblas_handle)));
+  HIPBLAS_CALL(hipblasSetStream(thr_entry->hipblas_handle, stream));
+  HIPBLAS_CALL(Xgeam<DType>(
+      thr_entry->hipblas_handle, HIPBLAS_OP_T, HIPBLAS_OP_N, row, col, &alpha, in,
       col, &beta, nullptr, row, out, row));
 }
 
@@ -133,9 +138,10 @@ void _Transpose(const DType* in, DType* out, int row, int col) {
  * @brief Tranpose the input matrix for data type half.
  * @note cuBLAS has no geam API for half data type, fallback to our kernel.
  */
+#ifdef DGL_ENABLE_HALF
 template <>
 void _Transpose<__half>(const __half* in, __half* out, int row, int col) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int nt = FindNumThreads(row);
   int nb = col;
   HIP_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
@@ -149,14 +155,15 @@ void _Transpose<__half>(const __half* in, __half* out, int row, int col) {
 template <>
 void _Transpose<__nv_bfloat16>(
     const __nv_bfloat16* in, __nv_bfloat16* out, int row, int col) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   int nt = FindNumThreads(row);
   int nb = col;
   HIP_KERNEL_CALL(_TransposeKernel, nb, nt, 0, stream, in, out, col, row);
 }
 #endif  // BF16_ENABLED
+#endif
 
-#if CUDART_VERSION < 11000
+//#if CUDART_VERSION < 11000
 template <typename DType>
 hipsparseStatus_t Xcsrmm2(
     hipsparseHandle_t handle, hipsparseOperation_t transA,
@@ -191,16 +198,15 @@ hipsparseStatus_t Xcsrmm2<double>(
       handle, transA, transB, m, n, k, nnz, alpha, descrA, csrValA, csrRowPtrA,
       csrColIndA, B, ldb, beta, C, ldc);
 }
-#endif
 
-/** Cusparse implementation of SpMM on Csr format. */
+/** hipsparse implementation of SpMM on Csr format. */
 template <typename DType, typename IdType>
-void CusparseCsrmm2(
+void hipsparseCsrmm2(
     const DGLContext& ctx, const CSRMatrix& csr, const DType* B_data,
     const DType* A_data, DType* C_data, int x_length) {
   // We use csrmm2 to perform following operation:
   // C = A x B, where A is a sparse matrix in csr format, B is the dense matrix
-  // for node feature tensor. However, since cusparse only supports
+  // for node feature tensor. However, since hipsparse only supports
   // column-major, while our tensor is stored in row-major, the actual
   // computation is: C = trans(A x trans(B)). Currently, we use cublasXgeam to
   // implement transposition and allocate intermediate workspace memory for
@@ -213,13 +219,13 @@ void CusparseCsrmm2(
   const DType beta = 0.0;
   // device
   auto device = runtime::DeviceAPI::Get(ctx);
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  hipStream_t stream = runtime::getCurrentHIPStream();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, stream));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, stream));
   // all one data array
   DType* valptr = nullptr;
   if (!A_data) {
@@ -227,68 +233,70 @@ void CusparseCsrmm2(
         static_cast<DType*>(device->AllocWorkspace(ctx, nnz * sizeof(DType)));
     _Fill(valptr, nnz, static_cast<DType>(1.));
   }
-#if CUDART_VERSION >= 11000
+//#if CUDART_VERSION >= 11000
   hipsparseSpMatDescr_t matA;
   hipsparseDnMatDescr_t matB, matC;
-  constexpr auto dtype = cuda_dtype<DType>::value;
-  constexpr auto idtype = cusparse_idtype<IdType>::value;
-  CUSPARSE_CALL(hipsparseCreateCsr(
+  constexpr auto dtype = HIP_dtype<DType>::value;
+  constexpr auto idtype = hipsparse_idtype<IdType>::value;
+  HIPSPARSE_CALL(hipsparseCreateCsr(
       &matA, m, k, nnz, static_cast<IdType*>(csr.indptr->data),
       static_cast<IdType*>(csr.indices->data),
       const_cast<DType*>(valptr ? valptr : A_data), idtype, idtype,
       HIPSPARSE_INDEX_BASE_ZERO, dtype));
-  CUSPARSE_CALL(hipsparseCreateDnMat(
+  HIPSPARSE_CALL(hipsparseCreateDnMat(
       &matB, k, n, n, const_cast<DType*>(B_data), dtype, HIPSPARSE_ORDER_ROW));
-  CUSPARSE_CALL(
+  HIPSPARSE_CALL(
       hipsparseCreateDnMat(&matC, m, n, n, C_data, dtype, HIPSPARSE_ORDER_ROW));
 
   auto transA = HIPSPARSE_OPERATION_NON_TRANSPOSE;
   auto transB = HIPSPARSE_OPERATION_NON_TRANSPOSE;
   size_t workspace_size;
-  CUSPARSE_CALL(hipsparseSpMM_bufferSize(
-      thr_entry->cusparse_handle, transA, transB, &alpha, matA, matB, &beta,
+  HIPSPARSE_CALL(hipsparseSpMM_bufferSize(
+      thr_entry->hipsparse_handle, transA, transB, &alpha, matA, matB, &beta,
       matC, dtype, HIPSPARSE_SPMM_CSR_ALG2, &workspace_size));
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
-  CUSPARSE_CALL(hipsparseSpMM(
-      thr_entry->cusparse_handle, transA, transB, &alpha, matA, matB, &beta,
+  HIPSPARSE_CALL(hipsparseSpMM(
+      thr_entry->hipsparse_handle, transA, transB, &alpha, matA, matB, &beta,
       matC, dtype, HIPSPARSE_SPMM_CSR_ALG2, workspace));
   device->FreeWorkspace(ctx, workspace);
 
-  CUSPARSE_CALL(hipsparseDestroySpMat(matA));
-  CUSPARSE_CALL(hipsparseDestroyDnMat(matB));
-  CUSPARSE_CALL(hipsparseDestroyDnMat(matC));
+  HIPSPARSE_CALL(hipsparseDestroySpMat(matA));
+  HIPSPARSE_CALL(hipsparseDestroyDnMat(matB));
+  HIPSPARSE_CALL(hipsparseDestroyDnMat(matC));
+/*
 #else
   // allocate matrix for temporary transposed output
   DType* trans_out =
       static_cast<DType*>(device->AllocWorkspace(ctx, m * n * sizeof(DType)));
 
   hipsparseMatDescr_t descr;
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&descr));
-  CUSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-  CUSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
-  CUSPARSE_CALL(Xcsrmm2<DType>(
-      thr_entry->cusparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&descr));
+  HIPSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
+  HIPSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
+  HIPSPARSE_CALL(Xcsrmm2<DType>(
+      thr_entry->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
       HIPSPARSE_OPERATION_TRANSPOSE, m, n, k, nnz, &alpha, descr,
       (valptr) ? valptr : A_data, static_cast<int32_t*>(csr.indptr->data),
       static_cast<int32_t*>(csr.indices->data), B_data, n, &beta, trans_out,
       m));
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(descr));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(descr));
   // transpose the output matrix
   _Transpose(trans_out, C_data, n, m);
   device->FreeWorkspace(ctx, trans_out);
 #endif
+*/
   if (valptr) device->FreeWorkspace(ctx, valptr);
 }
 
-/** Cusparse implementation of SpMM on Csr format. */
+/** hipsparse implementation of SpMM on Csr format. */
 template <typename DType, typename IdType>
-void CusparseCsrmm2Hetero(
+void hipsparseCsrmm2Hetero(
     const DGLContext& ctx, const CSRMatrix& csr, const DType* B_data,
     const DType* A_data, DType* C_data, int64_t x_length,
     hipStream_t strm_id) {
   // We use csrmm2 to perform following operation:
   // C = A x B, where A is a sparse matrix in csr format, B is the dense matrix
-  // for node feature tensor. However, since cusparse only supports
+  // for node feature tensor. However, since hipsparse only supports
   // column-major, while our tensor is stored in row-major, the actual
   // computation is: C = trans(A x trans(B)). Currently, we use cublasXgeam to
   // implement transposition and allocate intermediate workspace memory for
@@ -305,12 +313,12 @@ void CusparseCsrmm2Hetero(
   const DType beta = 1.0;
   // device
   auto device = runtime::DeviceAPI::Get(ctx);
-  auto* thr_entry = runtime::CUDAThreadEntry::ThreadLocal();
-  // allocate cusparse handle if needed
-  if (!thr_entry->cusparse_handle) {
-    CUSPARSE_CALL(hipsparseCreate(&(thr_entry->cusparse_handle)));
+  auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
+  // allocate hipsparse handle if needed
+  if (!thr_entry->hipsparse_handle) {
+    HIPSPARSE_CALL(hipsparseCreate(&(thr_entry->hipsparse_handle)));
   }
-  CUSPARSE_CALL(hipsparseSetStream(thr_entry->cusparse_handle, strm_id));
+  HIPSPARSE_CALL(hipsparseSetStream(thr_entry->hipsparse_handle, strm_id));
   // all one data array
   DType* valptr = nullptr;
   if (!A_data) {
@@ -318,49 +326,51 @@ void CusparseCsrmm2Hetero(
         static_cast<DType*>(device->AllocWorkspace(ctx, nnz * sizeof(DType)));
     _Fill(valptr, nnz, static_cast<DType>(1.));
   }
-#if CUDART_VERSION >= 11000
+//#if CUDART_VERSION >= 11000
   hipsparseSpMatDescr_t matA;
   hipsparseDnMatDescr_t matB, matC;
-  constexpr auto dtype = cuda_dtype<DType>::value;
-  constexpr auto idtype = cusparse_idtype<IdType>::value;
-  CUSPARSE_CALL(hipsparseCreateCsr(
+  constexpr auto dtype = HIP_dtype<DType>::value;
+  constexpr auto idtype = hipsparse_idtype<IdType>::value;
+  HIPSPARSE_CALL(hipsparseCreateCsr(
       &matA, m, k, nnz, static_cast<IdType*>(csr.indptr->data),
       static_cast<IdType*>(csr.indices->data),
       const_cast<DType*>(valptr ? valptr : A_data), idtype, idtype,
       HIPSPARSE_INDEX_BASE_ZERO, dtype));
-  CUSPARSE_CALL(hipsparseCreateDnMat(
+  HIPSPARSE_CALL(hipsparseCreateDnMat(
       &matB, k, n, n, const_cast<DType*>(B_data), dtype, HIPSPARSE_ORDER_ROW));
-  CUSPARSE_CALL(
+  HIPSPARSE_CALL(
       hipsparseCreateDnMat(&matC, m, n, n, C_data, dtype, HIPSPARSE_ORDER_ROW));
 
   auto transA = HIPSPARSE_OPERATION_NON_TRANSPOSE;
   auto transB = HIPSPARSE_OPERATION_NON_TRANSPOSE;
   size_t workspace_size;
-  CUSPARSE_CALL(hipsparseSpMM_bufferSize(
-      thr_entry->cusparse_handle, transA, transB, &alpha, matA, matB, &beta,
+  HIPSPARSE_CALL(hipsparseSpMM_bufferSize(
+      thr_entry->hipsparse_handle, transA, transB, &alpha, matA, matB, &beta,
       matC, dtype, HIPSPARSE_SPMM_CSR_ALG2, &workspace_size));
   void* workspace = device->AllocWorkspace(ctx, workspace_size);
-  CUSPARSE_CALL(hipsparseSpMM(
-      thr_entry->cusparse_handle, transA, transB, &alpha, matA, matB, &beta,
+  HIPSPARSE_CALL(hipsparseSpMM(
+      thr_entry->hipsparse_handle, transA, transB, &alpha, matA, matB, &beta,
       matC, dtype, HIPSPARSE_SPMM_CSR_ALG2, workspace));
   device->FreeWorkspace(ctx, workspace);
 
-  CUSPARSE_CALL(hipsparseDestroySpMat(matA));
-  CUSPARSE_CALL(hipsparseDestroyDnMat(matB));
-  CUSPARSE_CALL(hipsparseDestroyDnMat(matC));
+  HIPSPARSE_CALL(hipsparseDestroySpMat(matA));
+  HIPSPARSE_CALL(hipsparseDestroyDnMat(matB));
+  HIPSPARSE_CALL(hipsparseDestroyDnMat(matC));
+/*
 #else
   hipsparseMatDescr_t descr;
-  CUSPARSE_CALL(hipsparseCreateMatDescr(&descr));
-  CUSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
-  CUSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
+  HIPSPARSE_CALL(hipsparseCreateMatDescr(&descr));
+  HIPSPARSE_CALL(hipsparseSetMatType(descr, HIPSPARSE_MATRIX_TYPE_GENERAL));
+  HIPSPARSE_CALL(hipsparseSetMatIndexBase(descr, HIPSPARSE_INDEX_BASE_ZERO));
   CHECK_EQ(sizeof(IdType), sizeof(int32_t));
-  CUSPARSE_CALL(Xcsrmm2<DType>(
-      thr_entry->cusparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
+  HIPSPARSE_CALL(Xcsrmm2<DType>(
+      thr_entry->hipsparse_handle, HIPSPARSE_OPERATION_NON_TRANSPOSE,
       HIPSPARSE_OPERATION_TRANSPOSE, m, n, k, nnz, &alpha, descr,
       (valptr) ? valptr : A_data, static_cast<int32_t*>(csr.indptr->data),
       static_cast<int32_t*>(csr.indices->data), B_data, n, &beta, C_data, m));
-  CUSPARSE_CALL(hipsparseDestroyMatDescr(descr));
+  HIPSPARSE_CALL(hipsparseDestroyMatDescr(descr));
 #endif
+*/
   if (valptr) device->FreeWorkspace(ctx, valptr);
 }
 
@@ -369,29 +379,29 @@ void CusparseCsrmm2Hetero(
 #define SWITCH_OP(op, Op, ...)                                  \
   do {                                                          \
     if ((op) == "add") {                                        \
-      typedef cuda::binary::Add<DType> Op;                      \
+      typedef hip::binary::Add<DType> Op;                      \
       { __VA_ARGS__ }                                           \
     } else if ((op) == "sub") {                                 \
-      typedef cuda::binary::Sub<DType> Op;                      \
+      typedef hip::binary::Sub<DType> Op;                      \
       { __VA_ARGS__ }                                           \
     } else if ((op) == "mul") {                                 \
-      typedef cuda::binary::Mul<DType> Op;                      \
+      typedef hip::binary::Mul<DType> Op;                      \
       { __VA_ARGS__ }                                           \
     } else if ((op) == "div") {                                 \
-      typedef cuda::binary::Div<DType> Op;                      \
+      typedef hip::binary::Div<DType> Op;                      \
       { __VA_ARGS__ }                                           \
     } else if ((op) == "copy_lhs") {                            \
-      typedef cuda::binary::CopyLhs<DType> Op;                  \
+      typedef hip::binary::CopyLhs<DType> Op;                  \
       { __VA_ARGS__ }                                           \
     } else if ((op) == "copy_rhs") {                            \
-      typedef cuda::binary::CopyRhs<DType> Op;                  \
+      typedef hip::binary::CopyRhs<DType> Op;                  \
       { __VA_ARGS__ }                                           \
     } else {                                                    \
       LOG(FATAL) << "Unsupported SpMM binary operator: " << op; \
     }                                                           \
   } while (0)
 
-namespace cuda {
+namespace hip {
 
 /**
  * @brief CUDA kernel of g-SpMM on Coo format.
@@ -639,7 +649,7 @@ void SpMMCoo(
               *efeat_data = efeat.Ptr<DType>();
   DType* out_data = out.Ptr<DType>();
   Idx *argu_data = argu.Ptr<Idx>(), *arge_data = arge.Ptr<Idx>();
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const int64_t N = coo.num_rows, M = coo.num_cols, E = coo.row->shape[0];
 
   int64_t *ubcast_off = nullptr, *ebcast_off = nullptr;
@@ -704,7 +714,7 @@ void SpMMCsr(
   Idx* argu_data = argu.Ptr<Idx>();
   Idx* arge_data = arge.Ptr<Idx>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   int64_t *ubcast_off = nullptr, *ebcast_off = nullptr;
   int64_t len = bcast.out_len, lhs_len = bcast.lhs_len, rhs_len = bcast.rhs_len;
@@ -765,7 +775,7 @@ void SpMMCmpCsrHetero(
   Idx* argu_data = argu.Ptr<Idx>();
   Idx* arge_data = arge.Ptr<Idx>();
 
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
 
   int64_t *ubcast_off = nullptr, *ebcast_off = nullptr;
   int64_t len = bcast.out_len, lhs_len = bcast.lhs_len, rhs_len = bcast.rhs_len;
@@ -789,8 +799,8 @@ void SpMMCmpCsrHetero(
           len, src_type, etype)});
 }
 
-}  // namespace cuda
+}  // namespace hip
 }  // namespace aten
 }  // namespace dgl
 
-#endif  // DGL_ARRAY_CUDA_SPMM_CUH_
+#endif  // DGL_ARRAY_HIP_SPMM_H_

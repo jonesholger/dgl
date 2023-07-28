@@ -1,7 +1,7 @@
 #include "hip/hip_runtime.h"
 /**
  *  Copyright (c) 2021 by contributors.
- * @file array/cuda/spmat_op_impl_coo.cu
+ * @file array/hip/spmat_op_impl_coo.cu
  * @brief COO operator GPU implementation
  */
 #include <dgl/array.h>
@@ -10,18 +10,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../../runtime/cuda/cuda_common.h"
-#include "./atomic.cuh"
+#include "../../runtime/hip/hip_common.h"
+#include "./atomic.h"
 #include "./utils.h"
 
 namespace dgl {
 
 using runtime::NDArray;
-using namespace cuda;
+using namespace hip;
 
 namespace aten {
 namespace impl {
-
 template <typename IdType>
 __device__ void _warpReduce(volatile IdType* sdata, IdType tid) {
   sdata[tid] += sdata[tid + 32];
@@ -65,7 +64,7 @@ __global__ void _COOGetRowNNZKernel(
       _warpReduce(local_cnt, tx);
     }
     if (tx == 0) {
-      cuda::AtomicAdd(glb_cnt, local_cnt[tx]);
+      hip::AtomicAdd(glb_cnt, local_cnt[tx]);
     }
     start += blockDim.x * gridDim.x;
   }
@@ -73,11 +72,11 @@ __global__ void _COOGetRowNNZKernel(
 
 template <DGLDeviceType XPU, typename IdType>
 int64_t COOGetRowNNZ(COOMatrix coo, int64_t row) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = coo.row->ctx;
   IdType nnz = coo.row->shape[0];
   IdType nt = 1024;
-  IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
+  IdType nb = dgl::hip::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
   NDArray rst = NDArray::Empty({1}, coo.row->dtype, coo.row->ctx);
   _Fill(rst.Ptr<IdType>(), 1, IdType(0));
   HIP_KERNEL_CALL(
@@ -97,14 +96,14 @@ __global__ void _COOGetAllRowNNZKernel(
   IdType eid = blockIdx.x * blockDim.x + threadIdx.x;
   while (eid < nnz) {
     IdType row = row_indices[eid];
-    cuda::AtomicAdd(glb_cnts + row, IdType(1));
+    hip::AtomicAdd(glb_cnts + row, IdType(1));
     eid += blockDim.x * gridDim.x;
   }
 }
 
 template <DGLDeviceType XPU, typename IdType>
 NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
-  hipStream_t stream = runtime::getCurrentCUDAStream();
+  hipStream_t stream = runtime::getCurrentHIPStream();
   const auto& ctx = coo.row->ctx;
   IdType nnz = coo.row->shape[0];
   IdType num_rows = coo.num_rows;
@@ -113,7 +112,7 @@ NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
     auto rows_cpu = rows.CopyTo(DGLContext{kDGLCPU, 0});
     int64_t row = *rows_cpu.Ptr<IdType>();
     IdType nt = 1024;
-    IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
+    IdType nb = dgl::hip::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
     NDArray rst = NDArray::Empty({1}, coo.row->dtype, coo.row->ctx);
     _Fill(rst.Ptr<IdType>(), 1, IdType(0));
     HIP_KERNEL_CALL(
@@ -122,7 +121,7 @@ NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
     return rst;
   } else {
     IdType nt = 1024;
-    IdType nb = dgl::cuda::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
+    IdType nb = dgl::hip::FindNumBlocks<'x'>((nnz + nt - 1) / nt);
     NDArray in_degrees = NDArray::Empty({num_rows}, rows->dtype, rows->ctx);
     _Fill(in_degrees.Ptr<IdType>(), num_rows, IdType(0));
     HIP_KERNEL_CALL(

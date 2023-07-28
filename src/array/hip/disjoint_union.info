@@ -1,5 +1,5 @@
 
-[HIPIFY] info: file './src/array/cuda/disjoint_union.cu' statisitics:
+[HIPIFY] info: file './src/array/hip/disjoint_union.cu' statisitics:
   CONVERTED refs count: 2
   TOTAL lines of code: 185
   WARNINGS: 0
