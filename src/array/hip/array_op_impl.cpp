@@ -16,9 +16,8 @@ using runtime::NDArray;
 using namespace runtime::hip;
 namespace aten {
 namespace impl {
-#ifdef __HIP_DEVICE_COMPILE__
 ///////////////////////////// BinaryElewise /////////////////////////////
-
+//#ifdef __HIP_DEVICE_COMPILE__
 template <typename IdType, typename Op>
 __global__ void _BinaryElewiseKernel(
     const IdType* lhs, const IdType* rhs, IdType* out, int64_t length) {
@@ -285,7 +284,6 @@ NDArray Full(DType val, int64_t length, DGLContext ctx) {
       (_FullKernel<DType>), nb, nt, 0, stream, ret_data, length, val);
   return ret;
 }
-
 template IdArray Full<kDGLCUDA, int32_t>(
     int32_t val, int64_t length, DGLContext ctx);
 template IdArray Full<kDGLCUDA, int64_t>(
@@ -329,7 +327,6 @@ IdArray Range(IdType low, IdType high, DGLContext ctx) {
       (_RangeKernel<IdType>), nb, nt, 0, stream, ret_data, low, length);
   return ret;
 }
-
 template IdArray Range<kDGLCUDA, int32_t>(int32_t, int32_t, DGLContext);
 template IdArray Range<kDGLCUDA, int64_t>(int64_t, int64_t, DGLContext);
 
@@ -396,7 +393,6 @@ IdArray Relabel_(const std::vector<IdArray>& arrays) {
 
   return induced_nodes;
 }
-
 template IdArray Relabel_<kDGLCUDA, int32_t>(
     const std::vector<IdArray>& arrays);
 template IdArray Relabel_<kDGLCUDA, int64_t>(
@@ -435,10 +431,9 @@ IdArray AsNumBits(IdArray arr, uint8_t bits) {
   }
   return ret;
 }
-
 template IdArray AsNumBits<kDGLCUDA, int32_t>(IdArray arr, uint8_t bits);
 template IdArray AsNumBits<kDGLCUDA, int64_t>(IdArray arr, uint8_t bits);
-#endif
+//#endif
 }  // namespace impl
 }  // namespace aten
 }  // namespace dgl

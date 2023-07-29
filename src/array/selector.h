@@ -12,19 +12,19 @@ namespace dgl {
 
 namespace {
 
-#define DGLHOST __host__
+//#define DGLHOST __host__
 
-#ifdef __CUDACC__
+//#ifdef __CUDACC__
 #define DGLDEVICE __device__
 #define DGLINLINE __forceinline__
-#elif  __HIP_DEVICE_COMPILE__
-#define DGLDEVICE __device__
+//#elif  __HIP_DEVICE_COMPILE__
+#define DGLDEVICE __host__ __device__
 #define __forceinline__ inline __attribute__((always_inline))
 #define DGLINLINE __forceinline__
-#else
-#define DGLDEVICE
-#define DGLINLINE inline
-#endif  // __CUDACC__
+//#else
+//#define DGLDEVICE
+//#define DGLINLINE inline
+//#endif  // __CUDACC__
 
 }  // namespace
 
@@ -36,7 +36,7 @@ namespace {
 template <int target>
 struct Selector {
   template <typename T>
-  static  __host__ __device__ DGLINLINE T Call(T src, T edge, T dst) {
+  static  DGLDEVICE DGLINLINE T Call(T src, T edge, T dst) {
     LOG(INFO) << "Target " << target << " not recognized.";
     return src;
   }
@@ -44,19 +44,19 @@ struct Selector {
 
 template <>
 template <typename T>
- __host__ __device__ DGLINLINE T Selector<0>::Call(T src, T edge, T dst) {
+ DGLDEVICE DGLINLINE T Selector<0>::Call(T src, T edge, T dst) {
   return src;
 }
 
 template <>
 template <typename T>
- __host__ __device__ DGLINLINE T Selector<1>::Call(T src, T edge, T dst) {
+ DGLDEVICE DGLINLINE T Selector<1>::Call(T src, T edge, T dst) {
   return edge;
 }
 
 template <>
 template <typename T>
- __host__ __device__ DGLINLINE T Selector<2>::Call(T src, T edge, T dst) {
+ DGLDEVICE DGLINLINE T Selector<2>::Call(T src, T edge, T dst) {
   return dst;
 }
 }  // namespace dgl

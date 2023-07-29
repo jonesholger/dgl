@@ -15,9 +15,9 @@
 #include <utility>
 #include <vector>
 
-#include "../../../array/cuda/dgl_cub.cuh"
+#include "../../../array/hip/dgl_cub.h"
 #include "../../../runtime/hip/hip_common.h"
-#include "frequency_hashmap.cuh"
+#include "frequency_hashmap.h"
 
 namespace dgl {
 
@@ -228,7 +228,7 @@ std::pair<IdArray, IdArray> RandomWalkUniform(
         CHECK(restart_prob->ndim == 1) << "restart prob dimension should be 1.";
         const FloatType *restart_prob_data = restart_prob.Ptr<FloatType>();
         const int64_t restart_prob_size = restart_prob->shape[0];
-        CUDA_KERNEL_CALL(
+        HIP_KERNEL_CALL(
             (_RandomWalkKernel<IdType, FloatType, BLOCK_SIZE, TILE_SIZE>), grid,
             block, 0, stream, random_seed, seed_data, num_seeds,
             d_metapath_data, max_num_steps, d_graphs, restart_prob_data,
@@ -298,11 +298,11 @@ std::pair<IdArray, IdArray> RandomWalkBiased(
     // calculate the sum of the neighbor weights
     const IdType *d_offsets = static_cast<const IdType *>(csr.indptr->data);
     size_t temp_storage_size = 0;
-    CUDA_CALL(hipcub::DeviceSegmentedReduce::Sum(
+    HIP_CALL(hipcub::DeviceSegmentedReduce::Sum(
         nullptr, temp_storage_size, probs[etype], prob_sums[etype],
         num_segments, d_offsets, d_offsets + 1, stream));
     void *temp_storage = device->AllocWorkspace(ctx, temp_storage_size);
-    CUDA_CALL(hipcub::DeviceSegmentedReduce::Sum(
+    HIP_CALL(hipcub::DeviceSegmentedReduce::Sum(
         temp_storage, temp_storage_size, probs[etype], prob_sums[etype],
         num_segments, d_offsets, d_offsets + 1, stream));
     device->FreeWorkspace(ctx, temp_storage);
@@ -341,7 +341,7 @@ std::pair<IdArray, IdArray> RandomWalkBiased(
   CHECK(restart_prob->ndim == 1) << "restart prob dimension should be 1.";
   const FloatType *restart_prob_data = restart_prob.Ptr<FloatType>();
   const int64_t restart_prob_size = restart_prob->shape[0];
-  CUDA_KERNEL_CALL(
+  HIP_KERNEL_CALL(
       (_RandomWalkBiasedKernel<IdType, FloatType, BLOCK_SIZE, TILE_SIZE>), grid,
       block, 0, stream, random_seed, seed_data, num_seeds, d_metapath_data,
       max_num_steps, d_graphs, probs_dev, prob_sums_dev, restart_prob_data,

@@ -225,6 +225,5 @@ template void SDDMMCooHetero<kDGLCPU, int64_t, double>(
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-
 }  // namespace aten
 }  // namespace dgl

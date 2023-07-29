@@ -41,7 +41,7 @@
  * We treat pinned memory as normal host memory if we don't want
  * to enable CUDA UVA access for this operator
  */
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
 #define ATEN_XPU_SWITCH_CUDA(val, XPU, op, ...)                          \
   do {                                                                   \
     if ((val) == kDGLCPU) {                                              \

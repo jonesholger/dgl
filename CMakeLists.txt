@@ -229,7 +229,7 @@ if(ENABLE_HIP)
     src/runtime/hip/*.cpp
     src/geometry/hip/*.cpp
     src/graph/transform/hip/*.cpp
-#    src/graph/sampling/randomwalks/*.cu
+    src/graph/sampling/randomwalks/*.cpp
   )
   list(APPEND DGL_SRC ${DGL_DEVICE_SRC})
 endif(ENABLE_HIP)
@@ -366,7 +366,10 @@ if(BUILD_CPP_TEST)
   add_executable(runUnitTests ${TEST_SRC_FILES})
   target_link_libraries(runUnitTests gtest gtest_main)
   target_link_libraries(runUnitTests dgl)
-  add_test(UnitTests runUnitTests)
+  #add_test(UnitTests runUnitTests)
+  blt_add_test(NAME UnitTests
+               COMMAND bin/runUnitTests)
+
 endif(BUILD_CPP_TEST)
 
 if(BUILD_SPARSE)

@@ -93,7 +93,8 @@ inline bool is_zero<dim3>(dim3 size) {
   }
 
 #define HIP_KERNEL_CALL(kernel, nblks, nthrs, shmem, stream, ...)            \
-  {                                                                           \
+  {                                                                          \ 
+    printf("HIP_KERNEL_CALL\n");                                             \
     if (!dgl::runtime::is_zero((nblks)) && !dgl::runtime::is_zero((nthrs))) { \
       (kernel)<<<(nblks), (nthrs), (shmem), (stream)>>>(__VA_ARGS__);         \
       hipError_t e = hipGetLastError();                                     \

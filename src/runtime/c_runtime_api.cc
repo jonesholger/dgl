@@ -63,6 +63,7 @@ class DeviceAPIManager {
   }
   // Get or initialize API.
   DeviceAPI* GetAPI(int type, bool allow_missing) {
+    //std::cout << "GetAPI type: " << type << " allow missing: " << allow_missing << std::endl;
     //print_stacktrace();
     if (type < kRPCSessMask) {
       if (api_[type] != nullptr) return api_[type];
@@ -79,9 +80,10 @@ class DeviceAPIManager {
     }
   }
   DeviceAPI* GetAPI(const std::string name, bool allow_missing) {
+    //std::cout << "GetAPI type: " << name << " allow missing: " << allow_missing << std::endl;
     //print_stacktrace();
     std::string factory = "device_api." + name;
-    //std::cerr << "GetAPI: " << factory << std::endl;
+    std::cerr << "GetAPI: " << factory << std::endl;
     auto* f = Registry::Get(factory);
     if (f == nullptr) {
       //std::cerr << "Registry::Get returns nullptr\n";

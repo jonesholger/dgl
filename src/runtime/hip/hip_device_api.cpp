@@ -17,6 +17,7 @@ namespace runtime {
 class HIPDeviceAPI final : public DeviceAPI {
  public:
   HIPDeviceAPI() {
+    printf("HIPDeviceAPI ctor\n");
     int count;
     auto err = hipGetDeviceCount(&count);
     switch (err) {
@@ -383,7 +384,8 @@ hipStream_t getCurrentHIPStream() {
     return nullptr;
 }
 
-DGL_REGISTER_GLOBAL("device_api.hip")
+//DGL_REGISTER_GLOBAL("device_api.hip")
+DGL_REGISTER_GLOBAL("device_api.cuda")
     .set_body([](DGLArgs args, DGLRetValue* rv) {
       DeviceAPI* ptr = HIPDeviceAPI::Global().get();
       *rv = static_cast<void*>(ptr);

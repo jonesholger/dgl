@@ -6,17 +6,17 @@
 #ifndef DGL_ARRAY_ARITH_H_
 #define DGL_ARRAY_ARITH_H_
 
-#ifdef __CUDACC__
-#define DGLDEVICE __device__
-#define DGLINLINE __forceinline__
-#elif  __HIP_DEVICE_COMPILE__
-#define DGLDEVICE __device__
+//#ifdef __CUDACC__
+//#define DGLDEVICE __device__
+//#define DGLINLINE __forceinline__
+//#elif  __HIP_DEVICE_COMPILE__
+#define DGLDEVICE __host__ __device__
 #define __forceinline__ inline __attribute__((always_inline))
 #define DGLINLINE __forceinline__
-#else
-#define DGLDEVICE
-#define DGLINLINE inline
-#endif  // __CUDACC__
+//#else
+//#define DGLDEVICE
+//#define DGLINLINE inline
+//#endif  // __CUDACC__
 
 namespace dgl {
 namespace aten {
