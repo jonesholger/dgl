@@ -610,7 +610,8 @@ CSRMatrix CSRSliceMatrix(
 
   // Execute SegmentMaskColKernel
   const int64_t num_rows = csr.num_rows;
-  constexpr int WARP_SIZE = 32;
+  //constexpr int WARP_SIZE = 32;
+  constexpr int WARP_SIZE = 64;
   // With a simple fine-tuning, TILE_SIZE=16 gives a good performance.
   constexpr int TILE_SIZE = 16;
   constexpr int BLOCK_WARPS = CUDA_MAX_NUM_THREADS / WARP_SIZE;

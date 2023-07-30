@@ -327,7 +327,7 @@ void _TestCOOToCSR(DGLContext ctx) {
 TEST(SpmatTest, COOToCSR) {
   _TestCOOToCSR<int32_t>(CPU);
   _TestCOOToCSR<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCOOToCSR<int32_t>(GPU);
   _TestCOOToCSR<int64_t>(GPU);
 #endif
@@ -413,7 +413,7 @@ void _TestCOOSort(DGLContext ctx) {
 TEST(SpmatTest, COOSort) {
   _TestCOOSort<int32_t>(CPU);
   _TestCOOSort<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCOOSort<int32_t>(GPU);
   _TestCOOSort<int64_t>(GPU);
 #endif
@@ -475,7 +475,7 @@ void _TestCOOGetData(DGLContext ctx) {
 TEST(SpmatTest, COOGetData) {
   _TestCOOGetData<int32_t>(CPU);
   _TestCOOGetData<int64_t>(CPU);
-  // #ifdef DGL_USE_CUDA
+  // #if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   //_TestCOOGetData<int32_t>(GPU);
   //_TestCOOGetData<int64_t>(GPU);
   // #endif
@@ -510,8 +510,13 @@ void _TestCOOToCSRAlgs() {
   // Compare results between different CPU COOToCSR implementations.
   // NNZ is chosen to be bigger than the limit for the "small" matrix algorithm.
   // N is set to lay on border between "sparse" and "dense" algorithm choice.
-
-  const int64_t num_threads = std::min(256, omp_get_max_threads());
+  int64_t num_threads;
+  #pragma omp parallel
+  {
+    #pragma omp single
+    num_threads = std::min(256, omp_get_max_threads());
+    std::cout << "omp_get_max_threads :" << num_threads << std::endl;
+  }
   const int64_t min_num_threads = 3;
 
   if (num_threads < min_num_threads) {

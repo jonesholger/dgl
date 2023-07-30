@@ -210,7 +210,7 @@ TEST(SpmatTest, TestCSRIsNonZero) {
   _TestCSRIsNonZero1<int64_t>(CPU);
   _TestCSRIsNonZero2<int32_t>(CPU);
   _TestCSRIsNonZero2<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRIsNonZero1<int32_t>(GPU);
   _TestCSRIsNonZero1<int64_t>(GPU);
   _TestCSRIsNonZero2<int32_t>(GPU);
@@ -234,7 +234,7 @@ void _TestCSRGetRowNNZ(DGLContext ctx) {
 TEST(SpmatTest, TestCSRGetRowNNZ) {
   _TestCSRGetRowNNZ<int32_t>(CPU);
   _TestCSRGetRowNNZ<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRGetRowNNZ<int32_t>(GPU);
   _TestCSRGetRowNNZ<int64_t>(GPU);
 #endif
@@ -258,7 +258,7 @@ void _TestCSRGetRowColumnIndices(DGLContext ctx) {
 TEST(SpmatTest, TestCSRGetRowColumnIndices) {
   _TestCSRGetRowColumnIndices<int32_t>(CPU);
   _TestCSRGetRowColumnIndices<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRGetRowColumnIndices<int32_t>(GPU);
   _TestCSRGetRowColumnIndices<int64_t>(GPU);
 #endif
@@ -282,7 +282,7 @@ void _TestCSRGetRowData(DGLContext ctx) {
 TEST(SpmatTest, TestCSRGetRowData) {
   _TestCSRGetRowData<int32_t>(CPU);
   _TestCSRGetRowData<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRGetRowData<int32_t>(GPU);
   _TestCSRGetRowData<int64_t>(GPU);
 #endif
@@ -327,7 +327,7 @@ void _TestCSRGetData(DGLContext ctx) {
 TEST(SpmatTest, CSRGetData) {
   _TestCSRGetData<int32_t>(CPU);
   _TestCSRGetData<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRGetData<int32_t>(GPU);
   _TestCSRGetData<int64_t>(GPU);
 #endif
@@ -355,7 +355,7 @@ void _TestCSRGetDataAndIndices(DGLContext ctx) {
 TEST(SpmatTest, CSRGetDataAndIndices) {
   _TestCSRGetDataAndIndices<int32_t>(CPU);
   _TestCSRGetDataAndIndices<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRGetDataAndIndices<int32_t>(GPU);
   _TestCSRGetDataAndIndices<int64_t>(GPU);
 #endif
@@ -387,7 +387,7 @@ void _TestCSRTranspose(DGLContext ctx) {
 TEST(SpmatTest, CSRTranspose) {
   _TestCSRTranspose<int32_t>(CPU);
   _TestCSRTranspose<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRTranspose<int32_t>(GPU);
   _TestCSRTranspose<int64_t>(GPU);
 #endif
@@ -541,7 +541,7 @@ void _TestCSRSliceRows(DGLContext ctx) {
 TEST(SpmatTest, TestCSRSliceRows) {
   _TestCSRSliceRows<int32_t>(CPU);
   _TestCSRSliceRows<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRSliceRows<int32_t>(GPU);
   _TestCSRSliceRows<int64_t>(GPU);
 #endif
@@ -689,7 +689,7 @@ TEST(SpmatTest, CSRSliceMatrix) {
   _TestCSRSliceMatrix1<int64_t>(CPU);
   _TestCSRSliceMatrix2<int32_t>(CPU);
   _TestCSRSliceMatrix2<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRSliceMatrix1<int32_t>(GPU);
   _TestCSRSliceMatrix1<int64_t>(GPU);
   _TestCSRSliceMatrix2<int32_t>(GPU);
@@ -708,7 +708,7 @@ void _TestCSRHasDuplicate(DGLContext ctx) {
 TEST(SpmatTest, CSRHasDuplicate) {
   _TestCSRHasDuplicate<int32_t>(CPU);
   _TestCSRHasDuplicate<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRHasDuplicate<int32_t>(GPU);
   _TestCSRHasDuplicate<int64_t>(GPU);
 #endif
@@ -732,7 +732,7 @@ void _TestCSRSort(DGLContext ctx) {
 TEST(SpmatTest, CSRSort) {
   _TestCSRSort<int32_t>(CPU);
   _TestCSRSort<int64_t>(CPU);
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   _TestCSRSort<int32_t>(GPU);
   _TestCSRSort<int64_t>(GPU);
 #endif

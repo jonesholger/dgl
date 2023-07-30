@@ -17,7 +17,6 @@ namespace runtime {
 class HIPDeviceAPI final : public DeviceAPI {
  public:
   HIPDeviceAPI() {
-    printf("HIPDeviceAPI ctor\n");
     int count;
     auto err = hipGetDeviceCount(&count);
     switch (err) {

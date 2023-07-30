@@ -342,7 +342,7 @@
   } while (0)
 
 // Macro to dispatch according to device context (allowing cuda)
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
 #define ATEN_CSR_SWITCH_CUDA(csr, XPU, IdType, op, ...)                \
   ATEN_XPU_SWITCH_CUDA((csr).indptr->ctx.device_type, XPU, op, {       \
     ATEN_ID_TYPE_SWITCH((csr).indptr->dtype, IdType, {{__VA_ARGS__}}); \
