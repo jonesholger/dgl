@@ -475,10 +475,10 @@ void _TestCOOGetData(DGLContext ctx) {
 TEST(SpmatTest, COOGetData) {
   _TestCOOGetData<int32_t>(CPU);
   _TestCOOGetData<int64_t>(CPU);
-  // #if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
-  //_TestCOOGetData<int32_t>(GPU);
-  //_TestCOOGetData<int64_t>(GPU);
-  // #endif
+//#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+//  _TestCOOGetData<int32_t>(GPU);
+//  _TestCOOGetData<int64_t>(GPU);
+//#endif
 }
 
 template <typename IDX>
@@ -511,12 +511,7 @@ void _TestCOOToCSRAlgs() {
   // NNZ is chosen to be bigger than the limit for the "small" matrix algorithm.
   // N is set to lay on border between "sparse" and "dense" algorithm choice.
   int64_t num_threads;
-  #pragma omp parallel
-  {
-    #pragma omp single
-    num_threads = std::min(256, omp_get_max_threads());
-    std::cout << "omp_get_max_threads :" << num_threads << std::endl;
-  }
+  num_threads = std::min(256, omp_get_max_threads());
   const int64_t min_num_threads = 3;
 
   if (num_threads < min_num_threads) {

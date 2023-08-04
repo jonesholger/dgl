@@ -35,6 +35,8 @@ inline std::string DeviceName(int type) {
     case kDGLCUDA:
       return "cuda";
     // add more device here once supported
+    case kDGLROCM:
+      return "cuda";
     default:
       LOG(FATAL) << "unknown type =" << type;
       return "Unknown";
@@ -83,7 +85,7 @@ class DeviceAPIManager {
     //std::cout << "GetAPI type: " << name << " allow missing: " << allow_missing << std::endl;
     //print_stacktrace();
     std::string factory = "device_api." + name;
-    std::cerr << "GetAPI: " << factory << std::endl;
+    //std::cerr << "GetAPI: " << factory << std::endl;
     auto* f = Registry::Get(factory);
     if (f == nullptr) {
       //std::cerr << "Registry::Get returns nullptr\n";
@@ -393,7 +395,7 @@ int DGLCbArgToReturn(DGLValue* value, int code) {
 }
 
 int DGLLoadTensorAdapter(const char* path) {
-  std::cerr << "LoadTensorAdaoter at: " << path << std::endl;
+  std::cerr << "LoadTensorAdapter at: " << path << std::endl;
   return TensorDispatcher::Global()->Load(path) ? 0 : -1;
 }
 

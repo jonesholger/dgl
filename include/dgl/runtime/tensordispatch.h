@@ -36,6 +36,11 @@
 #ifdef DGL_USE_CUDA
 #include <cuda_runtime.h>
 #endif  // DGL_USE_CUDA
+
+#ifdef DGL_USE_HIP
+#include <hip/hip_runtime.h>
+#endif
+
 #include "ndarray.h"
 
 /**
@@ -90,7 +95,6 @@ class TensorDispatcher {
     FUNCCAST(tensoradapter::CPURawDelete, entry)(ptr);
   }
 
-#ifdef DGL_USE_CUDA
   /**
    * @brief Allocate a piece of GPU memory via
    * PyTorch's THCCachingAllocator.
@@ -104,10 +108,17 @@ class TensorDispatcher {
    * @param stream The stream to be allocated on.
    * @return Pointer to the allocated memory.
    */
+#if defined(DGL_USE_CUDA)
   inline void* CUDAAllocWorkspace(size_t nbytes, cudaStream_t stream) {
     auto entry = entrypoints_[Op::kCUDARawAlloc];
     return FUNCCAST(tensoradapter::CUDARawAlloc, entry)(nbytes, stream);
   }
+#elif defined(DGL_USE_HIP)
+  inline void* CUDAAllocWorkspace(size_t nbytes, hipStream_t stream) {
+    auto entry = entrypoints_[Op::kCUDARawAlloc];
+    return FUNCCAST(tensoradapter::CUDARawAlloc, entry)(nbytes, stream);
+  }
+#endif
 
   /**
    * @brief Free the GPU memory.
@@ -115,10 +126,13 @@ class TensorDispatcher {
    *
    * @param ptr Pointer to the memory to be freed.
    */
+
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   inline void CUDAFreeWorkspace(void* ptr) {
     auto entry = entrypoints_[Op::kCUDARawDelete];
     FUNCCAST(tensoradapter::CUDARawDelete, entry)(ptr);
   }
+#endif
 
   /**
    * @brief Find the current PyTorch CUDA stream
@@ -130,11 +144,17 @@ class TensorDispatcher {
    *
    * @return cudaStream_t stream handle
    */
+#if defined(DGL_USE_CUDA)
   inline cudaStream_t CUDAGetCurrentStream() {
     auto entry = entrypoints_[Op::kCUDACurrentStream];
     return FUNCCAST(tensoradapter::CUDACurrentStream, entry)();
   }
-
+#elif defined(DGL_USE_HIP)
+  inline hipStream_t CUDAGetCurrentStream() {
+    auto entry = entrypoints_[Op::kCUDACurrentStream];
+    return FUNCCAST(tensoradapter::CUDACurrentStream, entry)();
+  }
+#endif
   /**
    * @brief Allocate a piece of pinned CPU memory via PyTorch
    *     CachingHostAllocator.
@@ -146,6 +166,7 @@ class TensorDispatcher {
    *     allocator.
    * @return Raw pointer to the allocated memory.
    */
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   inline void* CUDAAllocHostWorkspace(
       size_t nbytes, void** ctx, void** deleter) {
     auto entry = entrypoints_[Op::kCUDARawHostAlloc];
@@ -153,7 +174,7 @@ class TensorDispatcher {
     auto alloc_func = FUNCCAST(tensoradapter::CUDARawHostAlloc, entry);
     return alloc_func(nbytes, ctx, deleter);
   }
-
+#endif
   /**
    * @brief Insert the pinned memory block (allocated via PyTorch
    *     CachingHostAllocator) back to the free list for future usage.(ref:
@@ -162,11 +183,12 @@ class TensorDispatcher {
    * @param deleter Pointer to the delete function ptr returned from the
    *     allocator.
    */
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   inline void CUDAFreeHostWorkspace(void** deleter) {
     auto entry = entrypoints_[Op::kCUDARawHostDelete];
     FUNCCAST(tensoradapter::CUDARawHostDelete, entry)(deleter);
   }
-
+#endif
   /**
    * @brief Invoke the record_event function call from PyTorch
    *     CachingHostAllocator.
@@ -182,18 +204,27 @@ class TensorDispatcher {
    * @param stream The stream that currently consumes this tensor.
    * @param device_id Device of the tensor.
    */
+#if defined(DGL_USE_CUDA)
   inline void CUDARecordHostAlloc(
       void* data, void* ctx, cudaStream_t stream, int device_id) {
     auto entry = entrypoints_[Op::kCUDARecordHostAlloc];
     auto recorded_alloc = FUNCCAST(tensoradapter::CUDARecordHostAlloc, entry);
     recorded_alloc(data, ctx, stream, device_id);
   }
-
+#elif defined(DGL_USE_HIP)
+  inline void CUDARecordHostAlloc(
+      void* data, void* ctx, hipStream_t stream, int device_id) {
+    auto entry = entrypoints_[Op::kCUDARecordHostAlloc];
+    auto recorded_alloc = FUNCCAST(tensoradapter::CUDARecordHostAlloc, entry);
+    recorded_alloc(data, ctx, stream, device_id);
+  }
+#endif
   /**
    * @brief Release cached pinned memory allocations via cudaHostFree.
    * @note Used in CUDADeviceAPI::PinData() before pinning any host memory by
    *     DGL.
    */
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
   inline void CUDAHostAllocatorEmptyCache() {
     auto entry = entrypoints_[Op::kCUDAHostAllocatorEmptyCache];
     FUNCCAST(tensoradapter::CUDAHostAllocatorEmptyCache, entry)();
@@ -209,10 +240,13 @@ class TensorDispatcher {
    * @param device_id Device of the tensor.
    */
   inline void RecordStream(void* ptr, DGLStreamHandle stream, int device_id) {
-#ifdef DGL_USE_CUDA
     auto entry = entrypoints_[Op::kRecordStream];
+#if defined(DGL_USE_CUDA) 
     FUNCCAST(tensoradapter::RecordStream, entry)
     (ptr, static_cast<cudaStream_t>(stream), device_id);
+#elif defined(DGL_USE_HIP)
+    FUNCCAST(tensoradapter::RecordStream, entry)
+    (ptr, static_cast<hipStream_t>(stream), device_id);
 #endif
   }
 
@@ -229,7 +263,7 @@ class TensorDispatcher {
    */
   static constexpr const char* names_[] = {
       "CPURawAlloc",         "CPURawDelete",
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
       "CUDARawAlloc",        "CUDARawDelete",
       "CUDACurrentStream",   "RecordStream",
       "CUDARawHostAlloc",    "CUDARawHostDelete",
@@ -242,7 +276,7 @@ class TensorDispatcher {
    public:
     static constexpr int kCPURawAlloc = 0;
     static constexpr int kCPURawDelete = 1;
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
     static constexpr int kCUDARawAlloc = 2;
     static constexpr int kCUDARawDelete = 3;
     static constexpr int kCUDACurrentStream = 4;
@@ -260,7 +294,7 @@ class TensorDispatcher {
   /** @brief Entrypoints of each function */
   void* entrypoints_[num_entries_] = {
       nullptr, nullptr,
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
 #endif  // DGL_USE_CUDA
   };

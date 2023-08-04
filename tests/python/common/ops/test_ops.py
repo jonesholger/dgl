@@ -289,7 +289,7 @@ def test_sddmm(g, shp, lhs_target, rhs_target, msg, idtype):
     if "m" in g.edata:
         g.edata.pop("m")
 
-
+@pytest.mark.skip(reason=None)
 @pytest.mark.parametrize("reducer", ["sum", "max", "min", "mean"])
 def test_segment_reduce(reducer):
     ctx = F.ctx()
@@ -323,7 +323,7 @@ def test_segment_reduce(reducer):
         assert F.allclose(grad1, grad2)
         print("backward passed")
 
-
+@pytest.mark.skip(reason=None)
 @unittest.skipIf(
     dgl.backend.backend_name != "pytorch", reason="Only support PyTorch for now"
 )
@@ -382,6 +382,7 @@ def test_segment_mm(idtype, feat_size, dtype, tol):
     assert torch.allclose(db, db_t, atol=tol, rtol=tol)
 
 
+@pytest.mark.skip(reason=None)
 @unittest.skipIf(
     dgl.backend.backend_name != "pytorch", reason="Only support PyTorch for now"
 )

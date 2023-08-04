@@ -57,6 +57,7 @@ typedef enum {
   /** @brief CUDA GPU device */
   kDGLCUDA = 2,
   // add more devices once supported
+  kDGLROCM = 10,
 } DGLDeviceType;
 
 /**

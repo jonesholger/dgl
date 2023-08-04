@@ -113,9 +113,12 @@ def device_id(ctx):
 
 def to_backend_ctx(dglctx):
     dev_type = dglctx.device_type
+    print("to_backend_ctx dev_type:" + str(dev_type))
     if dev_type == 1:
         return th.device("cpu")
     elif dev_type == 2:
+        return th.device("cuda", dglctx.device_id)
+    elif dev_type == 10:
         return th.device("cuda", dglctx.device_id)
     else:
         raise ValueError("Unsupported DGL device context:", dglctx)

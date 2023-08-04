@@ -106,7 +106,7 @@ class HIPDeviceAPI final : public DeviceAPI {
       DGLContext ctx, size_t nbytes, size_t alignment,
       DGLDataType type_hint) final {
     SetDevice(ctx);
-#if 0
+#if 1
     // Redirect to PyTorch's allocator when available.
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable()) {
@@ -122,7 +122,7 @@ class HIPDeviceAPI final : public DeviceAPI {
 
   void FreeDataSpace(DGLContext ctx, void* ptr) final {
     SetDevice(ctx);
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable()) {
       return tensor_dispatcher->CUDAFreeWorkspace(ptr);
@@ -138,7 +138,10 @@ class HIPDeviceAPI final : public DeviceAPI {
     hipStream_t cu_stream = static_cast<hipStream_t>(stream);
     from = static_cast<const char*>(from) + from_offset;
     to = static_cast<char*>(to) + to_offset;
-    if (ctx_from.device_type == kDGLCUDA && ctx_to.device_type == kDGLCUDA) {
+    //std::cout << "ctx from:" << ctx_from.device_type << " ctx to:" << ctx_to.device_type << std::endl;
+    bool ctx_from_gpu = (ctx_from.device_type == kDGLCUDA) || (ctx_from.device_type == kDGLROCM);
+    bool ctx_to_gpu = (ctx_to.device_type == kDGLCUDA) || (ctx_to.device_type == kDGLROCM);
+    if (ctx_from_gpu && ctx_to_gpu) {
       hip_assert(hipSetDevice(ctx_from.device_id));
       if (ctx_from.device_id == ctx_to.device_id) {
         GPUCopy(from, to, size, hipMemcpyDeviceToDevice, cu_stream);
@@ -147,11 +150,11 @@ class HIPDeviceAPI final : public DeviceAPI {
             to, ctx_to.device_id, from, ctx_from.device_id, size, cu_stream));
       }
     } else if (
-        ctx_from.device_type == kDGLCUDA && ctx_to.device_type == kDGLCPU) {
+        ctx_from_gpu && ctx_to.device_type == kDGLCPU) {
       hip_assert(hipSetDevice(ctx_from.device_id));
       GPUCopy(from, to, size, hipMemcpyDeviceToHost, cu_stream);
     } else if (
-        ctx_from.device_type == kDGLCPU && ctx_to.device_type == kDGLCUDA) {
+        ctx_from.device_type == kDGLCPU && ctx_to_gpu) {
       hip_assert(hipSetDevice(ctx_to.device_id));
       GPUCopy(from, to, size, hipMemcpyHostToDevice, cu_stream);
     } else {
@@ -181,7 +184,7 @@ class HIPDeviceAPI final : public DeviceAPI {
     CopyDataFromTo(
         from, from_offset, to, to_offset, size, ctx_from, ctx_to, type_hint,
         stream);
-#if 0
+#if 1
     auto tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable()) {
       auto custream = static_cast<hipStream_t>(stream);
@@ -244,7 +247,7 @@ class HIPDeviceAPI final : public DeviceAPI {
   bool PinData(void* ptr, size_t nbytes) override {
     // prevent users from pinning empty tensors or graphs
     if (ptr == nullptr || nbytes == 0) return false;
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     // Minimize the pinned memory pool allocated by backend (via tensoradapter)
     // to preserve enough memory for DGL inherited in-place pin-memory operation
@@ -265,7 +268,7 @@ class HIPDeviceAPI final : public DeviceAPI {
       size_t nbytes, void** ctx, void** deleter) override {
     // prevent pinning empty tensors or graphs
     if (nbytes == 0) return nullptr;
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     CHECK(tensor_dispatcher->IsAvailable())
         << "CachingHostAllocator is not available in the current backend "
@@ -275,7 +278,7 @@ class HIPDeviceAPI final : public DeviceAPI {
   }
 
   void FreePinnedDataSpace(void** deleter) override {
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     CHECK(tensor_dispatcher->IsAvailable())
         << "CachingHostAllocator is not available in the current backend "
@@ -325,18 +328,18 @@ class HIPDeviceAPI final : public DeviceAPI {
       DGLContext ctx, size_t size, DGLDataType type_hint) final {
     SetDevice(ctx);
     // Redirect to PyTorch's allocator when available.
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable())
       return tensor_dispatcher->CUDAAllocWorkspace(
-          size, getCurrentCUDAStream());
+          size, getCurrentHIPStream());
 #endif
     return HIPThreadEntry::ThreadLocal()->pool.AllocWorkspace(ctx, size);
   }
 
   void FreeWorkspace(DGLContext ctx, void* data) final {
     SetDevice(ctx);
-#if 0
+#if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
     if (tensor_dispatcher->IsAvailable())
       return tensor_dispatcher->CUDAFreeWorkspace(data);
@@ -374,7 +377,7 @@ HIPThreadEntry* HIPThreadEntry::ThreadLocal() {
 }
 
 hipStream_t getCurrentHIPStream() {
-#if 0
+#if 1
   TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
   if (tensor_dispatcher->IsAvailable())
     return tensor_dispatcher->CUDAGetCurrentStream();
