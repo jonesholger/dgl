@@ -10,7 +10,7 @@ python3 -m venv $venv_path
 source $venv_path/bin/activate
 export DGLBACKEND=pytorch
 BASE_DIR=`pwd`
-echo "script dir: $BASE_DIR"
+echo "BASE_DIR: $BASE_DIR"
 
 pip3 install --pre --no-cache-dir https://download.pytorch.org/whl/nightly/rocm5.5/torch-2.1.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
 pip3 install --pre --no-cache-dir https://download.pytorch.org/whl/nightly/rocm5.5/torchaudio-2.1.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
@@ -27,7 +27,8 @@ pip3 install --pre --no-cache-dir https://download.pytorch.org/whl/nightly/torch
 #pip3 install --pre --no-cache-dir torchdata-0.7.0.dev20230807-py3-none-any.whl --find-links .
 #popd
 pip3 install -r $BASE_DIR/requirements.txt
-
+# do we need the following for torch 5.5 
+python3 $BASE_DIR/script/patch_caffe2_targets.py
 mkdir -p $BASE_DIR/build_amd
 mkdir -p $BASE_DIR/install_amd
 mkdir -p $BASE_DIR/build
