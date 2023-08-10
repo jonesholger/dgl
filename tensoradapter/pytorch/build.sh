@@ -1,29 +1,34 @@
 #!/bin/bash
 # Helper script to build tensor adapter libraries for PyTorch
-ml rocm/5.5.0 
-ml rocmcc/5.5.0-magic
-ml python/3.9.12
-ml cmake/3.24.2
-source $HOME/workspace/venv/amd/bin/activate
+# assumes we can inherit from top-level venv
+#ml rocm/5.5.0 
+#ml rocmcc/5.5.0-magic
+#ml python/3.9.12
+#ml cmake/3.24.2
+#source $HOME/workspace/venv/amd/bin/activate
 set -e
-
+COMP_HIPCC_VER=5.5.0
+HIP_LIBRARIES_BASE=/usr/tce/packages/rocmcc/rocmcc-${COMP_HIPCC_VER}-magic/
 mkdir -p build
 mkdir -p $BINDIR/tensoradapter/pytorch
+echo "BINDIR in tensoradapetr build: $BINDIR"
+echo `pwd` 
 cd build
+rm -r *
 
 if [ $(uname) = 'Darwin' ]; then
 	CPSOURCE=*.dylib
 else
 	CPSOURCE=*.so
 fi
-ROCM_BASE=/opt/rocm-5.5.0/lib
-#USE_CUDA="ON"
+
 #CUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/20.9/cuda/11.0/
-export LD_LIBRARY_PATH=$ROCM_BASE:$LD_LIBRARY_PATH
-TORCH_BASE=$HOME/workspace/venv/amd/lib/python3.9/site-packages/torch/lib
+export LD_LIBRARY_PATH=$HIP_LIBRARIES_BASE/lib:$LD_LIBRARY_PATH
+TORCH_BASE=`$BINDIR/../script/torch_path.py`
+echo "TORCH_BASE in tensoradpater build: $TORCH_BASE"
 #CMAKE_FLAGS="-DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR -DTORCH_CUDA_ARCH_LIST=$TORCH_CUDA_ARCH_LIST -DUSE_CUDA=$USE_CUDA"
-CMAKE_FLAGS="-DUSE_CUDA=ON"
-CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_INSTALL_RPATH=$ROCM_BASE:$TORCH_BASE -DCMAKE_BUILD_RPATH=$ROCM_BASE:$TORCH_BASE" 
+#CMAKE_FLAGS="-DUSE_CUDA=ON -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_TOOLKIT_ROOT_DIR"
+CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_INSTALL_RPATH=$HIP_LIBRARIES_BASE/lib:$TORCH_BASE -DCMAKE_BUILD_RPATH=$HIP_LIBRARIES_BASE/lib:$TORCH_BASE" 
 CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_COMPILER=amdclang -DCMAKE_CXX_COMPILER=amdclang++ -DAMDGPU_TARGETS=gfx90a" 
 
 echo $CMAKE_FLAGS
@@ -38,7 +43,7 @@ else
 		mkdir -p $TORCH_VER
 		cd $TORCH_VER
 #		$CMAKE_COMMAND --trace-expand $CMAKE_FLAGS -DCMAKE_EXE_LINKER_FLAGS="-L $ROCM_BASE" -DPYTHON_INTERP=$PYTHON_INTERP ../..
-		$CMAKE_COMMAND $CMAKE_FLAGS -DCMAKE_EXE_LINKER_FLAGS="-L $ROCM_BASE" -DPYTHON_INTERP=$PYTHON_INTERP ../..
+		$CMAKE_COMMAND $CMAKE_FLAGS -DCMAKE_EXE_LINKER_FLAGS="-L $HIP_LIBRARIES_BASE/lib " -DPYTHON_INTERP=$PYTHON_INTERP ../..
 		make -j
 		cp -v $CPSOURCE $BINDIR/tensoradapter/pytorch
 		cd ..
