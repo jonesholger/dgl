@@ -6,7 +6,7 @@
 #ml python/3.9.12
 #ml cmake/3.24.2
 #source $HOME/workspace/venv/amd/bin/activate
-set -e
+#set -e
 COMP_HIPCC_VER=5.5.0
 HIP_LIBRARIES_BASE=/usr/tce/packages/rocmcc/rocmcc-${COMP_HIPCC_VER}-magic/
 mkdir -p build
@@ -14,7 +14,6 @@ mkdir -p $BINDIR/tensoradapter/pytorch
 echo "BINDIR in tensoradapetr build: $BINDIR"
 echo `pwd` 
 cd build
-rm -r *
 
 if [ $(uname) = 'Darwin' ]; then
 	CPSOURCE=*.dylib
