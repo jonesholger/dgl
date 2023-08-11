@@ -10,6 +10,7 @@ export DGLBACKEND=pytorch
 BASE_DIR=`pwd`
 echo "BASE_DIR: $BASE_DIR"
 python3 $BASE_DIR/script/patch_caffe2_targets.py
+rm -r build build_amd install_amd
 mkdir -p $BASE_DIR/build_amd
 mkdir -p $BASE_DIR/install_amd
 mkdir -p $BASE_DIR/build
