@@ -126,8 +126,8 @@ __global__ void GatherMMScatterKernel(
                 a_val * B[B_offset + ((i + k_start) * out_len + (outloop + l))];
           }
           if (idx_c) {
-            //AtomicAdd(C + cur_rowC * out_len + (outloop + l), out_reg);
-            printf("todo use hip atomicAdd float in __half specialization with macro conversion\n");
+            AtomicAdd(C + cur_rowC * out_len + (outloop + l), out_reg);
+            //printf("todo use hip atomicAdd float in __half specialization with macro conversion\n");
           } else {
             C[cur_rowC * out_len + (outloop + l)] += out_reg;
           }

@@ -330,9 +330,10 @@ class HIPDeviceAPI final : public DeviceAPI {
     // Redirect to PyTorch's allocator when available.
 #if 1
     TensorDispatcher* tensor_dispatcher = TensorDispatcher::Global();
-    if (tensor_dispatcher->IsAvailable())
+    if (tensor_dispatcher->IsAvailable()) {
       return tensor_dispatcher->CUDAAllocWorkspace(
           size, getCurrentHIPStream());
+    }
 #endif
     return HIPThreadEntry::ThreadLocal()->pool.AllocWorkspace(ctx, size);
   }

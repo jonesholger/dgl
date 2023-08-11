@@ -43,6 +43,7 @@ pushd $BASE_DIR/build
 cp $BASE_DIR/build_amd/lib/* .
 popd
 pushd $BASE_DIR/python
+python3 setup.py clean
 rm dgl-1.2*.whl
 pip3 wheel .
 pip3 install --force-reinstall dgl-1.2*.whl
