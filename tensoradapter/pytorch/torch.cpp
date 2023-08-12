@@ -6,13 +6,19 @@
 
 #include <c10/core/CPUAllocator.h>
 #include <tensoradapter_exports.h>
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA)
 #include <ATen/cuda/CUDAContext.h>
 #include <ATen/cuda/CachingHostAllocator.h>
 #include <c10/cuda/CUDACachingAllocator.h>
 #include <c10/cuda/CUDAStream.h>
 #include <cuda_runtime.h>
-#endif  // DGL_USE_CUDA
+#elif defined(DGL_USE_HIP)
+#include <ATen/hip/HIPContext.h>
+#include <ATen/hip/CachingHostAllocator.h>
+#include <c10/hip/HIPCachingAllocator.h>
+#include <c10/hip/HIPStream.h>
+#include <hip/hip_runtime_api.h>
+#endif  // DGL_USE_CUDA|HIP
 
 namespace tensoradapter {
 
@@ -101,6 +107,83 @@ TA_EXPORTS void CUDAHostAllocatorEmptyCache() {
   at::cuda::CachingHostAllocator_emptyCache();
 }
 #endif  // DGL_USE_CUDA
+
+#if defined(DGL_USE_HIP)
+
+TA_EXPORTS void* CUDARawAlloc(size_t nbytes, hipStream_t stream) {
+  at::globalContext().lazyInitHIP();
+  return c10::hip::HIPCachingAllocator::raw_alloc_with_stream(nbytes, stream);
+}
+
+TA_EXPORTS void CUDARawDelete(void* ptr) {
+  c10::hip::HIPCachingAllocator::raw_delete(ptr);
+}
+
+TA_EXPORTS hipStream_t CUDACurrentStream() {
+  return at::hip::getCurrentHIPStreamMasqueradingAsCUDA();
+}
+
+TA_EXPORTS void RecordStream(void* ptr, hipStream_t stream, int device_id) {
+  c10::DataPtr data_ptr{
+      ptr, ptr, c10::hip::HIPCachingAllocator::get()->raw_deleter(),
+      c10::Device(c10::DeviceType::HIP, device_id)};
+  c10::hip::HIPCachingAllocator::recordStream(
+      data_ptr,
+      // getStreamFromExternal doesn't exist before PyTorch 1.10, just copy it
+      // here
+      c10::hip::HIPStream(
+        c10::Stream(
+          c10::Stream::UNSAFE,
+          c10::Device(c10::DeviceType::HIP, device_id),
+          reinterpret_cast<int64_t>(stream)))
+      );
+  data_ptr.release_context();
+}
+
+class CUDAHostDeleter {
+ public:
+  explicit CUDAHostDeleter(std::unique_ptr<void, c10::DeleterFnPtr> ptr)
+      : ptr_(std::move(ptr)) {}
+
+ private:
+  std::unique_ptr<void, c10::DeleterFnPtr> ptr_;
+};
+
+TA_EXPORTS void* CUDARawHostAlloc(
+    size_t nbytes, void** ctx, void** raw_deleter) {
+  auto data_ptr = at::cuda::getCachingHostAllocator()->allocate(nbytes);
+  auto raw = data_ptr.get();
+  // Return the raw ctx ptr for recording event.
+  *ctx = data_ptr.get_context();
+
+  // Transfer ownership to raw_deleter.
+  auto* data_deleter = new CUDAHostDeleter(data_ptr.move_context());
+  *raw_deleter = static_cast<void*>(data_deleter);
+  return raw;
+}
+
+// Designated CUDAHostDeleter for CUDARawHostAlloc.
+TA_EXPORTS void CUDARawHostDelete(void** raw_deleter) {
+  delete static_cast<CUDAHostDeleter*>(*raw_deleter);
+  *raw_deleter = nullptr;
+}
+
+TA_EXPORTS void CUDARecordHostAlloc(
+    void* ptr, void* ctx, hipStream_t stream, int device_id) {
+  at::cuda::CachingHostAllocator_recordEvent(
+      ptr, ctx,
+      c10::hip::HIPStreamMasqueradingAsCUDA(
+          c10::Stream(
+              c10::Stream::UNSAFE,
+              c10::Device(c10::DeviceType::HIP, device_id),
+              reinterpret_cast<int64_t>(stream)))
+      );
+}
+
+TA_EXPORTS void CUDAHostAllocatorEmptyCache() {
+  at::cuda::CachingHostAllocator_emptyCache();
+}
+#endif // DGL_USE_HIP
 };
 
 };  // namespace tensoradapter

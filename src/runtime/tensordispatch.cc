@@ -48,6 +48,7 @@ bool TensorDispatcher::Load(const char *path) {
   }
 
   for (int i = 0; i < num_entries_; ++i) {
+    std::cout << "entrypoint[" << i << "] : " << names_[i] << std::endl;
     entrypoints_[i] = dlsym(handle_, names_[i]);
     CHECK(entrypoints_[i]) << "cannot locate symbol " << names_[i];
   }

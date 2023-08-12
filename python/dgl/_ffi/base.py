@@ -146,6 +146,7 @@ def load_tensor_adapter(backend, version):
     path = os.path.join(_DIR_NAME, "tensoradapter", backend, basename)
     tensor_adapter_loaded = _LIB.DGLLoadTensorAdapter(path.encode("utf-8")) == 0
     if not tensor_adapter_loaded:
+        print("tensor adapter not loaded:" + str(path))
         logger = logging.getLogger("dgl-core")
         logger.debug("Memory optimization with PyTorch is not enabled.")
 

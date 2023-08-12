@@ -10,11 +10,13 @@
 #ifndef TENSORADAPTER_H_
 #define TENSORADAPTER_H_
 
-#ifdef DGL_USE_CUDA
+#if defined(DGL_USE_CUDA)
 #include <cuda_runtime.h>
+#elif defined(DGL_USE_HIP)
+#include <hip/hip_runtime_api.h>
 #endif  // DGL_USE_CUDA
 
-#include <hip/hip_runtime_api.h>
+
 
 namespace tensoradapter {
 

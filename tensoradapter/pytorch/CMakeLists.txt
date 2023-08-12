@@ -22,6 +22,11 @@ if(USE_CUDA)
   add_definitions(-DDGL_USE_CUDA)
 endif()
 
+if(USE_ROCM)
+  message(STATUS "tensor adapter is using hip")
+  add_definitions(-DDGL_USE_HIP)
+endif()
+
 set(Torch_DIR "${TORCH_PREFIX}/Torch")
 message(STATUS "Setting directory to ${Torch_DIR}")
 find_package(Torch REQUIRED)

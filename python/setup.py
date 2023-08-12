@@ -149,6 +149,7 @@ def config_cython():
 
 
 def copy_lib(lib_name, backend=""):
+    print("copy_lib glob: " + str(os.path.join(dir_, lib_name, backend, get_lib_pattern(lib_name))))
     for lib_path in glob.glob(
         os.path.join(dir_, lib_name, backend, get_lib_pattern(lib_name))
     ):
@@ -158,6 +159,7 @@ def copy_lib(lib_name, backend=""):
             dst_dir_,
             exist_ok=True,
         )
+        print("copy from: " + str(os.path.join(dir_, lib_name, backend, lib_file_name)) + " to:" + str(dst_dir_) )
         shutil.copy(
             os.path.join(dir_, lib_name, backend, lib_file_name),
             dst_dir_,
@@ -178,6 +180,7 @@ setup_kwargs = {}
 
 # For bdist_wheel only
 if wheel_include_libs:
+    print("wheel_include_libs: Backends:" + str(BACKENDS))
     with open("MANIFEST.in", "w") as fo:
         for path in LIBS:
             shutil.copy(path, os.path.join(CURRENT_DIR, "dgl"))
@@ -217,6 +220,7 @@ if include_libs:
             if backend == "pytorch":
                 data_files.append(get_lib_file_path("dgl_sparse"))
                 data_files.append(get_lib_file_path("graphbolt"))
+    print("include_libs" + str(data_files))
     setup_kwargs = {"include_package_data": True, "data_files": data_files}
 
 setup(
