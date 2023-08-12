@@ -111,7 +111,8 @@ TA_EXPORTS void CUDAHostAllocatorEmptyCache() {
 #if defined(DGL_USE_HIP)
 
 TA_EXPORTS void* CUDARawAlloc(size_t nbytes, hipStream_t stream) {
-  at::globalContext().lazyInitHIP();
+  //at::globalContext().lazyInitHIP();
+  at::globalContext().lazyInitCUDA();
   return c10::hip::HIPCachingAllocator::raw_alloc_with_stream(nbytes, stream);
 }
 
