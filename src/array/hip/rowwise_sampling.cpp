@@ -357,9 +357,9 @@ COOMatrix CSRRowWiseSamplingUniform(
   }
 }
 
-template COOMatrix CSRRowWiseSamplingUniform<kDGLCUDA, int32_t>(
+template COOMatrix CSRRowWiseSamplingUniform<kDGLROCM, int32_t>(
     CSRMatrix, IdArray, int64_t, bool);
-template COOMatrix CSRRowWiseSamplingUniform<kDGLCUDA, int64_t>(
+template COOMatrix CSRRowWiseSamplingUniform<kDGLROCM, int64_t>(
     CSRMatrix, IdArray, int64_t, bool);
 
 }  // namespace impl

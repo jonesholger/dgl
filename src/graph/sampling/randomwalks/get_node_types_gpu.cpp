@@ -59,12 +59,17 @@ TypeArray GetNodeTypesFromMetapath(
   DeviceAPI::Get(metapath_ctx)->StreamSync(metapath_ctx, stream);
   return result;
 }
-
+#if defined(DGL_USE_CUDA)
 template TypeArray GetNodeTypesFromMetapath<kDGLCUDA, int32_t>(
     const HeteroGraphPtr hg, const TypeArray metapath);
 template TypeArray GetNodeTypesFromMetapath<kDGLCUDA, int64_t>(
     const HeteroGraphPtr hg, const TypeArray metapath);
-
+#elif defined(DGL_USE_HIP)
+template TypeArray GetNodeTypesFromMetapath<kDGLROCM, int32_t>(
+    const HeteroGraphPtr hg, const TypeArray metapath);
+template TypeArray GetNodeTypesFromMetapath<kDGLROCM, int64_t>(
+    const HeteroGraphPtr hg, const TypeArray metapath);
+#endif
 };  // namespace impl
 
 };  // namespace sampling

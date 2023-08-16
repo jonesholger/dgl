@@ -5,8 +5,10 @@
 
 static constexpr DGLContext CTX = DGLContext{kDGLCPU, 0};
 static constexpr DGLContext CPU = DGLContext{kDGLCPU, 0};
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
 static constexpr DGLContext GPU = DGLContext{kDGLCUDA, 0};
+#elif defined(DGL_USE_HIP)
+static constexpr DGLContext GPU = DGLContext{kDGLROCM, 0};
 #endif
 
 template <typename T>

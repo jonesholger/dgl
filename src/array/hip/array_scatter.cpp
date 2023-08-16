@@ -38,28 +38,28 @@ void Scatter_(IdArray index, NDArray value, NDArray out) {
   HIP_KERNEL_CALL(_ScatterKernel, nb, nt, 0, stream, idx, val, len, outd);
 }
 
-template void Scatter_<kDGLCUDA, int32_t, int32_t>(IdArray, NDArray, NDArray);
-template void Scatter_<kDGLCUDA, int64_t, int32_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, int32_t, int32_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, int64_t, int32_t>(IdArray, NDArray, NDArray);
 #ifdef DGL_ENABLE_HALF
-template void Scatter_<kDGLCUDA, __half, int32_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, __half, int32_t>(IdArray, NDArray, NDArray);
 #endif
 #if BF16_ENABLED
-template void Scatter_<kDGLCUDA, __nv_bfloat16, int32_t>(
+template void Scatter_<kDGLROCM, __nv_bfloat16, int32_t>(
     IdArray, NDArray, NDArray);
 #endif  // BF16_ENABLED
-template void Scatter_<kDGLCUDA, float, int32_t>(IdArray, NDArray, NDArray);
-template void Scatter_<kDGLCUDA, double, int32_t>(IdArray, NDArray, NDArray);
-template void Scatter_<kDGLCUDA, int32_t, int64_t>(IdArray, NDArray, NDArray);
-template void Scatter_<kDGLCUDA, int64_t, int64_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, float, int32_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, double, int32_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, int32_t, int64_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, int64_t, int64_t>(IdArray, NDArray, NDArray);
 #ifdef DGL_ENABLE_HALF
-template void Scatter_<kDGLCUDA, __half, int64_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, __half, int64_t>(IdArray, NDArray, NDArray);
 #endif
 #if BF16_ENABLED
-template void Scatter_<kDGLCUDA, __nv_bfloat16, int64_t>(
+template void Scatter_<kDGLROCM, __nv_bfloat16, int64_t>(
     IdArray, NDArray, NDArray);
 #endif  // BF16_ENABLED
-template void Scatter_<kDGLCUDA, float, int64_t>(IdArray, NDArray, NDArray);
-template void Scatter_<kDGLCUDA, double, int64_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, float, int64_t>(IdArray, NDArray, NDArray);
+template void Scatter_<kDGLROCM, double, int64_t>(IdArray, NDArray, NDArray);
 
 };  // namespace impl
 };  // namespace aten

@@ -202,14 +202,14 @@ void SpMMCsrHetero(
 }
 
 #ifdef DGL_ENABLE_HALF
-template void SpMMCsrHetero<kDGLCUDA, int32_t, __half>(
+template void SpMMCsrHetero<kDGLROCM, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
-template void SpMMCsrHetero<kDGLCUDA, int64_t, __half>(
+template void SpMMCsrHetero<kDGLROCM, int64_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
@@ -219,14 +219,14 @@ template void SpMMCsrHetero<kDGLCUDA, int64_t, __half>(
 #endif
 
 #if BF16_ENABLED
-template void SpMMCsrHetero<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SpMMCsrHetero<kDGLROCM, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
-template void SpMMCsrHetero<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SpMMCsrHetero<kDGLROCM, int64_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
@@ -234,28 +234,28 @@ template void SpMMCsrHetero<kDGLCUDA, int64_t, __nv_bfloat16>(
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
 #endif  // BF16_ENABLED
-template void SpMMCsrHetero<kDGLCUDA, int32_t, float>(
+template void SpMMCsrHetero<kDGLROCM, int32_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
-template void SpMMCsrHetero<kDGLCUDA, int64_t, float>(
+template void SpMMCsrHetero<kDGLROCM, int64_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
-template void SpMMCsrHetero<kDGLCUDA, int32_t, double>(
+template void SpMMCsrHetero<kDGLROCM, int32_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,
     std::vector<std::vector<NDArray>>* out_aux,
     const std::vector<dgl_type_t>& ufeat_ntids,
     const std::vector<dgl_type_t>& out_ntids);
-template void SpMMCsrHetero<kDGLCUDA, int64_t, double>(
+template void SpMMCsrHetero<kDGLROCM, int64_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const std::vector<CSRMatrix>& csr, const std::vector<NDArray>& ufeat,
     const std::vector<NDArray>& efeat, std::vector<NDArray>* out,

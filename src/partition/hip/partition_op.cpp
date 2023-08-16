@@ -344,9 +344,9 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRemainder(
 }
 
 template std::pair<IdArray, IdArray> GeneratePermutationFromRemainder<
-    kDGLCUDA, int32_t>(int64_t array_size, int num_parts, IdArray in_idx);
+    kDGLROCM, int32_t>(int64_t array_size, int num_parts, IdArray in_idx);
 template std::pair<IdArray, IdArray> GeneratePermutationFromRemainder<
-    kDGLCUDA, int64_t>(int64_t array_size, int num_parts, IdArray in_idx);
+    kDGLROCM, int64_t>(int64_t array_size, int num_parts, IdArray in_idx);
 
 template <DGLDeviceType XPU, typename IdType>
 IdArray MapToLocalFromRemainder(const int num_parts, IdArray global_idx) {
@@ -372,9 +372,9 @@ IdArray MapToLocalFromRemainder(const int num_parts, IdArray global_idx) {
   }
 }
 
-template IdArray MapToLocalFromRemainder<kDGLCUDA, int32_t>(
+template IdArray MapToLocalFromRemainder<kDGLROCM, int32_t>(
     int num_parts, IdArray in_idx);
-template IdArray MapToLocalFromRemainder<kDGLCUDA, int64_t>(
+template IdArray MapToLocalFromRemainder<kDGLROCM, int64_t>(
     int num_parts, IdArray in_idx);
 
 template <DGLDeviceType XPU, typename IdType>
@@ -408,9 +408,9 @@ IdArray MapToGlobalFromRemainder(
   }
 }
 
-template IdArray MapToGlobalFromRemainder<kDGLCUDA, int32_t>(
+template IdArray MapToGlobalFromRemainder<kDGLROCM, int32_t>(
     int num_parts, IdArray in_idx, int part_id);
-template IdArray MapToGlobalFromRemainder<kDGLCUDA, int64_t>(
+template IdArray MapToGlobalFromRemainder<kDGLROCM, int64_t>(
     int num_parts, IdArray in_idx, int part_id);
 
 // Range Based Partition Operations
@@ -519,16 +519,16 @@ std::pair<IdArray, NDArray> GeneratePermutationFromRange(
 }
 
 template std::pair<IdArray, IdArray>
-GeneratePermutationFromRange<kDGLCUDA, int32_t, int32_t>(
+GeneratePermutationFromRange<kDGLROCM, int32_t, int32_t>(
     int64_t array_size, int num_parts, IdArray range, IdArray in_idx);
 template std::pair<IdArray, IdArray>
-GeneratePermutationFromRange<kDGLCUDA, int64_t, int32_t>(
+GeneratePermutationFromRange<kDGLROCM, int64_t, int32_t>(
     int64_t array_size, int num_parts, IdArray range, IdArray in_idx);
 template std::pair<IdArray, IdArray>
-GeneratePermutationFromRange<kDGLCUDA, int32_t, int64_t>(
+GeneratePermutationFromRange<kDGLROCM, int32_t, int64_t>(
     int64_t array_size, int num_parts, IdArray range, IdArray in_idx);
 template std::pair<IdArray, IdArray>
-GeneratePermutationFromRange<kDGLCUDA, int64_t, int64_t>(
+GeneratePermutationFromRange<kDGLROCM, int64_t, int64_t>(
     int64_t array_size, int num_parts, IdArray range, IdArray in_idx);
 
 template <DGLDeviceType XPU, typename IdType, typename RangeType>
@@ -557,13 +557,13 @@ IdArray MapToLocalFromRange(
   }
 }
 
-template IdArray MapToLocalFromRange<kDGLCUDA, int32_t, int32_t>(
+template IdArray MapToLocalFromRange<kDGLROCM, int32_t, int32_t>(
     int num_parts, IdArray range, IdArray in_idx);
-template IdArray MapToLocalFromRange<kDGLCUDA, int64_t, int32_t>(
+template IdArray MapToLocalFromRange<kDGLROCM, int64_t, int32_t>(
     int num_parts, IdArray range, IdArray in_idx);
-template IdArray MapToLocalFromRange<kDGLCUDA, int32_t, int64_t>(
+template IdArray MapToLocalFromRange<kDGLROCM, int32_t, int64_t>(
     int num_parts, IdArray range, IdArray in_idx);
-template IdArray MapToLocalFromRange<kDGLCUDA, int64_t, int64_t>(
+template IdArray MapToLocalFromRange<kDGLROCM, int64_t, int64_t>(
     int num_parts, IdArray range, IdArray in_idx);
 
 template <DGLDeviceType XPU, typename IdType, typename RangeType>
@@ -598,13 +598,13 @@ IdArray MapToGlobalFromRange(
   }
 }
 
-template IdArray MapToGlobalFromRange<kDGLCUDA, int32_t, int32_t>(
+template IdArray MapToGlobalFromRange<kDGLROCM, int32_t, int32_t>(
     int num_parts, IdArray range, IdArray in_idx, int part_id);
-template IdArray MapToGlobalFromRange<kDGLCUDA, int64_t, int32_t>(
+template IdArray MapToGlobalFromRange<kDGLROCM, int64_t, int32_t>(
     int num_parts, IdArray range, IdArray in_idx, int part_id);
-template IdArray MapToGlobalFromRange<kDGLCUDA, int32_t, int64_t>(
+template IdArray MapToGlobalFromRange<kDGLROCM, int32_t, int64_t>(
     int num_parts, IdArray range, IdArray in_idx, int part_id);
-template IdArray MapToGlobalFromRange<kDGLCUDA, int64_t, int64_t>(
+template IdArray MapToGlobalFromRange<kDGLROCM, int64_t, int64_t>(
     int num_parts, IdArray range, IdArray in_idx, int part_id);
 
 }  // namespace impl

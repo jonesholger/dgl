@@ -719,7 +719,7 @@ inline const char* DeviceTypeCode2Str(DGLDeviceType device_type) {
     case kDGLCUDA:
       return "cuda";
     case kDGLROCM:
-      return "cuda";
+      return "rocm";
     default:
       LOG(FATAL) << "Unsupported device type code="
                  << static_cast<int>(device_type);

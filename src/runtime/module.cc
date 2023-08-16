@@ -102,8 +102,9 @@ bool RuntimeEnabled(const std::string& target) {
   std::string f_name;
   if (target == "cpu") {
     return true;
+
   } else if (target == "cuda" || target == "gpu") {
-    f_name = "device_api.cuda";
+    f_name = "device_api.rocm"; //hbej fix this with guards
   } else if (target == "cl" || target == "opencl" || target == "sdaccel") {
     f_name = "device_api.opencl";
   } else if (target == "gl" || target == "opengl") {
@@ -121,7 +122,7 @@ bool RuntimeEnabled(const std::string& target) {
   } else if (target.length() >= 5 && target.substr(0, 5) == "nvptx") {
     f_name = "device_api.cuda";
   } else if (target.length() >= 4 && target.substr(0, 4) == "rocm") {
-    f_name = "device_api.cuda";
+    f_name = "device_api.rocm";
   } else if (target.length() >= 4 && target.substr(0, 4) == "llvm") {
     const PackedFunc* pf =
         runtime::Registry::Get("codegen.llvm_target_enabled");

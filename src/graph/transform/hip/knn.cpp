@@ -962,33 +962,33 @@ void NNDescent(
   device->FreeWorkspace(ctx, sum_temp_storage);
 }
 
-template void KNN<kDGLCUDA, float, int32_t>(
+template void KNN<kDGLROCM, float, int32_t>(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result, const std::string& algorithm);
-template void KNN<kDGLCUDA, float, int64_t>(
+template void KNN<kDGLROCM, float, int64_t>(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result, const std::string& algorithm);
-template void KNN<kDGLCUDA, double, int32_t>(
+template void KNN<kDGLROCM, double, int32_t>(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result, const std::string& algorithm);
-template void KNN<kDGLCUDA, double, int64_t>(
+template void KNN<kDGLROCM, double, int64_t>(
     const NDArray& data_points, const IdArray& data_offsets,
     const NDArray& query_points, const IdArray& query_offsets, const int k,
     IdArray result, const std::string& algorithm);
 
-template void NNDescent<kDGLCUDA, float, int32_t>(
+template void NNDescent<kDGLROCM, float, int32_t>(
     const NDArray& points, const IdArray& offsets, IdArray result, const int k,
     const int num_iters, const int num_candidates, const double delta);
-template void NNDescent<kDGLCUDA, float, int64_t>(
+template void NNDescent<kDGLROCM, float, int64_t>(
     const NDArray& points, const IdArray& offsets, IdArray result, const int k,
     const int num_iters, const int num_candidates, const double delta);
-template void NNDescent<kDGLCUDA, double, int32_t>(
+template void NNDescent<kDGLROCM, double, int32_t>(
     const NDArray& points, const IdArray& offsets, IdArray result, const int k,
     const int num_iters, const int num_candidates, const double delta);
-template void NNDescent<kDGLCUDA, double, int64_t>(
+template void NNDescent<kDGLROCM, double, int64_t>(
     const NDArray& points, const IdArray& offsets, IdArray result, const int k,
     const int num_iters, const int num_candidates, const double delta);
 

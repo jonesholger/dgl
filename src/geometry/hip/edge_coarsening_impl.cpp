@@ -190,13 +190,13 @@ void WeightedNeighborMatching(
   }
   device->FreeWorkspace(ctx, prop);
 }
-template void WeightedNeighborMatching<kDGLCUDA, float, int32_t>(
+template void WeightedNeighborMatching<kDGLROCM, float, int32_t>(
     const aten::CSRMatrix &csr, const NDArray weight, IdArray result);
-template void WeightedNeighborMatching<kDGLCUDA, float, int64_t>(
+template void WeightedNeighborMatching<kDGLROCM, float, int64_t>(
     const aten::CSRMatrix &csr, const NDArray weight, IdArray result);
-template void WeightedNeighborMatching<kDGLCUDA, double, int32_t>(
+template void WeightedNeighborMatching<kDGLROCM, double, int32_t>(
     const aten::CSRMatrix &csr, const NDArray weight, IdArray result);
-template void WeightedNeighborMatching<kDGLCUDA, double, int64_t>(
+template void WeightedNeighborMatching<kDGLROCM, double, int64_t>(
     const aten::CSRMatrix &csr, const NDArray weight, IdArray result);
 
 /** @brief Unweighted neighbor matching procedure (GPU version).
@@ -230,9 +230,9 @@ void NeighborMatching(const aten::CSRMatrix &csr, IdArray result) {
 
   WeightedNeighborMatching<XPU, float, IdType>(csr, weight, result);
 }
-template void NeighborMatching<kDGLCUDA, int32_t>(
+template void NeighborMatching<kDGLROCM, int32_t>(
     const aten::CSRMatrix &csr, IdArray result);
-template void NeighborMatching<kDGLCUDA, int64_t>(
+template void NeighborMatching<kDGLROCM, int64_t>(
     const aten::CSRMatrix &csr, IdArray result);
 
 }  // namespace impl

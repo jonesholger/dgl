@@ -82,7 +82,7 @@ class DeviceAPIManager {
     }
   }
   DeviceAPI* GetAPI(const std::string name, bool allow_missing) {
-    //std::cout << "GetAPI type: " << name << " allow missing: " << allow_missing << std::endl;
+    std::cout << "GetAPI type: " << name << " allow missing: " << allow_missing << std::endl;
     //print_stacktrace();
     std::string factory = "device_api." + name;
     //std::cerr << "GetAPI: " << factory << std::endl;
@@ -395,7 +395,7 @@ int DGLCbArgToReturn(DGLValue* value, int code) {
 }
 
 int DGLLoadTensorAdapter(const char* path) {
-  std::cerr << "LoadTensorAdapter at: " << path << std::endl;
+  std::cerr << "Attempt LoadTensorAdapter at: " << path << std::endl;
   return TensorDispatcher::Global()->Load(path) ? 0 : -1;
 }
 

@@ -329,6 +329,7 @@ std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlockGPU64(
     HeteroGraphPtr, const std::vector<IdArray> &, bool,
     std::vector<IdArray> *const);
 
+#if defined(DGL_USE_CUDA)
 template <>
 std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlock<kDGLCUDA, int32_t>(
     HeteroGraphPtr graph, const std::vector<IdArray> &rhs_nodes,
@@ -342,8 +343,22 @@ std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlock<kDGLCUDA, int64_t>(
     bool include_rhs_in_lhs, std::vector<IdArray> *const lhs_nodes) {
   return ToBlockGPU64(graph, rhs_nodes, include_rhs_in_lhs, lhs_nodes);
 }
+#elif defined(DGL_USE_HIP)
+template <>
+std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlock<kDGLROCM, int32_t>(
+    HeteroGraphPtr graph, const std::vector<IdArray> &rhs_nodes,
+    bool include_rhs_in_lhs, std::vector<IdArray> *const lhs_nodes) {
+  return ToBlockGPU32(graph, rhs_nodes, include_rhs_in_lhs, lhs_nodes);
+}
 
-#endif  // DGL_USE_CUDA
+template <>
+std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlock<kDGLROCM, int64_t>(
+    HeteroGraphPtr graph, const std::vector<IdArray> &rhs_nodes,
+    bool include_rhs_in_lhs, std::vector<IdArray> *const lhs_nodes) {
+  return ToBlockGPU64(graph, rhs_nodes, include_rhs_in_lhs, lhs_nodes);
+}
+#endif
+#endif  // DGL_USE_CUDA || HIP
 
 DGL_REGISTER_GLOBAL("capi._CAPI_DGLToBlock")
     .set_body([](DGLArgs args, DGLRetValue *rv) {

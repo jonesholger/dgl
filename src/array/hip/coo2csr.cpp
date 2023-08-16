@@ -23,7 +23,7 @@ CSRMatrix COOToCSR(COOMatrix coo) {
 }
 
 template <>
-CSRMatrix COOToCSR<kDGLCUDA, int32_t>(COOMatrix coo) {
+CSRMatrix COOToCSR<kDGLROCM, int32_t>(COOMatrix coo) {
   auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   hipStream_t stream = runtime::getCurrentHIPStream();
   // allocate hipsparse handle if needed
@@ -98,7 +98,7 @@ __global__ void _SortedSearchKernelUpperBound(
 }
 
 template <>
-CSRMatrix COOToCSR<kDGLCUDA, int64_t>(COOMatrix coo) {
+CSRMatrix COOToCSR<kDGLROCM, int64_t>(COOMatrix coo) {
   const auto& ctx = coo.row->ctx;
   const auto nbits = coo.row->dtype.bits;
   hipStream_t stream = runtime::getCurrentHIPStream();
@@ -129,8 +129,8 @@ CSRMatrix COOToCSR<kDGLCUDA, int64_t>(COOMatrix coo) {
       coo.num_rows, coo.num_cols, indptr, coo.col, coo.data, col_sorted);
 }
 
-template CSRMatrix COOToCSR<kDGLCUDA, int32_t>(COOMatrix coo);
-template CSRMatrix COOToCSR<kDGLCUDA, int64_t>(COOMatrix coo);
+template CSRMatrix COOToCSR<kDGLROCM, int32_t>(COOMatrix coo);
+template CSRMatrix COOToCSR<kDGLROCM, int64_t>(COOMatrix coo);
 
 }  // namespace impl
 }  // namespace aten

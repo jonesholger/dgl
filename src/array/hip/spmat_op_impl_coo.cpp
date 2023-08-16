@@ -86,8 +86,8 @@ int64_t COOGetRowNNZ(COOMatrix coo, int64_t row) {
   return *rst.Ptr<IdType>();
 }
 
-template int64_t COOGetRowNNZ<kDGLCUDA, int32_t>(COOMatrix, int64_t);
-template int64_t COOGetRowNNZ<kDGLCUDA, int64_t>(COOMatrix, int64_t);
+template int64_t COOGetRowNNZ<kDGLROCM, int32_t>(COOMatrix, int64_t);
+template int64_t COOGetRowNNZ<kDGLROCM, int64_t>(COOMatrix, int64_t);
 
 template <typename IdType>
 __global__ void _COOGetAllRowNNZKernel(
@@ -131,8 +131,8 @@ NDArray COOGetRowNNZ(COOMatrix coo, NDArray rows) {
   }
 }
 
-template NDArray COOGetRowNNZ<kDGLCUDA, int32_t>(COOMatrix, NDArray);
-template NDArray COOGetRowNNZ<kDGLCUDA, int64_t>(COOMatrix, NDArray);
+template NDArray COOGetRowNNZ<kDGLROCM, int32_t>(COOMatrix, NDArray);
+template NDArray COOGetRowNNZ<kDGLROCM, int64_t>(COOMatrix, NDArray);
 
 }  // namespace impl
 }  // namespace aten

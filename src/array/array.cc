@@ -583,7 +583,7 @@ COOMatrix CSRRowWiseSampling(
     // prob_or_mask is pinned and rows on GPU is valid
     CHECK_VALID_CONTEXT(prob_or_mask, rows);
     ATEN_CSR_SWITCH_CUDA_UVA(mat, rows, XPU, IdType, "CSRRowWiseSampling", {
-      CHECK(!(prob_or_mask->dtype.bits == 8 && XPU == kDGLCUDA))
+      CHECK(!(prob_or_mask->dtype.bits == 8 && (XPU == kDGLCUDA || XPU == kDGLROCM)))
           << "GPU sampling with masks is currently not supported yet.";
       ATEN_FLOAT_INT8_UINT8_TYPE_SWITCH(
           prob_or_mask->dtype, FloatType, "probability or mask", {

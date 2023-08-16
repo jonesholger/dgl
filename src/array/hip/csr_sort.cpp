@@ -55,8 +55,8 @@ bool CSRIsSorted(CSRMatrix csr) {
   return ret;
 }
 
-template bool CSRIsSorted<kDGLCUDA, int32_t>(CSRMatrix csr);
-template bool CSRIsSorted<kDGLCUDA, int64_t>(CSRMatrix csr);
+template bool CSRIsSorted<kDGLROCM, int32_t>(CSRMatrix csr);
+template bool CSRIsSorted<kDGLROCM, int64_t>(CSRMatrix csr);
 
 template <DGLDeviceType XPU, typename IdType>
 void CSRSort_(CSRMatrix* csr) {
@@ -64,7 +64,7 @@ void CSRSort_(CSRMatrix* csr) {
 }
 
 template <>
-void CSRSort_<kDGLCUDA, int32_t>(CSRMatrix* csr) {
+void CSRSort_<kDGLROCM, int32_t>(CSRMatrix* csr) {
   auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   auto device = runtime::DeviceAPI::Get(csr->indptr->ctx);
   hipStream_t stream = runtime::getCurrentHIPStream();
@@ -105,7 +105,7 @@ void CSRSort_<kDGLCUDA, int32_t>(CSRMatrix* csr) {
 }
 
 template <>
-void CSRSort_<kDGLCUDA, int64_t>(CSRMatrix* csr) {
+void CSRSort_<kDGLROCM, int64_t>(CSRMatrix* csr) {
   hipStream_t stream = runtime::getCurrentHIPStream();
   auto device = runtime::DeviceAPI::Get(csr->indptr->ctx);
 
@@ -143,8 +143,8 @@ void CSRSort_<kDGLCUDA, int64_t>(CSRMatrix* csr) {
   device->FreeWorkspace(ctx, workspace);
 }
 
-template void CSRSort_<kDGLCUDA, int32_t>(CSRMatrix* csr);
-template void CSRSort_<kDGLCUDA, int64_t>(CSRMatrix* csr);
+template void CSRSort_<kDGLROCM, int32_t>(CSRMatrix* csr);
+template void CSRSort_<kDGLROCM, int64_t>(CSRMatrix* csr);
 
 }  // namespace impl
 }  // namespace aten

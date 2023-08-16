@@ -101,77 +101,77 @@ void SpMMCoo(
 }
 
 #ifdef DGL_ENABLE_HALF
-template void SpMMCsr<kDGLCUDA, int32_t, __half>(
+template void SpMMCsr<kDGLROCM, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCsr<kDGLCUDA, int64_t, __half>(
+template void SpMMCsr<kDGLROCM, int64_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 #endif
 
 #if BF16_ENABLED
-template void SpMMCsr<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SpMMCsr<kDGLROCM, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCsr<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SpMMCsr<kDGLROCM, int64_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 #endif  // BF16_ENABLED
-template void SpMMCsr<kDGLCUDA, int32_t, float>(
+template void SpMMCsr<kDGLROCM, int32_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCsr<kDGLCUDA, int64_t, float>(
+template void SpMMCsr<kDGLROCM, int64_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCsr<kDGLCUDA, int32_t, double>(
+template void SpMMCsr<kDGLROCM, int32_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCsr<kDGLCUDA, int64_t, double>(
+template void SpMMCsr<kDGLROCM, int64_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const CSRMatrix& csr, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 
 #ifdef DGL_ENABLE_HALF
-template void SpMMCoo<kDGLCUDA, int32_t, __half>(
+template void SpMMCoo<kDGLROCM, int32_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCoo<kDGLCUDA, int64_t, __half>(
+template void SpMMCoo<kDGLROCM, int64_t, __half>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 #endif
 
 #if BF16_ENABLED
-template void SpMMCoo<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SpMMCoo<kDGLROCM, int32_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCoo<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SpMMCoo<kDGLROCM, int64_t, __nv_bfloat16>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
 #endif  // BF16_ENABLED
-template void SpMMCoo<kDGLCUDA, int32_t, float>(
+template void SpMMCoo<kDGLROCM, int32_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCoo<kDGLCUDA, int64_t, float>(
+template void SpMMCoo<kDGLROCM, int64_t, float>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCoo<kDGLCUDA, int32_t, double>(
+template void SpMMCoo<kDGLROCM, int32_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);
-template void SpMMCoo<kDGLCUDA, int64_t, double>(
+template void SpMMCoo<kDGLROCM, int64_t, double>(
     const std::string& op, const std::string& reduce, const BcastOff& bcast,
     const COOMatrix& coo, NDArray ufeat, NDArray efeat, NDArray out,
     std::vector<NDArray> out_aux);

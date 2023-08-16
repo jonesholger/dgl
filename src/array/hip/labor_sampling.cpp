@@ -741,16 +741,16 @@ std::pair<COOMatrix, FloatArray> CSRLaborSampling(
 }
 
 template std::pair<COOMatrix, FloatArray>
-CSRLaborSampling<kDGLCUDA, int32_t, float>(
+CSRLaborSampling<kDGLROCM, int32_t, float>(
     CSRMatrix, IdArray, int64_t, FloatArray, int, IdArray, IdArray);
 template std::pair<COOMatrix, FloatArray>
-CSRLaborSampling<kDGLCUDA, int64_t, float>(
+CSRLaborSampling<kDGLROCM, int64_t, float>(
     CSRMatrix, IdArray, int64_t, FloatArray, int, IdArray, IdArray);
 template std::pair<COOMatrix, FloatArray>
-CSRLaborSampling<kDGLCUDA, int32_t, double>(
+CSRLaborSampling<kDGLROCM, int32_t, double>(
     CSRMatrix, IdArray, int64_t, FloatArray, int, IdArray, IdArray);
 template std::pair<COOMatrix, FloatArray>
-CSRLaborSampling<kDGLCUDA, int64_t, double>(
+CSRLaborSampling<kDGLROCM, int64_t, double>(
     CSRMatrix, IdArray, int64_t, FloatArray, int, IdArray, IdArray);
 
 }  // namespace impl

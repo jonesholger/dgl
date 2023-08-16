@@ -387,7 +387,6 @@ hipStream_t getCurrentHIPStream() {
     return nullptr;
 }
 
-//DGL_REGISTER_GLOBAL("device_api.hip")
 DGL_REGISTER_GLOBAL("device_api.cuda")
     .set_body([](DGLArgs args, DGLRetValue* rv) {
       DeviceAPI* ptr = HIPDeviceAPI::Global().get();

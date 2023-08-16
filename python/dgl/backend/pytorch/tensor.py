@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import builtins
 import numbers
+import traceback
 
 import numpy as np
 import scipy  # Weird bug in new pytorch when import scipy after import torch
@@ -481,7 +482,12 @@ def zerocopy_from_dgl_ndarray(data):
             device=to_backend_ctx(data.ctx),
         )
     else:
+        try:
+            dd = dlpack.from_dlpack(data.to_dlpack())
+        except Exception:
+            print(traceback.format_exc())
         return dlpack.from_dlpack(data.to_dlpack())
+        
 
 
 def sync():

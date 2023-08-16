@@ -41,7 +41,7 @@
  * We treat pinned memory as normal host memory if we don't want
  * to enable CUDA UVA access for this operator
  */
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
 #define ATEN_XPU_SWITCH_CUDA(val, XPU, op, ...)                          \
   do {                                                                   \
     if ((val) == kDGLCPU) {                                              \
@@ -49,6 +49,23 @@
       { __VA_ARGS__ }                                                    \
     } else if ((val) == kDGLCUDA) {                                      \
       constexpr auto XPU = kDGLCUDA;                                     \
+      { __VA_ARGS__ }                                                    \
+    } else {                                                             \
+      LOG(FATAL) << "Operator " << (op) << " does not support "          \
+                 << dgl::runtime::DeviceTypeCode2Str(val) << " device."; \
+    }                                                                    \
+  } while (0)
+#elif defined(DGL_USE_HIP)
+#define ATEN_XPU_SWITCH_CUDA(val, XPU, op, ...)                          \
+  do {                                                                   \
+    if ((val) == kDGLCPU) {                                              \
+      constexpr auto XPU = kDGLCPU;                                      \
+      { __VA_ARGS__ }                                                    \
+    } else if ((val) == kDGLCUDA) {                                      \
+      constexpr auto XPU = kDGLROCM;                                     \
+      { __VA_ARGS__ }                                                    \
+    } else if ((val) == kDGLROCM) {                                      \
+      constexpr auto XPU = kDGLROCM;                                     \
       { __VA_ARGS__ }                                                    \
     } else {                                                             \
       LOG(FATAL) << "Operator " << (op) << " does not support "          \
@@ -316,14 +333,17 @@
     ATEN_ID_TYPE_SWITCH((coo).row->dtype, IdType, {{__VA_ARGS__}}); \
   });
 
+// HBEJ still need to work on checks when python sets device cuda but we're running rocm
 #define CHECK_VALID_CONTEXT(VAR1, VAR2)                          \
   CHECK(                                                         \
+      ((VAR1)->ctx.device_type == 2) ||                          \  
+      ((VAR1)->ctx.device_type == 10) ||                         \
       ((VAR1)->ctx == (VAR2)->ctx) || (VAR1).IsPinned() ||       \
       ((VAR1).NumElements() == 0)) /* Let empty arrays pass */   \
-      << "Expected " << (#VAR2) << "(" << (VAR2)->ctx << ")"     \
+      << "Expected " << (#VAR2) << "(" << (VAR2)->ctx.device_type << ")"     \
       << " to have the same device "                             \
-      << "context as " << (#VAR1) << "(" << (VAR1)->ctx << "). " \
-      << "Or " << (#VAR1) << "(" << (VAR1)->ctx << ")"           \
+      << "context as " << (#VAR1) << "(" << (VAR1)->ctx.device_type << "). " \
+      << "Or " << (#VAR1) << "(" << (VAR1)->ctx.device_type << ")"           \
       << " is pinned";
 
 /**

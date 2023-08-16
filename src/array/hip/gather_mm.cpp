@@ -366,114 +366,114 @@ void GatherMMScatter(
 }
 
 #ifdef DGL_ENABLE_HALF
-template void GatherMM<kDGLCUDA, int32_t, __half>(
+template void GatherMM<kDGLROCM, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
-template void GatherMM<kDGLCUDA, int64_t, __half>(
+template void GatherMM<kDGLROCM, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
 #endif
 #if BF16_ENABLED
-template void GatherMM<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void GatherMM<kDGLROCM, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
-template void GatherMM<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void GatherMM<kDGLROCM, int64_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
 #endif  // BF16_ENABLED
-template void GatherMM<kDGLCUDA, int32_t, float>(
+template void GatherMM<kDGLROCM, int32_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
-template void GatherMM<kDGLCUDA, int64_t, float>(
+template void GatherMM<kDGLROCM, int64_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
-template void GatherMM<kDGLCUDA, int32_t, double>(
+template void GatherMM<kDGLROCM, int32_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
-template void GatherMM<kDGLCUDA, int64_t, double>(
+template void GatherMM<kDGLROCM, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b);
 
 #ifdef DGL_ENABLE_HALF
-template void GatherMMScatter<kDGLCUDA, int32_t, __half>(
+template void GatherMMScatter<kDGLROCM, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
-template void GatherMMScatter<kDGLCUDA, int64_t, __half>(
+template void GatherMMScatter<kDGLROCM, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
 #endif
 
 #if BF16_ENABLED
-template void GatherMMScatter<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void GatherMMScatter<kDGLROCM, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
-template void GatherMMScatter<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void GatherMMScatter<kDGLROCM, int64_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
 #endif  // BF16_ENABLED
-template void GatherMMScatter<kDGLCUDA, int32_t, float>(
+template void GatherMMScatter<kDGLROCM, int32_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
-template void GatherMMScatter<kDGLCUDA, int64_t, float>(
+template void GatherMMScatter<kDGLROCM, int64_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
-template void GatherMMScatter<kDGLCUDA, int32_t, double>(
+template void GatherMMScatter<kDGLROCM, int32_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
-template void GatherMMScatter<kDGLCUDA, int64_t, double>(
+template void GatherMMScatter<kDGLROCM, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray idx_a,
     const NDArray idx_b, const NDArray idx_c);
 
 #ifdef DGL_ENABLE_HALF
-template void SegmentMM<kDGLCUDA, int32_t, __half>(
+template void SegmentMM<kDGLROCM, int32_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
-template void SegmentMM<kDGLCUDA, int64_t, __half>(
+template void SegmentMM<kDGLROCM, int64_t, __half>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
 #endif
 
 #if BF16_ENABLED
-template void SegmentMM<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SegmentMM<kDGLROCM, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
-template void SegmentMM<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SegmentMM<kDGLROCM, int64_t, __nv_bfloat16>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
 #endif  // BF16_ENABLED
-template void SegmentMM<kDGLCUDA, int32_t, float>(
+template void SegmentMM<kDGLROCM, int32_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
-template void SegmentMM<kDGLCUDA, int64_t, float>(
+template void SegmentMM<kDGLROCM, int64_t, float>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
-template void SegmentMM<kDGLCUDA, int32_t, double>(
+template void SegmentMM<kDGLROCM, int32_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
-template void SegmentMM<kDGLCUDA, int64_t, double>(
+template void SegmentMM<kDGLROCM, int64_t, double>(
     const NDArray A, const NDArray B, NDArray C, const NDArray seglen_A,
     bool a_trans, bool b_trans);
 
 #ifdef DGL_ENABLE_HALF
-template void SegmentMMBackwardB<kDGLCUDA, int32_t, __half>(
+template void SegmentMMBackwardB<kDGLROCM, int32_t, __half>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
-template void SegmentMMBackwardB<kDGLCUDA, int64_t, __half>(
+template void SegmentMMBackwardB<kDGLROCM, int64_t, __half>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
 #endif
 
 #if BF16_ENABLED
-template void SegmentMMBackwardB<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SegmentMMBackwardB<kDGLROCM, int32_t, __nv_bfloat16>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
-template void SegmentMMBackwardB<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SegmentMMBackwardB<kDGLROCM, int64_t, __nv_bfloat16>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
 #endif  // BF16_ENABLED
-template void SegmentMMBackwardB<kDGLCUDA, int32_t, float>(
+template void SegmentMMBackwardB<kDGLROCM, int32_t, float>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
-template void SegmentMMBackwardB<kDGLCUDA, int64_t, float>(
+template void SegmentMMBackwardB<kDGLROCM, int64_t, float>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
-template void SegmentMMBackwardB<kDGLCUDA, int32_t, double>(
+template void SegmentMMBackwardB<kDGLROCM, int32_t, double>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
-template void SegmentMMBackwardB<kDGLCUDA, int64_t, double>(
+template void SegmentMMBackwardB<kDGLROCM, int64_t, double>(
     const NDArray A, const NDArray dC, NDArray dB, const NDArray seglen);
 
 }  // namespace aten

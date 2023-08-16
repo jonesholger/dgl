@@ -21,7 +21,7 @@ CSRMatrix CSRTranspose(CSRMatrix csr) {
 }
 
 template <>
-CSRMatrix CSRTranspose<kDGLCUDA, int32_t>(CSRMatrix csr) {
+CSRMatrix CSRTranspose<kDGLROCM, int32_t>(CSRMatrix csr) {
   auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   hipStream_t stream = runtime::getCurrentHIPStream();
   // allocate cusparse handle if needed
@@ -81,12 +81,12 @@ CSRMatrix CSRTranspose<kDGLCUDA, int32_t>(CSRMatrix csr) {
 }
 
 template <>
-CSRMatrix CSRTranspose<kDGLCUDA, int64_t>(CSRMatrix csr) {
+CSRMatrix CSRTranspose<kDGLROCM, int64_t>(CSRMatrix csr) {
   return COOToCSR(COOTranspose(CSRToCOO(csr, false)));
 }
 
-template CSRMatrix CSRTranspose<kDGLCUDA, int32_t>(CSRMatrix csr);
-template CSRMatrix CSRTranspose<kDGLCUDA, int64_t>(CSRMatrix csr);
+template CSRMatrix CSRTranspose<kDGLROCM, int32_t>(CSRMatrix csr);
+template CSRMatrix CSRTranspose<kDGLROCM, int64_t>(CSRMatrix csr);
 
 }  // namespace impl
 }  // namespace aten

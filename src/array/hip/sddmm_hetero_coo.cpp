@@ -37,13 +37,13 @@ void SDDMMCooHetero(
 }
 
 #ifdef DGL_ENABLE_HALF
-template void SDDMMCooHetero<kDGLCUDA, int32_t, __half>(
+template void SDDMMCooHetero<kDGLROCM, int32_t, __half>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-template void SDDMMCooHetero<kDGLCUDA, int64_t, __half>(
+template void SDDMMCooHetero<kDGLROCM, int64_t, __half>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
@@ -52,38 +52,38 @@ template void SDDMMCooHetero<kDGLCUDA, int64_t, __half>(
 #endif
 
 #if BF16_ENABLED
-template void SDDMMCooHetero<kDGLCUDA, int32_t, __nv_bfloat16>(
+template void SDDMMCooHetero<kDGLROCM, int32_t, __nv_bfloat16>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-template void SDDMMCooHetero<kDGLCUDA, int64_t, __nv_bfloat16>(
+template void SDDMMCooHetero<kDGLROCM, int64_t, __nv_bfloat16>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
 #endif  // BF16_ENABLED
-template void SDDMMCooHetero<kDGLCUDA, int32_t, float>(
+template void SDDMMCooHetero<kDGLROCM, int32_t, float>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-template void SDDMMCooHetero<kDGLCUDA, int64_t, float>(
+template void SDDMMCooHetero<kDGLROCM, int64_t, float>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-template void SDDMMCooHetero<kDGLCUDA, int32_t, double>(
+template void SDDMMCooHetero<kDGLROCM, int32_t, double>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,
     int rhs_target, const std::vector<dgl_type_t>& in_eid,
     const std::vector<dgl_type_t>& out_eid);
-template void SDDMMCooHetero<kDGLCUDA, int64_t, double>(
+template void SDDMMCooHetero<kDGLROCM, int64_t, double>(
     const std::string& op, const BcastOff& bcast,
     const std::vector<COOMatrix>& vec_coo, const std::vector<NDArray>& lhs,
     const std::vector<NDArray>& rhs, std::vector<NDArray> out, int lhs_target,

@@ -61,39 +61,39 @@ NDArray CSRGetData(
 }
 
 #ifdef DGL_ENABLE_HALF
-template NDArray CSRGetData<kDGLCUDA, int32_t, __half>(
+template NDArray CSRGetData<kDGLROCM, int32_t, __half>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __half filler);
-template NDArray CSRGetData<kDGLCUDA, int64_t, __half>(
+template NDArray CSRGetData<kDGLROCM, int64_t, __half>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __half filler);
 #endif
 #if BF16_ENABLED
-template NDArray CSRGetData<kDGLCUDA, int32_t, __nv_bfloat16>(
+template NDArray CSRGetData<kDGLROCM, int32_t, __nv_bfloat16>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __nv_bfloat16 filler);
-template NDArray CSRGetData<kDGLCUDA, int64_t, __nv_bfloat16>(
+template NDArray CSRGetData<kDGLROCM, int64_t, __nv_bfloat16>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, __nv_bfloat16 filler);
 #endif  // BF16_ENABLED
-template NDArray CSRGetData<kDGLCUDA, int32_t, float>(
+template NDArray CSRGetData<kDGLROCM, int32_t, float>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, float filler);
-template NDArray CSRGetData<kDGLCUDA, int64_t, float>(
+template NDArray CSRGetData<kDGLROCM, int64_t, float>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, float filler);
-template NDArray CSRGetData<kDGLCUDA, int32_t, double>(
+template NDArray CSRGetData<kDGLROCM, int32_t, double>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, double filler);
-template NDArray CSRGetData<kDGLCUDA, int64_t, double>(
+template NDArray CSRGetData<kDGLROCM, int64_t, double>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, double filler);
 
 // For CSRGetData<XPU, IdType>(CSRMatrix, NDArray, NDArray)
-template NDArray CSRGetData<kDGLCUDA, int32_t, int32_t>(
+template NDArray CSRGetData<kDGLROCM, int32_t, int32_t>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, int32_t filler);
-template NDArray CSRGetData<kDGLCUDA, int64_t, int64_t>(
+template NDArray CSRGetData<kDGLROCM, int64_t, int64_t>(
     CSRMatrix csr, NDArray rows, NDArray cols, bool return_eids,
     NDArray weights, int64_t filler);
 

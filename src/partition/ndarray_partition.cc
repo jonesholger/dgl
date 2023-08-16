@@ -37,11 +37,19 @@ class RemainderPartition : public NDArrayPartition {
 
   std::pair<IdArray, NDArray> GeneratePermutation(
       IdArray in_idx) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
         return impl::GeneratePermutationFromRemainder<kDGLCUDA, IdType>(
+            ArraySize(), NumParts(), in_idx);
+      });
+    }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        return impl::GeneratePermutationFromRemainder<kDGLROCM, IdType>(
             ArraySize(), NumParts(), in_idx);
       });
     }
@@ -54,11 +62,19 @@ class RemainderPartition : public NDArrayPartition {
   }
 
   IdArray MapToLocal(IdArray in_idx) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
         return impl::MapToLocalFromRemainder<kDGLCUDA, IdType>(
+            NumParts(), in_idx);
+      });
+    }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        return impl::MapToLocalFromRemainder<kDGLROCM, IdType>(
             NumParts(), in_idx);
       });
     }
@@ -71,11 +87,19 @@ class RemainderPartition : public NDArrayPartition {
   }
 
   IdArray MapToGlobal(IdArray in_idx, const int part_id) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
         return impl::MapToGlobalFromRemainder<kDGLCUDA, IdType>(
+            NumParts(), in_idx, part_id);
+      });
+    }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        return impl::MapToGlobalFromRemainder<kDGLROCM, IdType>(
             NumParts(), in_idx, part_id);
       });
     }
@@ -107,16 +131,23 @@ class RangePartition : public NDArrayPartition {
         // we have only one CPU context, and can safely copy the array to that.
         range_cpu_(range.CopyTo(DGLContext{kDGLCPU, 0})) {
     auto ctx = range->ctx;
+  #if defined(DGL_USE_CUDA)
     if (ctx.device_type != kDGLCUDA) {
       LOG(FATAL) << "The range for an NDArrayPartition is only supported "
                     " on GPUs. Transfer the range to the target device before "
                     "creating the partition.";
     }
+  #elif defined(DGL_USE_HIP)
+    if (ctx.device_type != kDGLROCM) {
+      LOG(FATAL) << "The range for an NDArrayPartition is only supported "
+                    " on GPUs. Transfer the range to the target device before "
+                    "creating the partition.";
+    }
+  #endif
   }
-
   std::pair<IdArray, NDArray> GeneratePermutation(
       IdArray in_idx) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA)
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       if (ctx.device_type != range_->ctx.device_type ||
@@ -133,6 +164,23 @@ class RangePartition : public NDArrayPartition {
         });
       });
     }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      if (ctx.device_type != range_->ctx.device_type ||
+          ctx.device_id != range_->ctx.device_id) {
+        LOG(FATAL) << "The range for the NDArrayPartition and the input "
+                      "array must be on the same device: "
+                   << ctx << " vs. " << range_->ctx;
+      }
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        ATEN_ID_TYPE_SWITCH(range_->dtype, RangeType, {
+          return impl::GeneratePermutationFromRange<
+              kDGLROCM, IdType, RangeType>(
+              ArraySize(), NumParts(), range_, in_idx);
+        });
+      });
+    }
 #endif
 
     LOG(FATAL) << "Remainder based partitioning for the CPU is not yet "
@@ -142,12 +190,22 @@ class RangePartition : public NDArrayPartition {
   }
 
   IdArray MapToLocal(IdArray in_idx) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
         ATEN_ID_TYPE_SWITCH(range_->dtype, RangeType, {
           return impl::MapToLocalFromRange<kDGLCUDA, IdType, RangeType>(
+              NumParts(), range_, in_idx);
+        });
+      });
+    }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        ATEN_ID_TYPE_SWITCH(range_->dtype, RangeType, {
+          return impl::MapToLocalFromRange<kDGLROCM, IdType, RangeType>(
               NumParts(), range_, in_idx);
         });
       });
@@ -161,12 +219,22 @@ class RangePartition : public NDArrayPartition {
   }
 
   IdArray MapToGlobal(IdArray in_idx, const int part_id) const override {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
     auto ctx = in_idx->ctx;
     if (ctx.device_type == kDGLCUDA) {
       ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
         ATEN_ID_TYPE_SWITCH(range_->dtype, RangeType, {
           return impl::MapToGlobalFromRange<kDGLCUDA, IdType, RangeType>(
+              NumParts(), range_, in_idx, part_id);
+        });
+      });
+    }
+#elif defined(DGL_USE_HIP)
+    auto ctx = in_idx->ctx;
+    if (ctx.device_type == kDGLROCM) {
+      ATEN_ID_TYPE_SWITCH(in_idx->dtype, IdType, {
+        ATEN_ID_TYPE_SWITCH(range_->dtype, RangeType, {
+          return impl::MapToGlobalFromRange<kDGLROCM, IdType, RangeType>(
               NumParts(), range_, in_idx, part_id);
         });
       });

@@ -133,8 +133,8 @@ FilterRef CreateSetFilter(IdArray set) {
   return FilterRef(std::make_shared<HIPFilterSet<IdType>>(set));
 }
 
-template FilterRef CreateSetFilter<kDGLCUDA, int32_t>(IdArray set);
-template FilterRef CreateSetFilter<kDGLCUDA, int64_t>(IdArray set);
+template FilterRef CreateSetFilter<kDGLROCM, int32_t>(IdArray set);
+template FilterRef CreateSetFilter<kDGLROCM, int64_t>(IdArray set);
 
 }  // namespace array
 }  // namespace dgl

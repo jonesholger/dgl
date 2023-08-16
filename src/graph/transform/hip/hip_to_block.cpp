@@ -80,7 +80,7 @@ class DeviceNodeMapMaker {
     for (int64_t ntype = 0; ntype < lhs_num_ntypes; ++ntype) {
       const IdArray& nodes = lhs_nodes[ntype];
       if (nodes->shape[0] > 0) {
-        CHECK_EQ(nodes->ctx.device_type, kDGLCUDA);
+        CHECK_EQ(nodes->ctx.device_type, kDGLROCM);
         node_maps->LhsHashTable(ntype).FillWithDuplicates(
             nodes.Ptr<IdType>(), nodes->shape[0],
             (*lhs_device)[ntype].Ptr<IdType>(), count_lhs_device + ntype,
@@ -120,7 +120,7 @@ class DeviceNodeMapMaker {
     for (int64_t ntype = 0; ntype < lhs_num_ntypes; ++ntype) {
       const IdArray& nodes = lhs_nodes[ntype];
       if (nodes->shape[0] > 0) {
-        CHECK_EQ(nodes->ctx.device_type, kDGLCUDA);
+        CHECK_EQ(nodes->ctx.device_type, kDGLROCM);
         node_maps->LhsHashTable(ntype).FillWithUnique(
             nodes.Ptr<IdType>(), nodes->shape[0], stream);
       }
@@ -239,7 +239,7 @@ std::tuple<HeteroGraphPtr, std::vector<IdArray>> ToBlockGPU(
 // following two functions are the same. Using template<> fails to export the
 // symbols.
 std::tuple<HeteroGraphPtr, std::vector<IdArray>>
-// ToBlock<kDGLCUDA, int32_t>
+// ToBlock<kDGLROCM, int32_t>
 ToBlockGPU32(
     HeteroGraphPtr graph, const std::vector<IdArray>& rhs_nodes,
     bool include_rhs_in_lhs, std::vector<IdArray>* const lhs_nodes) {
@@ -247,7 +247,7 @@ ToBlockGPU32(
 }
 
 std::tuple<HeteroGraphPtr, std::vector<IdArray>>
-// ToBlock<kDGLCUDA, int64_t>
+// ToBlock<kDGLROCM, int64_t>
 ToBlockGPU64(
     HeteroGraphPtr graph, const std::vector<IdArray>& rhs_nodes,
     bool include_rhs_in_lhs, std::vector<IdArray>* const lhs_nodes) {

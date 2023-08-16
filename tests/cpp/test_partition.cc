@@ -77,12 +77,18 @@ void _TestRemainder_MapToX() {
 }
 
 TEST(PartitionTest, TestRemainderPartition) {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
   _TestRemainder_GeneratePermutation<kDGLCUDA, int32_t>();
   _TestRemainder_GeneratePermutation<kDGLCUDA, int64_t>();
 
   _TestRemainder_MapToX<kDGLCUDA, int32_t>();
   _TestRemainder_MapToX<kDGLCUDA, int64_t>();
+#elif defined(DGL_USE_HIP)
+  _TestRemainder_GeneratePermutation<kDGLROCM, int32_t>();
+  _TestRemainder_GeneratePermutation<kDGLROCM, int64_t>();
+
+  _TestRemainder_MapToX<kDGLROCM, int32_t>();
+  _TestRemainder_MapToX<kDGLROCM, int64_t>();
 #endif
   // CPU is not implemented
 }
@@ -185,12 +191,18 @@ void _TestRange_MapToX() {
 }
 
 TEST(PartitionTest, TestRangePartition) {
-#if defined(DGL_USE_CUDA) || defined(DGL_USE_HIP)
+#if defined(DGL_USE_CUDA) 
   _TestRange_GeneratePermutation<kDGLCUDA, int32_t>();
   _TestRange_GeneratePermutation<kDGLCUDA, int64_t>();
 
   _TestRange_MapToX<kDGLCUDA, int32_t>();
   _TestRange_MapToX<kDGLCUDA, int64_t>();
+#elif defined(DGL_USE_HIP)
+  _TestRange_GeneratePermutation<kDGLROCM, int32_t>();
+  _TestRange_GeneratePermutation<kDGLROCM, int64_t>();
+
+  _TestRange_MapToX<kDGLROCM, int32_t>();
+  _TestRange_MapToX<kDGLROCM, int64_t>();
 #endif
   // CPU is not implemented
 }

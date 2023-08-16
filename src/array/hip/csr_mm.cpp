@@ -328,24 +328,24 @@ std::pair<CSRMatrix, NDArray> CSRMM(
 }
 
 #ifdef DGL_ENABLE_HALF
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int32_t, __half>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int32_t, __half>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int64_t, __half>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int64_t, __half>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
 #endif
 #if BF16_ENABLED
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int32_t, __nv_bfloat16>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int32_t, __nv_bfloat16>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int64_t, __nv_bfloat16>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int64_t, __nv_bfloat16>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
 #endif  // BF16_ENABLED
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int32_t, float>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int32_t, float>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int64_t, float>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int64_t, float>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int32_t, double>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int32_t, double>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
-template std::pair<CSRMatrix, NDArray> CSRMM<kDGLCUDA, int64_t, double>(
+template std::pair<CSRMatrix, NDArray> CSRMM<kDGLROCM, int64_t, double>(
     const CSRMatrix&, NDArray, const CSRMatrix&, NDArray);
 
 }  // namespace aten

@@ -129,8 +129,8 @@ void COOSort_(COOMatrix* coo, bool sort_column) {
   }
 }
 
-template void COOSort_<kDGLCUDA, int32_t>(COOMatrix* coo, bool sort_column);
-template void COOSort_<kDGLCUDA, int64_t>(COOMatrix* coo, bool sort_column);
+template void COOSort_<kDGLROCM, int32_t>(COOMatrix* coo, bool sort_column);
+template void COOSort_<kDGLROCM, int64_t>(COOMatrix* coo, bool sort_column);
 
 ///////////////////////////// COOIsSorted /////////////////////////////
 
@@ -179,8 +179,8 @@ std::pair<bool, bool> COOIsSorted(COOMatrix coo) {
   return {row_sorted, col_sorted};
 }
 
-template std::pair<bool, bool> COOIsSorted<kDGLCUDA, int32_t>(COOMatrix coo);
-template std::pair<bool, bool> COOIsSorted<kDGLCUDA, int64_t>(COOMatrix coo);
+template std::pair<bool, bool> COOIsSorted<kDGLROCM, int32_t>(COOMatrix coo);
+template std::pair<bool, bool> COOIsSorted<kDGLROCM, int64_t>(COOMatrix coo);
 
 }  // namespace impl
 }  // namespace aten

@@ -23,7 +23,7 @@ COOMatrix CSRToCOO(CSRMatrix csr) {
 }
 
 template <>
-COOMatrix CSRToCOO<kDGLCUDA, int32_t>(CSRMatrix csr) {
+COOMatrix CSRToCOO<kDGLROCM, int32_t>(CSRMatrix csr) {
   auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
   hipStream_t stream = runtime::getCurrentHIPStream();
   // allocate hipsparse handle if needed
@@ -75,7 +75,7 @@ __global__ void _RepeatKernel(
 }
 
 template <>
-COOMatrix CSRToCOO<kDGLCUDA, int64_t>(CSRMatrix csr) {
+COOMatrix CSRToCOO<kDGLROCM, int64_t>(CSRMatrix csr) {
   const auto& ctx = csr.indptr->ctx;
   hipStream_t stream = runtime::getCurrentHIPStream();
 
@@ -95,8 +95,8 @@ COOMatrix CSRToCOO<kDGLCUDA, int64_t>(CSRMatrix csr) {
       csr.sorted);
 }
 
-template COOMatrix CSRToCOO<kDGLCUDA, int32_t>(CSRMatrix csr);
-template COOMatrix CSRToCOO<kDGLCUDA, int64_t>(CSRMatrix csr);
+template COOMatrix CSRToCOO<kDGLROCM, int32_t>(CSRMatrix csr);
+template COOMatrix CSRToCOO<kDGLROCM, int64_t>(CSRMatrix csr);
 
 template <DGLDeviceType XPU, typename IdType>
 COOMatrix CSRToCOODataAsOrder(CSRMatrix csr) {
@@ -105,8 +105,8 @@ COOMatrix CSRToCOODataAsOrder(CSRMatrix csr) {
 }
 
 template <>
-COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int32_t>(CSRMatrix csr) {
-  COOMatrix coo = CSRToCOO<kDGLCUDA, int32_t>(csr);
+COOMatrix CSRToCOODataAsOrder<kDGLROCM, int32_t>(CSRMatrix csr) {
+  COOMatrix coo = CSRToCOO<kDGLROCM, int32_t>(csr);
   if (aten::IsNullArray(coo.data)) return coo;
 
   auto* thr_entry = runtime::HIPThreadEntry::ThreadLocal();
@@ -142,8 +142,8 @@ COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int32_t>(CSRMatrix csr) {
 }
 
 template <>
-COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int64_t>(CSRMatrix csr) {
-  COOMatrix coo = CSRToCOO<kDGLCUDA, int64_t>(csr);
+COOMatrix CSRToCOODataAsOrder<kDGLROCM, int64_t>(CSRMatrix csr) {
+  COOMatrix coo = CSRToCOO<kDGLROCM, int64_t>(csr);
   if (aten::IsNullArray(coo.data)) return coo;
   const auto& sorted = Sort(coo.data);
 
@@ -158,8 +158,8 @@ COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int64_t>(CSRMatrix csr) {
   return coo;
 }
 
-template COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int32_t>(CSRMatrix csr);
-template COOMatrix CSRToCOODataAsOrder<kDGLCUDA, int64_t>(CSRMatrix csr);
+template COOMatrix CSRToCOODataAsOrder<kDGLROCM, int32_t>(CSRMatrix csr);
+template COOMatrix CSRToCOODataAsOrder<kDGLROCM, int64_t>(CSRMatrix csr);
 
 }  // namespace impl
 }  // namespace aten

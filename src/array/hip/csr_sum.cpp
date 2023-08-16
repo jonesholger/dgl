@@ -155,24 +155,24 @@ std::pair<CSRMatrix, NDArray> CSRSum(
 }
 
 #ifdef DGL_ENABLE_HALF
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, __half>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int32_t, __half>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int64_t, __half>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int64_t, __half>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
 #endif
 #if BF16_ENABLED
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, __nv_bfloat16>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int32_t, __nv_bfloat16>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int64_t, __nv_bfloat16>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int64_t, __nv_bfloat16>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
 #endif  // BF16_ENABLED
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, float>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int32_t, float>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int64_t, float>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int64_t, float>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int32_t, double>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int32_t, double>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
-template std::pair<CSRMatrix, NDArray> CSRSum<kDGLCUDA, int64_t, double>(
+template std::pair<CSRMatrix, NDArray> CSRSum<kDGLROCM, int64_t, double>(
     const std::vector<CSRMatrix>&, const std::vector<NDArray>&);
 
 }  // namespace aten
