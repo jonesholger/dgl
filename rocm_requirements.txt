@@ -1,0 +1,56 @@
+absl-py==1.4.0
+astunparse==1.6.3
+cachetools==5.3.1
+certifi==2023.7.22
+charset-normalizer==3.2.0
+cmake==3.27.2
+filelock==3.12.2
+flatbuffers==23.5.26
+fsspec==2023.6.0
+gast==0.4.0
+google-auth==2.22.0
+google-auth-oauthlib==0.4.6
+google-pasta==0.2.0
+grpcio==1.57.0
+h5py==3.9.0
+idna==3.4
+importlib-metadata==6.8.0
+Jinja2==3.1.2
+keras==2.11.0
+libclang==16.0.6
+lit==17.0.0rc2
+Markdown==3.4.4
+MarkupSafe==2.1.3
+mpmath==1.3.0
+networkx==3.1
+numpy==1.22.4
+oauthlib==3.2.2
+opt-einsum==3.3.0
+packaging==23.1
+Pillow==10.0.0
+protobuf==3.19.6
+pyasn1==0.5.0
+pyasn1-modules==0.3.0
+pytorch-triton-rocm @ https://download.pytorch.org/whl/nightly/pytorch_triton_rocm-2.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+requests==2.31.0
+requests-oauthlib==1.3.1
+rsa==4.9
+scipy==1.11.2
+six==1.16.0
+sympy==1.12
+tensorboard==2.11.2
+tensorboard-data-server==0.6.1
+tensorboard-plugin-wit==1.8.1
+tensorflow-estimator==2.11.0
+tensorflow-io-gcs-filesystem==0.33.0
+tensorflow-rocm==2.11.0.540
+termcolor==2.3.0
+torch @ https://download.pytorch.org/whl/nightly/rocm5.5/torch-2.1.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
+torchaudio @ https://download.pytorch.org/whl/nightly/rocm5.5/torchaudio-2.1.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
+torchdata @ https://download.pytorch.org/whl/nightly/torchdata-0.7.0.dev20230807-py3-none-any.whl
+torchvision @ https://download.pytorch.org/whl/nightly/rocm5.5/torchvision-0.16.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
+typing_extensions==4.7.1
+urllib3==1.26.16
+Werkzeug==2.3.7
+wrapt==1.15.0
+zipp==3.16.2

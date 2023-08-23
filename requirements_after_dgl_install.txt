@@ -1,0 +1,2 @@
+deepchem==2.7.1
+dgllife==0.3.2
