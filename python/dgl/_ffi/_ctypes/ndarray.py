@@ -85,7 +85,7 @@ class NDArrayBase(object):
     @property
     def _dgl_handle(self):
         return ctypes.cast(self.handle, ctypes.c_void_p).value
-
+    
     def to_dlpack(self, alignment=0):
         """Produce an array from a DLPack Tensor without copying memory
 
@@ -109,7 +109,7 @@ class NDArrayBase(object):
             ptr, _c_str_dltensor, _c_dlpack_deleter
         )
 
-
+    
 def _make_array(handle, is_view):
     handle = ctypes.cast(handle, DGLArrayHandle)
     return _CLASS_NDARRAY(handle, is_view)

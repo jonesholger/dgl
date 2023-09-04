@@ -40,6 +40,9 @@ inline DGLDataType ToDGLDataType(const DLDataType& src) {
 inline DLDevice ToDLDevice(const DGLContext& ctx) {
   DLDevice device;
   device.device_type = static_cast<DLDeviceType>(ctx.device_type);
+#ifdef DGL_USE_HIP
+  if(device.device_type == kDLCUDA) device.device_type = kDLROCM; 
+#endif
   device.device_id = ctx.device_id;
   return device;
 }

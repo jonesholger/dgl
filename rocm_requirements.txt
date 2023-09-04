@@ -51,6 +51,7 @@ torchdata @ https://download.pytorch.org/whl/nightly/torchdata-0.7.0.dev20230807
 torchvision @ https://download.pytorch.org/whl/nightly/rocm5.5/torchvision-0.16.0.dev20230807%2Brocm5.5-cp39-cp39-linux_x86_64.whl
 typing_extensions==4.7.1
 urllib3==1.26.16
+wheel==0.37.0
 Werkzeug==2.3.7
 wrapt==1.15.0
 zipp==3.16.2

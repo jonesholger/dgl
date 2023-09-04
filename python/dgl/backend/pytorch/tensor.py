@@ -482,9 +482,10 @@ def zerocopy_from_dgl_ndarray(data):
             device=to_backend_ctx(data.ctx),
         )
     else:
-        #return dlpack.from_dlpack(data.to_dlpack())
-        tt = th.as_tensor(data.asnumpy(),dtype=getattr(th, data.dtype),device=to_backend_ctx(data.ctx),)
-        return tt
+        return dlpack.from_dlpack(data.to_dlpack())
+        # the following a temp workaround
+        #tt = th.as_tensor(data.asnumpy(),dtype=getattr(th, data.dtype),device=to_backend_ctx(data.ctx),)
+        #return tt
         
 
 def sync():
