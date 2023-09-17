@@ -3,10 +3,10 @@ if [ $# -eq 0 ]; then
     >&2 echo "No build directory provided: should be one level below dgl main dir"
     exit 1
 fi
-ml rocm/5.5.0 
-ml rocmcc/5.5.0-magic
+ml rocm/5.4.3 
+ml rocmcc/5.4.3-magic
 ml cmake/3.24.2
-COMP_HIPCC_VER=5.5.0
+COMP_HIPCC_VER=5.4.3
 HIP_LIBRARIES_BASE=/usr/tce/packages/rocmcc/rocmcc-${COMP_HIPCC_VER}-magic/
 BUILD_DIR=$1
 TOP_LEVEL=`pwd`

@@ -301,7 +301,8 @@ class HIPDeviceAPI final : public DeviceAPI {
         hipGetLastError();  // clear error
         break;
       case hipSuccess:
-        result = (attr.type == hipMemoryTypeHost);
+        //result = (attr.type == hipMemoryTypeHost); // 5.5
+        result = (attr.memoryType == hipMemoryTypeHost); // 5.4.3
         break;
       case hipErrorNotInitialized:
       case hipErrorNoDevice:

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ml rocm/5.5.0 
-ml rocmcc/5.5.0-magic
+ml rocm/5.4.3 
+ml rocmcc/5.4.3-magic
 ml cmake/3.24.2
 
 venv_path=$HOME/workspace/venv/dgl_test
@@ -27,7 +27,7 @@ cp $BASE_DIR/build_amd/lib/* .
 cp -r $BASE_DIR/build_amd/tensoradapter .
 popd
 pushd $BASE_DIR/python
-python3 setup.py clean
+python3 setup.py clean --all
 rm dist/dgl-1.2*.whl
 python3 setup.py bdist_wheel
 pip3 install --force-reinstall --no-deps dist/dgl-1.2*.whl

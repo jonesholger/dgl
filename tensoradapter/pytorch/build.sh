@@ -1,13 +1,7 @@
 #!/bin/bash
 # Helper script to build tensor adapter libraries for PyTorch
 # assumes we can inherit from top-level venv
-#ml rocm/5.5.0 
-#ml rocmcc/5.5.0-magic
-#ml python/3.9.12
-#ml cmake/3.24.2
-#source $HOME/workspace/venv/amd/bin/activate
-#set -e
-COMP_HIPCC_VER=5.5.0
+COMP_HIPCC_VER=5.4.3
 HIP_LIBRARIES_BASE=/usr/tce/packages/rocmcc/rocmcc-${COMP_HIPCC_VER}-magic/
 mkdir -p build
 mkdir -p $BINDIR/tensoradapter/pytorch

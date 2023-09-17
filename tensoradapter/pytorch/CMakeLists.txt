@@ -50,15 +50,12 @@ target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/dlpack/include")
 target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${TORCH_INCLUDE_DIRS}")
-#target_link_directories(${TENSORADAPTER_TORCH_LIBS} BEFORE 
-#  INTERFACE /opt/rocm-5.5.0/lib
-#  INTERFACE /opt/rocm-5.5.0/hip/lib
-#  INTERFACE /opt/rocm-5.5.0/hsa/lib )
+
 target_link_libraries(${TORCH_TARGET_NAME} PRIVATE "${TENSORADAPTER_TORCH_LIBS}")
 target_link_directories(${TORCH_TARGET_NAME} BEFORE 
-  PUBLIC /opt/rocm-5.5.0/lib
-  PUBLIC /opt/rocm-5.5.0/hip/lib
-  PUBLIC /opt/rocm-5.5.0/hsa/lib )
+  PUBLIC /opt/rocm-5.4.3/lib
+  PUBLIC /opt/rocm-5.4.3/hip/lib
+  PUBLIC /opt/rocm-5.4.3/hsa/lib )
 set_property(TARGET ${TORCH_TARGET_NAME} PROPERTY CXX_STANDARD 17)
 message(STATUS "Configured target ${TORCH_TARGET_NAME}")
 get_property(import_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS )
