@@ -3,11 +3,21 @@ if [ $# -eq 0 ]; then
     >&2 echo "No build directory provided: should be one level below dgl main dir"
     exit 1
 fi
-ml rocm/5.4.3 
-ml rocmcc/5.4.3-magic
-ml cmake/3.24.2
 COMP_HIPCC_VER=5.4.3
+ml rocm/$COMP_HIPCC_VER 
+ml cmake/3.23.1
+
+if [[ "$HOSTNAME" =~ .*"tioga".* || "$HOSTNAME" =~ .*"rzvernal".* ]]; then
+ml rocmcc/$COMP_HIPCC_VER-magic
 HIP_LIBRARIES_BASE=/usr/tce/packages/rocmcc/rocmcc-${COMP_HIPCC_VER}-magic/
+COMP_ARCH=gfx90a
+fi
+
+if [[ "$HOSTNAME" =~ .*"corona".* ]]; then
+HIP_LIBRARIES_BASE=/opt/rocm-${COMP_HIPCC_VER}/
+COMP_ARCH=gfx906
+fi
+
 BUILD_DIR=$1
 TOP_LEVEL=`pwd`
 TORCH_BASE=`$TOP_LEVEL/script/torch_path.py`
@@ -16,7 +26,6 @@ echo "torch: $TORCH_BASE"
 echo "BUILD_DIR: $BUILD_DIR"
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
-COMP_ARCH=gfx90a
 cmake  \
     -DCMAKE_CXX_COMPILER=amdclang++ \
     -DCMAKE_C_COMPILER=amdclang \
