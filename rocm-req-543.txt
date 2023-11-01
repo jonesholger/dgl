@@ -21,7 +21,7 @@ lit==15.0.7
 Markdown==3.4.4
 MarkupSafe==2.1.2
 mpmath==1.2.1
-networkx==3.0
+networkx==3.1
 numpy==1.22.4
 oauthlib==3.2.2
 opt-einsum==3.3.0
@@ -36,7 +36,6 @@ rsa==4.9
 scipy==1.8.1
 six==1.16.0
 sympy==1.11.1
-tensorflow-rocm==2.11.0.540
 tensorboard==2.11.2
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.1
