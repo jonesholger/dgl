@@ -30,7 +30,7 @@ export PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.9,max_split_size_mb
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.4.2
 pip3 install --no-cache-dir tensorflow-rocm==2.11.0.540
 pip3 install -r $BASE_DIR/rocm-req-543.txt
-pip3 install -r $BASE_DIR/ampl_test_requirements_min.txt
+#pip3 install -r $BASE_DIR/ampl_test_requirements_min.txt
 
 python3 $BASE_DIR/script/patch_caffe2_targets.py
 rm -r build build_amd tensoradapter/pytorch/build
@@ -58,5 +58,5 @@ popd
 
 python3 $BASE_DIR/tutorials/blitz/2_dglgraph.py
 
-pip3 install -r $BASE_DIR/requirements_after_dgl_install.txt
+#pip3 install -r $BASE_DIR/requirements_after_dgl_install.txt
 
