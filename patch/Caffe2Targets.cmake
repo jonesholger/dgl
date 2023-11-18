@@ -50,12 +50,14 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
+set(TORCH_LIB_BASE "/g/g0/holger/workspace/venv/dgl_use_torch_rocm/lib/python3.9/site-packages/torch/lib")
 # Create imported target c10_hip
 add_library(c10_hip SHARED IMPORTED)
 
 set_target_properties(c10_hip PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "c10;/opt/rocm-5.4.3/hip/lib/libamdhip64.so"
+  #INTERFACE_LINK_LIBRARIES "c10;/opt/rocm-5.4.3/hip/lib/libamdhip64.so"
+  INTERFACE_LINK_LIBRARIES "c10;${TORCH_LIB_BASE}/libamdhip64.so"
 )
 
 # Create imported target c10
@@ -92,7 +94,8 @@ set_target_properties(torch_hip PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "USE_C10D_NCCL"
   INTERFACE_COMPILE_OPTIONS "-fPIC;-D__HIP_PLATFORM_HCC__=1;-DCUDA_HAS_FP16=1;-DUSE_ROCM;-D__HIP_NO_HALF_OPERATORS__=1;-D__HIP_NO_HALF_CONVERSIONS__=1;-DTORCH_HIP_VERSION=504;-Wno-macro-redefined;-Wno-inconsistent-missing-override;-Wno-exceptions;-Wno-shift-count-negative;-Wno-shift-count-overflow;-Wno-unused-command-line-argument;-Wno-duplicate-decl-specifier;-Wno-implicit-int-float-conversion;-DCAFFE2_USE_MIOPEN;-DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_HIP;-std=c++17"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "c10_hip;torch_cpu_library;/opt/rocm-5.4.3/hip/lib/libamdhip64.so;MIOpen;/opt/rocm-5.4.3/hip/lib/libamdhip64.so;/opt/rocm-5.4.3/roctracer/lib/libroctx64.so;roc::rocblas;hip::hipfft;hip::hiprand;roc::hipsparse"
+  #INTERFACE_LINK_LIBRARIES "c10_hip;torch_cpu_library;/opt/rocm-5.4.3/hip/lib/libamdhip64.so;MIOpen;/opt/rocm-5.4.3/hip/lib/libamdhip64.so;/opt/rocm-5.4.3/roctracer/lib/libroctx64.so;roc::rocblas;hip::hipfft;hip::hiprand;roc::hipsparse"
+  INTERFACE_LINK_LIBRARIES "c10_hip;torch_cpu_library;${TORCH_LIB_BASE}/libamdhip64.so;MIOpen;${TORCH_LIB_BASE}/libroctx64.so;roc::rocblas;hip::hipfft;hip::hiprand;roc::hipsparse"
 )
 
 # Create imported target torch_hip_library

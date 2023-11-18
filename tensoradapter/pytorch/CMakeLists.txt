@@ -53,9 +53,10 @@ target_include_directories(
 
 target_link_libraries(${TORCH_TARGET_NAME} PRIVATE "${TENSORADAPTER_TORCH_LIBS}")
 target_link_directories(${TORCH_TARGET_NAME} BEFORE 
-  PUBLIC /opt/rocm-5.4.3/lib
-  PUBLIC /opt/rocm-5.4.3/hip/lib
-  PUBLIC /opt/rocm-5.4.3/hsa/lib )
+  #PUBLIC /opt/rocm-5.4.3/lib
+  #PUBLIC /opt/rocm-5.4.3/hip/lib
+  #PUBLIC /opt/rocm-5.4.3/hsa/lib
+  PUBLIC /g/g0/holger/workspace/venv/dgl_use_torch_rocm/lib/python3.9/site-packages/torch/lib )
 set_property(TARGET ${TORCH_TARGET_NAME} PROPERTY CXX_STANDARD 17)
 message(STATUS "Configured target ${TORCH_TARGET_NAME}")
 get_property(import_targets DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS )
