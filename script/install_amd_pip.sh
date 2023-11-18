@@ -30,36 +30,51 @@ export PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.9,max_split_size_mb
 #pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.4.2
 
 pip3 install --pre --no-cache-dir https://download.pytorch.org/whl/rocm5.6/torch-2.1.1%2Brocm5.6-cp39-cp39-linux_x86_64.whl
-#pip3 install --no-cache-dir tensorflow-rocm==2.11.0.540
+pip3 install --no-cache-dir tensorflow-rocm==2.12.0.560
 
-#pip3 install -r $BASE_DIR/rocm-req-543.txt
-#pip3 install -r $BASE_DIR/ampl_test_requirements_min.txt
+pip3 install -r $BASE_DIR/rocm-req-543.txt
+pip3 install -r $BASE_DIR/ampl_test_requirements_min.txt
 
-#python3 $BASE_DIR/script/patch_caffe2_targets.py
-#rm -r build build_amd tensoradapter/pytorch/build
-#mkdir -p $BUILD_DIR
-#mkdir -p $BASE_DIR/build
+python3 $BASE_DIR/script/patch_caffe2_targets.py
+TORCH_BASE=`$BASE_DIR/script/torch_path.py`
 
-#$BASE_DIR/script/build_dgl_amd_pip.sh $BUILD_DIR
+pushd $TORCH_BASE/lib
+ln -s libhipblas.so libhipblas.so.1
+ln -s libhipsparse.so libhipsparse.so.0
+ln -s libamdhip64.so libamdhip64.so.5
+ln -s librocsolver.so librocsolver.so.0
+ln -s librocblas.so librocblas.so.3
+ln -s librocsparse.so librocsparse.so.0
+ln -s libamd_comgr.so libamd_comgr.so.2
+ln -s libhsa-runtime64.so libhsa-runtime64.so.1
+ln -s libdrm.so libdrm.so.2
+ln -s libdrm_amdgpu.so libdrm_amdgpu.so.1
+popd
 
-#pushd $BUILD_DIR
-#make -j 24
-#./bin/runUnitTests
-#popd
+rm -r build build_amd tensoradapter/pytorch/build
+mkdir -p $BUILD_DIR
+mkdir -p $BASE_DIR/build
 
-#pushd $BASE_DIR/build
-#cp $BUILD_DIR/lib/* .
-#cp -r $BUILD_DIR/tensoradapter .
-#popd
+$BASE_DIR/script/build_dgl_amd_pip.sh $BUILD_DIR
 
-#pushd $BASE_DIR/python
-#python3 setup.py clean --all
-#rm dist/dgl-1.2*.whl
-#python3 setup.py bdist_wheel
-#pip3 install --force-reinstall --no-deps dist/dgl-1.2*.whl
-#popd
+pushd $BUILD_DIR
+make -j 24
+./bin/runUnitTests
+popd
 
-#python3 $BASE_DIR/tutorials/blitz/2_dglgraph.py
+pushd $BASE_DIR/build
+cp $BUILD_DIR/lib/* .
+cp -r $BUILD_DIR/tensoradapter .
+popd
 
-#pip3 install -r $BASE_DIR/requirements_after_dgl_install.txt
+pushd $BASE_DIR/python
+python3 setup.py clean --all
+m dist/dgl-1.2*.whl
+python3 setup.py bdist_wheel
+pip3 install --force-reinstall --no-deps dist/dgl-1.2*.whl
+popd
+
+python3 $BASE_DIR/tutorials/blitz/2_dglgraph.py
+
+pip3 install -r $BASE_DIR/requirements_after_dgl_install.txt
 

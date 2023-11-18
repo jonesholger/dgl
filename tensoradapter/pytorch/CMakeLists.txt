@@ -50,6 +50,8 @@ target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/dlpack/include")
 target_include_directories(
   ${TORCH_TARGET_NAME} PRIVATE "${TORCH_INCLUDE_DIRS}")
+target_include_directories(
+  ${TORCH_TARGET_NAME} PRIVATE "/opt/rocm-5.6.0/include")
 
 target_link_libraries(${TORCH_TARGET_NAME} PRIVATE "${TENSORADAPTER_TORCH_LIBS}")
 target_link_directories(${TORCH_TARGET_NAME} BEFORE 

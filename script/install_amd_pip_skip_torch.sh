@@ -29,9 +29,7 @@ export PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.9,max_split_size_mb
 TOP_LEVEL=`pwd`
 TORCH_BASE=`$TOP_LEVEL/script/torch_path.py`
 echo "torch: $TORCH_BASE"
-#export LD_LIBRARY_PATH=$TORCH_BASE/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$TORCH_BASE/lib
-export ROCM_PATH=$TORCH_BASE
+export LD_LIBRARY_PATH=$TORCH_BASE/lib:$LD_LIBRARY_PATH
 
 rm -r build $BUILD_DIR tensoradapter/pytorch/build
 mkdir -p $BUILD_DIR
